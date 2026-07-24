@@ -4,6 +4,76 @@ import i18n from '@/lang'
 
 import $ from 'jquery'
 
+// ---------- 节点悬停详情 tooltip ----------
+// 整个画布共享一个 tooltip DOM，避免节点多的时候产生大量节点
+let tooltipEl = null
+
+const escapeHtml = (str) => String(str).replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+}[c]))
+
+const formatValue = (value) => {
+    if (Array.isArray(value)) {
+        return value.join(', ')
+    }
+    if (typeof value === 'object' && value !== null) {
+        return JSON.stringify(value)
+    }
+    return `${value}`
+}
+
+const buildTooltipContent = (options) => {
+    const rows = (options.attributes || [])
+        .map((attr) => {
+            let value = options.ci?.[attr.name]
+            if (value === undefined || value === null || value === '') {
+                return null
+            }
+            if (attr.is_password) {
+                value = '******'
+            }
+            return `<div class="topo-node-tooltip-row"><span class="topo-node-tooltip-label">${escapeHtml(attr.alias || attr.name)}:</span><span>${escapeHtml(formatValue(value))}</span></div>`
+        })
+        .filter(Boolean)
+        .join('')
+    const title = `<div class="topo-node-tooltip-title">${escapeHtml(options.title || '')}</div>`
+    return `${title}${rows || `<div class="topo-node-tooltip-empty">${i18n.t('noData')}</div>`}`
+}
+
+const showTooltip = (container, options) => {
+    hideTooltip()
+    tooltipEl = document.createElement('div')
+    tooltipEl.className = 'ci-detail-relation-topo-node-tooltip'
+    tooltipEl.innerHTML = buildTooltipContent(options)
+    document.body.appendChild(tooltipEl)
+
+    const rect = container.getBoundingClientRect()
+    const tipRect = tooltipEl.getBoundingClientRect()
+    // 默认显示在节点右侧，超出视口则放到左侧/向上收
+    let left = rect.right + 8
+    if (left + tipRect.width > window.innerWidth) {
+        left = Math.max(0, rect.left - tipRect.width - 8)
+    }
+    let top = rect.top
+    if (top + tipRect.height > window.innerHeight) {
+        top = Math.max(0, window.innerHeight - tipRect.height - 8)
+    }
+    tooltipEl.style.left = `${left}px`
+    tooltipEl.style.top = `${top}px`
+}
+
+const hideTooltip = () => {
+    if (tooltipEl) {
+        tooltipEl.remove()
+        tooltipEl = null
+    }
+}
+// ---------- tooltip end ----------
+
 class BaseNode extends TreeNode {
     constructor(opts) {
         super(opts)
@@ -30,6 +100,14 @@ class BaseNode extends TreeNode {
         container.append(icon)
         container.append(titleContent)
         container.append(uniqueDom)
+
+        // 悬停显示该 CI 的详细信息（构造节点时传入的 ci + attributes）
+        if (opts.options.ci && opts.options.attributes) {
+            container.on('mouseenter', () => {
+                showTooltip(container[0], opts.options)
+            })
+            container.on('mouseleave', hideTooltip)
+        }
 
         if (opts.options.side && (!opts.options.children.length && !(opts.options.edges && opts.options.edges.length && opts.options.edges.find(e => e.source === opts.options.side && e.sourceNode === opts.options.id)))) {
             const addIcon = $(`<i aria-label="${i18n.t('icon')}: plus-square" class="anticon anticon-plus-square add-icon-${opts.options.side}"><svg viewBox="64 64 896 896" data-icon="plus-square" width="1em" height="1em" fill="currentColor" aria-hidden="true" focusable="false" class=""><path d="M328 544h152v152c0 4.4 3.6 8 8 8h48c4.4 0 8-3.6 8-8V544h152c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8H544V328c0-4.4-3.6-8-8-8h-48c-4.4 0-8 3.6-8 8v152H328c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8z"></path><path d="M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V144c0-17.7-14.3-32-32-32zm-40 728H184V184h656v656z"></path></svg></i>`)

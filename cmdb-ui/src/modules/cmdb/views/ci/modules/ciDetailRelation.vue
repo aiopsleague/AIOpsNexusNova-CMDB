@@ -146,6 +146,8 @@ export default {
         unique_alias,
         unique_name,
         unique_value: this.ci[unique_name],
+        ci: this.ci, // 悬停详情用的完整 CI 数据
+        attributes: this.attrList(), // 悬停详情用的属性元数据
         icon: _findCiType?.icon || '',
         endpoints: [
           {
@@ -179,6 +181,8 @@ export default {
               unique_alias,
               unique_name,
               unique_value: parentCi[unique_name],
+              ci: parentCi, // 悬停详情用的完整 CI 数据
+              attributes: parent.attributes, // 悬停详情用的属性元数据
               children: [],
               icon: _findCiType?.icon || '',
               endpoints: [
@@ -222,6 +226,8 @@ export default {
               unique_alias,
               unique_name,
               unique_value: childCi[unique_name],
+              ci: childCi, // 悬停详情用的完整 CI 数据
+              attributes: child.attributes, // 悬停详情用的属性元数据
               children: [],
               icon: _findCiType?.icon || '',
               endpoints: [

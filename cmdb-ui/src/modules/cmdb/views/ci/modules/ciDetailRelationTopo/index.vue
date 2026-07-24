@@ -135,6 +135,8 @@ export default {
               unique_alias,
               unique_name,
               unique_value: r[unique_name],
+              ci: r, // 悬停详情用的完整 CI 数据
+              attributes, // 悬停详情用的属性元数据
               children: [],
               icon: _findCiType?.icon || '',
               endpoints: [

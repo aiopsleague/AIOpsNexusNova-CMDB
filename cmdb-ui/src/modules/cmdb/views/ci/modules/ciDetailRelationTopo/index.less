@@ -83,3 +83,36 @@
     }
   }
 }
+
+// 节点悬停详情 tooltip（挂在 body 下，与画布无关）
+.ci-detail-relation-topo-node-tooltip {
+  position: fixed;
+  z-index: 3000;
+  pointer-events: none; // 不抢占鼠标事件，避免抖动
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 2px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  padding: 8px 12px;
+  max-width: 360px;
+  max-height: 320px;
+  overflow-y: auto;
+  font-size: 12px;
+  .topo-node-tooltip-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: #222;
+  }
+  .topo-node-tooltip-row {
+    line-height: 20px;
+    word-break: break-all;
+  }
+  .topo-node-tooltip-label {
+    color: #86909c;
+    margin-right: 4px;
+  }
+  .topo-node-tooltip-empty {
+    color: #86909c;
+  }
+}
