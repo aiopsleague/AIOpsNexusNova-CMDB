@@ -72,6 +72,7 @@
             :typeId="typeId"
             :ci="ci"
             :relationData="relationData"
+            @navigateToCi="handleNavigateToCi"
           />
         </div>
       </a-tab-pane>
@@ -332,24 +333,26 @@ export default {
     },
   },
   methods: {
-    async create(ciId, activeTabKey = 'tab_1') {
+    async create(ciId, activeTabKey = 'tab_1', typeId = null) {
+      const effectiveTypeId = typeId || this.typeId
       this.initQueryLoading = true
       this.activeTabKey = activeTabKey
       this.ciId = ciId
 
       await this.getCI()
       if (this.hasPermission) {
-        this.getAttributes()
+        this.getAttributes(effectiveTypeId)
         this.getCIHistory()
         const ciTypeRes = await getCITypes()
         this.ci_types = ciTypeRes.ci_types
 
-        this.initRelationData(this.typeId, this.ciId)
+        this.initRelationData(effectiveTypeId, this.ciId)
       }
       this.initQueryLoading = false
     },
-    getAttributes() {
-      getCITypeGroupById(this.typeId, { need_other: 1 })
+    getAttributes(typeIdOverride) {
+      const typeId = typeIdOverride || this.typeId
+      getCITypeGroupById(typeId, { need_other: 1 })
         .then((res) => {
           this.attributeGroups = (res || []).filter((group) => group?.attributes?.length)
 
@@ -499,6 +502,13 @@ export default {
           }
         })
       }
+    },
+    // 双击拓扑节点：在当前窗口内加载目标 CI 的详情（含拓扑等 5 个标签页）
+    handleNavigateToCi({ typeId, ciId }) {
+      // 原地刷新：切换标签到拓扑并加载新 CI 数据
+      this.create(ciId, 'tab_2', typeId)
+      // 继续向上冒泡，让独立页面场景的 ciDetailPage 可以同步更新路由 URL
+      this.$emit('navigateToCi', { typeId, ciId })
     },
     filterUsernameMethod({ value, row, column }) {
       return row.username === value

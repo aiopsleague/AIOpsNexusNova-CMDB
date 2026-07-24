@@ -40,10 +40,10 @@ export default {
     }
   },
   methods: {
-    create(ciId, activeTabKey = 'tab_1', ciDetailRelationKey = '1') {
+    create(ciId, activeTabKey = 'tab_1') {
       this.visible = true
       this.$nextTick(() => {
-        this.$refs.ciDetailTab.create(ciId, activeTabKey, ciDetailRelationKey)
+        this.$refs.ciDetailTab.create(ciId, activeTabKey)
       })
     },
   },

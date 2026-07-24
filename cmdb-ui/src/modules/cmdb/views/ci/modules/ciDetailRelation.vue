@@ -121,7 +121,7 @@ export default {
       this.secondCIs = secondCIs
     },
 
-    // 双击拓扑节点：跳转到该 CI 的详情页并定位到拓扑 Tab
+    // 双击拓扑节点：通知父组件导航到目标 CI
     handleNodeDblclick({ typeId, ciId }) {
       if (!typeId || !ciId) {
         return
@@ -129,18 +129,10 @@ export default {
       if (typeId === this.typeId && ciId === this.ciId) {
         return // 当前 CI 自身，无需跳转
       }
-      this.$router
-        .push({
-          name: 'cmdb_ci_detail',
-          params: { typeId, ciId },
-          query: { tab: 'tab_2' },
-        })
-        .catch((err) => {
-          // 连续双击同一节点导致的重复导航，忽略即可
-          if (err?.name !== 'NavigationDuplicated') {
-            throw err
-          }
-        })
+      // 将导航事件向上冒泡，由父组件（ciDetailTab）决定如何导航：
+      // - 抽屉场景：直接调用 create() 原地刷新，URL 不变
+      // - 独立页面场景：ciDetailPage 进一步更新路由 URL
+      this.$emit('navigateToCi', { typeId, ciId })
     },
 
     handleTopoData() {

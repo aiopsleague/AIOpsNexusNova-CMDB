@@ -2,7 +2,7 @@
   <div>
     <div class="ci-detail-header">{{ this.type.alias }}</div>
     <div class="ci-detail-page">
-      <ci-detail-tab ref="ciDetailTab" :typeId="typeId" :attributeHistoryTableHeight="windowHeight - 250" />
+      <ci-detail-tab ref="ciDetailTab" :typeId="typeId" :attributeHistoryTableHeight="windowHeight - 250" @navigateToCi="handleNavigateToCi" />
     </div>
   </div>
 </template>
@@ -65,6 +65,25 @@ export default {
         this.type = res.ci_types[0]
       })
       this.getAttributeList()
+    },
+    // 双击拓扑节点：同步更新地址栏 URL（ciDetailTab 已原地刷新了内容）
+    handleNavigateToCi({ typeId, ciId }) {
+      // 已匹配当前路由，无需重复跳转
+      if (
+        Number(this.$route.params.typeId) === typeId &&
+        Number(this.$route.params.ciId) === ciId
+      ) {
+        return
+      }
+      this.$router
+        .push({
+          name: 'cmdb_ci_detail',
+          params: { typeId, ciId },
+          query: { tab: 'tab_2' },
+        })
+        .catch((err) => {
+          if (err?.name !== 'NavigationDuplicated') throw err
+        })
     },
     async getAttributeList() {
       await getCITypeAttributesById(this.typeId).then((res) => {
