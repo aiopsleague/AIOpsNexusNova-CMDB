@@ -5,17 +5,23 @@
 # 后端默认是新版 FastAPI（cmdb-api-fastapi），也支持旧版 Flask（cmdb-api）。
 #
 # 用法：
-#   ./dev.sh start [--flask] [--worker] [--init]   # 启动（默认 fastapi 后端）
-#   ./dev.sh stop [--keep-db]                      # 停止（默认连 db 容器一起停）
-#   ./dev.sh restart [--flask] [--worker] [--init]
-#   ./dev.sh status                                # 查看各服务状态
-#   ./dev.sh logs <api|worker|ui>                  # 跟踪某个服务的日志
+#   ./dev.sh start                      # 启动全部服务：db + fastapi + worker + ui
+#   ./dev.sh start <服务...>            # 只启动指定服务，可多个，如：
+#                                       #   ./dev.sh start fastapi
+#                                       #   ./dev.sh start db fastapi worker
+#                                       #   ./dev.sh start flask          （旧版后端）
+#                                       #   ./dev.sh start init           （只跑初始化命令）
+#   ./dev.sh stop [服务...|all]         # 停止全部或指定服务（init 不是常驻进程，无 stop）
+#   ./dev.sh restart [服务...|all]      # 重启全部（含 db）或指定服务
+#   ./dev.sh status                     # 查看各服务状态
+#   ./dev.sh logs [api|worker|ui]       # 跟踪某个服务的日志（默认 api）
 #
+# 服务名：db、fastapi、flask、ui、worker、init、all（all 与留空等价，= db+fastapi+worker+ui）
 # 选项：
-#   --flask      后端用旧版 cmdb-api（Flask），需要先在 cmdb-api 里 pipenv install
-#   --worker     同时启动 celery worker + beat（自动发现/定时任务需要，仅 fastapi）
-#   --init       启动后端前跑一遍初始化命令（cli.py db-setup 等，首次建库时用）
-#   --keep-db    stop 时保留 MySQL/Redis 容器
+#   --flask / --fastapi  指定后端实现（同直接写 flask/fastapi 服务名；
+#                        flask 需要先在 cmdb-api 里 pipenv install）
+#   --init               start 全部时在启动后端前跑一遍初始化命令（首次建库时用）
+#   --keep-db            stop 全部时保留 MySQL/Redis 容器
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -48,9 +54,10 @@ log_file() { echo "$RUN_DIR/$1.log"; }
 
 # 进程识别用命令行模式而不是 pid 文件：uvicorn --reload / celery 会 fork 子
 # 进程，pid 文件容易漂移；模式匹配对 stop/status 都可靠。
+# api 同时匹配两种后端，保证 stop/status 不受启动时选择的是哪个后端影响。
 proc_pattern() {  # $1=name
     case "$1" in
-        api)    [[ "$BACKEND" == flask ]] && echo 'flask run' || echo 'uvicorn main:app' ;;
+        api)    echo 'uvicorn main:app|flask run' ;;
         worker) echo 'celery_worker.celery worker' ;;
         ui)     echo 'vue-cli-service serve' ;;
     esac
@@ -123,43 +130,76 @@ db_stop() {
 }
 
 # ---------- 后端 ----------
+FASTAPI_DIR="$ROOT/cmdb-api-fastapi"
+FLASK_DIR="$ROOT/cmdb-api"
+
+detect_flask() {  # 检测旧版后端的运行方式，结果写入全局数组 FLASK_RUN
+    if [[ -x "$FLASK_DIR/.venv/bin/flask" ]]; then
+        FLASK_RUN=("$FLASK_DIR/.venv/bin/flask")
+    elif command -v pipenv >/dev/null && ( cd "$FLASK_DIR" && pipenv --venv ) >/dev/null 2>&1; then
+        FLASK_RUN=(pipenv run flask)
+    else
+        c_red "旧版 cmdb-api 的依赖环境不存在，请先在 cmdb-api 目录执行 pipenv install"
+        return 1
+    fi
+}
+
 api_start() {
     if [[ "$BACKEND" == fastapi ]]; then
-        local dir="$ROOT/cmdb-api-fastapi"
-        [[ -x "$dir/.venv/bin/uvicorn" ]] || { c_red "找不到 $dir/.venv，请先创建虚拟环境安装依赖"; return 1; }
-        if [[ "$DO_INIT" == 1 ]]; then
-            c_yellow "执行初始化命令（cli.py）..."
-            ( cd "$dir" && .venv/bin/python cli.py db-setup \
-                && .venv/bin/python cli.py common-check-new-columns \
-                && .venv/bin/python cli.py cmdb-init-cache \
-                && .venv/bin/python cli.py cmdb-init-acl \
-                && .venv/bin/python cli.py init-import-user-from-acl \
-                && .venv/bin/python cli.py init-department )
-        fi
-        start_proc api "$dir" .venv/bin/uvicorn main:app --host 0.0.0.0 --port "$API_PORT" --reload
-        if [[ "$WITH_WORKER" == 1 ]]; then
-            start_proc worker "$dir" .venv/bin/celery -A celery_worker.celery worker --beat -E \
-                -Q one_cmdb_async,acl_async,beat_tasks --loglevel=info
-        fi
+        [[ -x "$FASTAPI_DIR/.venv/bin/uvicorn" ]] || { c_red "找不到 $FASTAPI_DIR/.venv，请先创建虚拟环境安装依赖"; return 1; }
+        start_proc api "$FASTAPI_DIR" .venv/bin/uvicorn main:app --host 0.0.0.0 --port "$API_PORT" --reload
     else
-        local dir="$ROOT/cmdb-api"
-        if [[ -x "$dir/.venv/bin/flask" ]]; then
-            start_proc api "$dir" env FLASK_APP=autoapp.py FLASK_ENV=development \
-                .venv/bin/flask run --host 0.0.0.0 --port "$API_PORT"
-        elif command -v pipenv >/dev/null && ( cd "$dir" && pipenv --venv ) >/dev/null 2>&1; then
-            start_proc api "$dir" env FLASK_APP=autoapp.py FLASK_ENV=development \
-                pipenv run flask run --host 0.0.0.0 --port "$API_PORT"
-        else
-            c_red "旧版 cmdb-api 的依赖环境不存在，请先在 cmdb-api 目录执行 pipenv install"
-            return 1
-        fi
+        detect_flask || return 1
+        start_proc api "$FLASK_DIR" env FLASK_APP=autoapp.py FLASK_ENV=development \
+            "${FLASK_RUN[@]}" run --host 0.0.0.0 --port "$API_PORT"
     fi
     wait_http "http://127.0.0.1:$API_PORT/api/health" "后端($BACKEND)" 60
 }
 
 api_stop() {
-    stop_proc worker
     stop_proc api
+}
+
+worker_start() {
+    if [[ "$BACKEND" == fastapi ]]; then
+        [[ -x "$FASTAPI_DIR/.venv/bin/celery" ]] || { c_red "找不到 $FASTAPI_DIR/.venv"; return 1; }
+        start_proc worker "$FASTAPI_DIR" .venv/bin/celery -A celery_worker.celery worker --beat -E \
+            -Q one_cmdb_async,acl_async,beat_tasks --loglevel=info
+    else
+        detect_flask || return 1
+        # 与 flask 同一虚拟环境里的 celery
+        local celery=("${FLASK_RUN[@]/flask/celery}")
+        start_proc worker "$FLASK_DIR" "${celery[@]}" -A celery_worker.celery worker --beat -E \
+            -Q one_cmdb_async,acl_async,beat_tasks --loglevel=info
+    fi
+}
+
+worker_stop() {
+    stop_proc worker
+}
+
+# 初始化命令（建表/缓存/ACL/部门等），两个后端的命令名保持一致。
+# 注意：部分命令（如 cmdb-init-acl）不是幂等的，在已初始化的库上会报错，
+# 这里逐条执行、失败只告警不中断。
+run_init() {
+    c_yellow "执行初始化命令（后端：$BACKEND）..."
+    local cmds=(db-setup common-check-new-columns cmdb-init-cache cmdb-init-acl init-import-user-from-acl init-department)
+    local failed=0 c old_pwd="$PWD"
+    if [[ "$BACKEND" == fastapi ]]; then
+        [[ -x "$FASTAPI_DIR/.venv/bin/python" ]] || { c_red "找不到 $FASTAPI_DIR/.venv"; return 1; }
+        cd "$FASTAPI_DIR"
+        for c in "${cmds[@]}"; do
+            .venv/bin/python cli.py "$c" || { c_red "[warn] $c 执行失败（已初始化的库上属预期），跳过"; failed=1; }
+        done
+    else
+        detect_flask || return 1
+        cd "$FLASK_DIR"
+        for c in "${cmds[@]}"; do
+            "${FLASK_RUN[@]}" "$c" || { c_red "[warn] $c 执行失败（已初始化的库上属预期），跳过"; failed=1; }
+        done
+    fi
+    cd "$old_pwd"
+    [[ "$failed" == 1 ]] && c_yellow "初始化完成（部分命令报错已跳过，详见上方输出）" || c_green "初始化完成"
 }
 
 # ---------- 前端 ----------
@@ -190,10 +230,36 @@ ui_stop() {
     stop_proc ui
 }
 
-# ---------- 子命令 ----------
-do_start() {
+# ---------- 服务调度 ----------
+start_one() {  # $1=服务名
+    case "$1" in
+        db)            db_start ;;
+        fastapi|flask|api) api_start ;;
+        worker)        worker_start ;;
+        ui)            ui_start ;;
+        init)          run_init ;;
+        all)           do_start_all ;;
+        *) c_red "未知服务：$1"; return 2 ;;
+    esac
+}
+
+stop_one() {  # $1=服务名
+    case "$1" in
+        db)            db_stop ;;
+        fastapi|flask|api) api_stop ;;
+        worker)        worker_stop ;;
+        ui)            ui_stop ;;
+        init)          c_yellow "init 不是常驻进程，无需停止" ;;
+        all)           do_stop_all ;;
+        *) c_red "未知服务：$1"; return 2 ;;
+    esac
+}
+
+do_start_all() {
     db_start
+    [[ "$DO_INIT" == 1 ]] && run_init
     api_start
+    worker_start
     ui_start
     echo
     c_green "全部启动完成："
@@ -202,11 +268,41 @@ do_start() {
     do_status
 }
 
-do_stop() {
+do_stop_all() {
     ui_stop
+    worker_stop
     api_stop
     [[ "$KEEP_DB" == 1 ]] || db_stop
     c_green "停止完成"
+}
+
+do_start() {
+    if [[ ${#SERVICES[@]} -eq 0 ]]; then
+        do_start_all
+    else
+        for s in "${SERVICES[@]}"; do start_one "$s"; done
+    fi
+}
+
+do_stop() {
+    if [[ ${#SERVICES[@]} -eq 0 ]]; then
+        do_stop_all
+    else
+        for s in "${SERVICES[@]}"; do stop_one "$s"; done
+    fi
+}
+
+do_restart() {
+    if [[ ${#SERVICES[@]} -eq 0 ]]; then
+        do_stop_all
+        do_start_all
+    else
+        for s in "${SERVICES[@]}"; do
+            [[ "$s" == init ]] && { c_yellow "init 不是常驻进程，直接执行"; run_init; continue; }
+            stop_one "$s"
+            start_one "$s"
+        done
+    fi
 }
 
 do_status() {
@@ -226,6 +322,7 @@ do_status() {
 
 # ---------- 参数解析 ----------
 CMD="${1:-}"; shift || true
+SERVICES=()
 LOGS_NAME=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -234,11 +331,18 @@ while [[ $# -gt 0 ]]; do
         --worker)  WITH_WORKER=1 ;;
         --init)    DO_INIT=1 ;;
         --keep-db) KEEP_DB=1 ;;
-        *) if [[ "$CMD" == logs && -z "$LOGS_NAME" ]]; then
-               LOGS_NAME="$1"
-           else
-               c_red "未知参数：$1"; exit 2
-           fi ;;
+        db|fastapi|flask|api|ui|worker|init|all)
+            if [[ "$CMD" == start || "$CMD" == stop || "$CMD" == restart ]]; then
+                SERVICES+=("$1")
+                # 服务名里明确写了后端实现的，以此为准
+                [[ "$1" == flask ]] && BACKEND=flask
+                [[ "$1" == fastapi || "$1" == api ]] && BACKEND=fastapi
+            elif [[ "$CMD" == logs && -z "$LOGS_NAME" ]]; then
+                LOGS_NAME="$1"
+            else
+                c_red "未知参数：$1"; exit 2
+            fi ;;
+        *) c_red "未知参数：$1"; exit 2 ;;
     esac
     shift
 done
@@ -246,11 +350,11 @@ done
 case "$CMD" in
     start)   do_start ;;
     stop)    do_stop ;;
-    restart) do_stop; KEEP_DB=1; do_start ;;  # restart 不动数据库
+    restart) do_restart ;;
     status)  do_status ;;
     logs)    name="${LOGS_NAME:-api}"; tail -f "$RUN_DIR/$name.log" ;;
     *)
-        sed -n '2,22p' "$0"
+        sed -n '2,29p' "$0"
         exit 2
         ;;
 esac

@@ -19,6 +19,10 @@ class _DBShim(object):
     session = db_session
     engine = engine
 
+    def get_engine(self, app=None, bind=None):
+        # Flask-SQLAlchemy compat: single-engine setup, app/bind are ignored
+        return engine
+
     def __getattr__(self, name):
         if hasattr(sqlalchemy, name):
             return getattr(sqlalchemy, name)
