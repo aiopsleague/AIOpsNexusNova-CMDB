@@ -40,6 +40,10 @@ export default {
     }
   },
   computed: {
+    // 优先从当前 CI 数据获取实际类型 ID，兜底使用 prop（兼容初次加载时 ci 尚未就绪）
+    currentTypeId() {
+      return (this.ci && this.ci._type) || this.typeId
+    },
     exsited_ci() {
       const _exsited_ci = [this.ciId]
       this.relationData.parentCITypeList.forEach((parent) => {
@@ -82,7 +86,7 @@ export default {
   methods: {
     async init(relationData) {
       const ci_types_list = this.ci_types()
-      const _findCiType = ci_types_list.find((item) => item.id === this.typeId)
+      const _findCiType = ci_types_list.find((item) => item.id === this.currentTypeId)
       if (!_findCiType) {
         return
       }
@@ -126,7 +130,7 @@ export default {
       if (!typeId || !ciId) {
         return
       }
-      if (typeId === this.typeId && ciId === this.ciId) {
+      if (typeId === this.currentTypeId && ciId === this.ciId) {
         return // 当前 CI 自身，无需跳转
       }
       // 将导航事件向上冒泡，由父组件（ciDetailTab）决定如何导航：
@@ -145,7 +149,7 @@ export default {
         return
       }
 
-      const _findCiType = ci_types_list.find((item) => item.id === this.typeId)
+      const _findCiType = ci_types_list.find((item) => item.id === this.currentTypeId)
       const unique_id = _findCiType.show_id || _findCiType.unique_id
       const _findUnique = this.attrList().find((attr) => attr.id === unique_id)
       const unique_name = _findUnique?.name
@@ -153,7 +157,7 @@ export default {
 
       const nodes = {
         isRoot: true,
-        id: `Root_${this.typeId}`,
+        id: `Root_${this.currentTypeId}`,
         title: _findCiType.alias || _findCiType.name, // 中文名
         name: _findCiType.name, // 英文名
         Class: Node,
@@ -219,7 +223,7 @@ export default {
               source: 'right',
               target: 'left',
               sourceNode: `${parentCi._id}`,
-              targetNode: `Root_${this.typeId}`,
+              targetNode: `Root_${this.currentTypeId}`,
               type: 'endpoint',
             })
           })
@@ -265,7 +269,7 @@ export default {
               id: `Root_${childCi._id}`,
               source: 'right',
               target: 'left',
-              sourceNode: `Root_${this.typeId}`,
+              sourceNode: `Root_${this.currentTypeId}`,
               targetNode: `${childCi._id}`,
               type: 'endpoint',
             })

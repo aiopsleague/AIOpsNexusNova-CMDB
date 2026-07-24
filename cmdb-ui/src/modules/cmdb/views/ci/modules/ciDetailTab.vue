@@ -213,6 +213,7 @@
 <script>
 import _ from 'lodash'
 import { getCITypeGroupById, getCITypes } from '@/modules/cmdb/api/CIType'
+import { getCITypeAttributesById } from '@/modules/cmdb/api/CITypeAttr'
 import { getCIHistory } from '@/modules/cmdb/api/history'
 import { getCIById, searchCI } from '@/modules/cmdb/api/ci'
 
@@ -269,6 +270,8 @@ export default {
       ciId: null,
       ci_types: [],
       hasPermission: true,
+      localAttrList: [],
+      localAttributes: {},
       tableHeight: this.attributeHistoryTableHeight || (this.$store.state.windowHeight - 130),
       initQueryLoading: true,
       ciHistoryStatsList: [
@@ -316,6 +319,13 @@ export default {
       ci_types: () => {
         return this.ci_types
       },
+      // 提供当前 CI 类型对应的属性列表，覆盖父链可能提供的旧类型 attrList
+      attrList: () => {
+        return this.localAttrList
+      },
+      attributes: () => {
+        return this.localAttributes
+      },
     }
   },
   inject: {
@@ -342,6 +352,7 @@ export default {
       await this.getCI()
       if (this.hasPermission) {
         this.getAttributes(effectiveTypeId)
+        this.loadAttrList(effectiveTypeId)
         this.getCIHistory()
         const ciTypeRes = await getCITypes()
         this.ci_types = ciTypeRes.ci_types
@@ -359,6 +370,18 @@ export default {
           this.handleReferenceAttr()
         })
         .catch((e) => {})
+    },
+    // 加载当前 CI 类型的 attrList，用于拓扑节点显示唯一标识（unique_alias: unique_value）
+    async loadAttrList(typeIdOverride) {
+      const typeId = typeIdOverride || this.typeId
+      try {
+        const res = await getCITypeAttributesById(typeId)
+        this.localAttrList = res.attributes || []
+        this.localAttributes = res
+      } catch (e) {
+        this.localAttrList = []
+        this.localAttributes = {}
+      }
     },
 
     async handleReferenceAttr() {
