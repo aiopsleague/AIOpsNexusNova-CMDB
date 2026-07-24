@@ -1,0 +1,162 @@
+# 开发环境编排：FastAPI 后端 + celery worker + 前端 dev server，源码挂载、热重载。
+#
+# 用法：
+#   docker compose -f docker-compose.dev.yml up -d --build   # 首次或依赖变化时
+#   docker compose -f docker-compose.dev.yml up -d           # 之后日常启动
+#   docker compose -f docker-compose.dev.yml down            # 停止（数据保留在卷里）
+#
+# 注意：
+# - 与 docker-compose.yml 共用数据卷（cmdb_db-data / cmdb_cache-data）和宿主机端口
+#   （23306/6379/5000/8000），两套不能同时运行；启动本套前请先停掉另一套
+#   以及宿主机上手工起的 uvicorn / vue-cli-service serve。
+# - 首次启动 cmdb-db 会导入 docs/cmdb.sql 初始化数据（需要几分钟），
+#   cmdb-api 会等数据库 healthy 后再启动。
+services:
+  cmdb-db:
+    image: registry.cn-hangzhou.aliyuncs.com/veops/cmdb-db:2.5
+    container_name: cmdb-dev-db
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: cmdb
+      MYSQL_USER: cmdb
+      MYSQL_PASSWORD: 123456
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./docs/mysqld.cnf:/etc/mysql/conf.d/mysqld.cnf
+      - ./docs/cmdb.sql:/docker-entrypoint-initdb.d/cmdb.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    networks:
+      dev:
+        aliases:
+          - mysql
+    ports:
+      - '23306:3306'
+
+  cmdb-cache:
+    image: registry.cn-hangzhou.aliyuncs.com/veops/cmdb-cache:2.5
+    container_name: cmdb-dev-cache
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - cache-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      dev:
+        aliases:
+          - redis
+    ports:
+      - '6379:6379'
+
+  cmdb-api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile-API-fastapi.dev
+    container_name: cmdb-dev-api
+    environment:
+      TZ: UTC
+      SECRET_KEY: dev-secret-key
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      CACHE_REDIS_HOST: redis
+      CACHE_REDIS_PORT: 6379
+      CELERY_BROKER_URL: redis://redis:6379/2
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+    volumes:
+      # 源码挂载：改代码后 uvicorn --reload 自动重载
+      - ./cmdb-api-fastapi:/data/apps/cmdb
+    ports:
+      - '5000:5000'
+    depends_on:
+      cmdb-db:
+        condition: service_healthy
+      cmdb-cache:
+        condition: service_healthy
+    networks:
+      - dev
+    command:
+      - /bin/sh
+      - -c
+      - |
+        python cli.py db-setup
+        python cli.py common-check-new-columns
+        python cli.py cmdb-init-cache
+        python cli.py cmdb-init-acl
+        python cli.py init-import-user-from-acl
+        python cli.py init-department
+        exec uvicorn main:app --host 0.0.0.0 --port 5000 --reload
+
+  cmdb-worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile-API-fastapi.dev
+    container_name: cmdb-dev-worker
+    environment:
+      TZ: UTC
+      SECRET_KEY: dev-secret-key
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      CACHE_REDIS_HOST: redis
+      CACHE_REDIS_PORT: 6379
+      CELERY_BROKER_URL: redis://redis:6379/2
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+    volumes:
+      - ./cmdb-api-fastapi:/data/apps/cmdb
+    depends_on:
+      cmdb-db:
+        condition: service_healthy
+      cmdb-cache:
+        condition: service_healthy
+    networks:
+      - dev
+    # 开发环境合跑：三个队列 + beat 定时调度都在一个进程里
+    command: celery -A celery_worker.celery worker --beat -E -Q one_cmdb_async,acl_async,beat_tasks --loglevel=info
+
+  cmdb-ui:
+    image: docker.m.daocloud.io/library/node:16.20
+    container_name: cmdb-dev-ui
+    working_dir: /data/apps/cmdb-ui
+    environment:
+      # vue.config.js 里 devServer proxy 的 target，容器内指向 cmdb-api 服务
+      DEV_API_TARGET: http://cmdb-api:5000
+    volumes:
+      - ./cmdb-ui:/data/apps/cmdb-ui
+      # node_modules 用独立卷，避免与宿主机（可能用其他 Node 版本装的）互相污染
+      - ui-node-modules:/data/apps/cmdb-ui/node_modules
+    ports:
+      - '8000:8000'
+    depends_on:
+      - cmdb-api
+    networks:
+      - dev
+    command:
+      - /bin/sh
+      - -c
+      - |
+        yarn install --ignore-engines --network-timeout 1000000
+        exec ./node_modules/.bin/vue-cli-service serve
+
+volumes:
+  db-data:
+    driver: local
+    name: cmdb_db-data
+  cache-data:
+    driver: local
+    name: cmdb_cache-data
+  ui-node-modules:
+    driver: local
+    name: cmdb_dev_ui_node_modules
+
+networks:
+  dev:
+    driver: bridge
+    name: cmdb_dev_network

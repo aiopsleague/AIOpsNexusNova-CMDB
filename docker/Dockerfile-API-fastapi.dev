@@ -1,0 +1,25 @@
+# ================================= API (FastAPI, dev) ================================
+# 构建上下文为项目根目录：
+#   docker build -f docker/Dockerfile-API-fastapi.dev .
+FROM docker.m.daocloud.io/library/python:3.11
+
+LABEL description="Python3.11, cmdb-api FastAPI dev"
+
+# python-magic 依赖 libmagic
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libmagic1 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /data/apps/cmdb
+
+COPY cmdb-api-fastapi/Pipfile ./
+
+RUN pip install --no-cache-dir pipenv -i https://mirrors.aliyun.com/pypi/simple/ \
+    && pipenv install --system --skip-lock
+
+COPY cmdb-api-fastapi .
+
+# 容器内必须 UTC：否则 JWT iat 会落在未来，Access-Token 全部失效
+ENV TZ=UTC
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000"]
