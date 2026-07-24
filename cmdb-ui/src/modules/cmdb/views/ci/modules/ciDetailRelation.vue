@@ -1,6 +1,6 @@
 <template>
   <div class="ci-detail-relation">
-    <CiDetailRelationTopo ref="ciDetailRelationTopo"/>
+    <CiDetailRelationTopo ref="ciDetailRelationTopo" @nodeDblclick="handleNodeDblclick"/>
   </div>
 </template>
 
@@ -121,6 +121,28 @@ export default {
       this.secondCIs = secondCIs
     },
 
+    // 双击拓扑节点：跳转到该 CI 的详情页并定位到拓扑 Tab
+    handleNodeDblclick({ typeId, ciId }) {
+      if (!typeId || !ciId) {
+        return
+      }
+      if (typeId === this.typeId && ciId === this.ciId) {
+        return // 当前 CI 自身，无需跳转
+      }
+      this.$router
+        .push({
+          name: 'cmdb_ci_detail',
+          params: { typeId, ciId },
+          query: { tab: 'tab_2' },
+        })
+        .catch((err) => {
+          // 连续双击同一节点导致的重复导航，忽略即可
+          if (err?.name !== 'NavigationDuplicated') {
+            throw err
+          }
+        })
+    },
+
     handleTopoData() {
       const ci_types_list = this.ci_types()
       if (!ci_types_list?.length) {
@@ -183,6 +205,8 @@ export default {
               unique_value: parentCi[unique_name],
               ci: parentCi, // 悬停详情用的完整 CI 数据
               attributes: parent.attributes, // 悬停详情用的属性元数据
+              ci_id: parentCi._id, // 双击跳转拓扑关系用
+              ci_type_id: parent.id, // 双击跳转拓扑关系用
               children: [],
               icon: _findCiType?.icon || '',
               endpoints: [
@@ -228,6 +252,8 @@ export default {
               unique_value: childCi[unique_name],
               ci: childCi, // 悬停详情用的完整 CI 数据
               attributes: child.attributes, // 悬停详情用的属性元数据
+              ci_id: childCi._id, // 双击跳转拓扑关系用
+              ci_type_id: child.id, // 双击跳转拓扑关系用
               children: [],
               icon: _findCiType?.icon || '',
               endpoints: [

@@ -86,6 +86,12 @@ export default {
         if (type === 'custom:clickRight') {
           this.debounceClick(sourceNode, 0)
         }
+        if (type === 'custom:dblclickNode') {
+          const { ci_id, ci_type_id } = data || {}
+          if (ci_id && ci_type_id) {
+            this.$emit('nodeDblclick', { ciId: Number(ci_id), typeId: Number(ci_type_id) })
+          }
+        }
       })
     },
 
@@ -137,6 +143,8 @@ export default {
               unique_value: r[unique_name],
               ci: r, // 悬停详情用的完整 CI 数据
               attributes, // 悬停详情用的属性元数据
+              ci_id: r._id, // 双击跳转拓扑关系用
+              ci_type_id: r._type, // 双击跳转拓扑关系用
               children: [],
               icon: _findCiType?.icon || '',
               endpoints: [

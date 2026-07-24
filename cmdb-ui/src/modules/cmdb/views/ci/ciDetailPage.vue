@@ -39,16 +39,33 @@ export default {
     }
   },
   mounted() {
-    const { ciId = undefined } = this.$route.params
-    if (ciId) {
-      this.$refs.ciDetailTab.create(Number(ciId))
-    }
-    getCIType(this.typeId).then((res) => {
-      this.type = res.ci_types[0]
-    })
-    this.getAttributeList()
+    this.loadByRoute()
+  },
+  watch: {
+    // 同一路由不同参数（如双击拓扑节点跳转）时组件实例被复用，
+    // mounted 不会再次触发，需要监听 $route 重新加载
+    '$route'(to) {
+      if (to.name === 'cmdb_ci_detail') {
+        this.loadByRoute()
+      }
+    },
   },
   methods: {
+    loadByRoute() {
+      this.typeId = Number(this.$route.params.typeId)
+      const { ciId = undefined } = this.$route.params
+      const { tab = 'tab_1' } = this.$route.query
+      if (ciId) {
+        // nextTick：等 ciDetailTab 的 typeId prop 随本次变更更新后再加载
+        this.$nextTick(() => {
+          this.$refs.ciDetailTab.create(Number(ciId), tab)
+        })
+      }
+      getCIType(this.typeId).then((res) => {
+        this.type = res.ci_types[0]
+      })
+      this.getAttributeList()
+    },
     async getAttributeList() {
       await getCITypeAttributesById(this.typeId).then((res) => {
         this.attrList = res.attributes
