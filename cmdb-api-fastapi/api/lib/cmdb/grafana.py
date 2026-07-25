@@ -7,6 +7,7 @@ from api.lib.cmdb.cache import CITypeCache
 from api.lib.cmdb.ci import CIManager
 from api.lib.cmdb.resp_format import ErrFormat
 from api.lib.common_setting.grafana import GrafanaConfigCRUD
+from api.lib.common_setting.grafana_client import build_vars
 from api.lib.common_setting.grafana_client import GrafanaClient
 from api.lib.common_setting.grafana_client import pick_dashboard
 from api.models.cmdb import CI
@@ -48,6 +49,5 @@ def resolve_ci_grafana(ci_id):
         grafana_url=picked["connection"]["url"],
         uid=picked["uid"],
         slug=picked["slug"],
-        var_name=picked["var_name"],
-        var_value=picked["var_value"],
+        vars=build_vars(picked["mapping"], ci, str(unique_value)),
     ))
