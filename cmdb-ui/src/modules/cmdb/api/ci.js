@@ -52,6 +52,14 @@ export function getCIById(ciId) {
   })
 }
 
+//  获取CI的Grafana Dashboard配置
+export function getCIGrafana(ciId) {
+  return axios({
+    url: urlPrefix + `/ci/${ciId}/grafana`,
+    method: 'GET'
+  })
+}
+
 //  获取移动端CI详情
 export function getCIMobileDetail(ciId) {
   return axios({
