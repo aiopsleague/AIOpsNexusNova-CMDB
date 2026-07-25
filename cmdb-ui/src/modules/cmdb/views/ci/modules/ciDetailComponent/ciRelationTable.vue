@@ -86,6 +86,15 @@
               </a>
             </template>
             <template #operation_default="{ row }">
+              <a-tooltip :title="$t('cmdb.ci.detail')">
+                <a
+                  :href="`/cmdb/cidetail/${item.value}/${row._id}`"
+                  target="_blank"
+                  :style="{ marginRight: '12px' }"
+                >
+                  <a-icon type="unordered-list" />
+                </a>
+              </a-tooltip>
               <a-popconfirm
                 arrowPointAtCenter
                 :title="$t('cmdb.ci.confirmDeleteRelation')"
@@ -332,7 +341,7 @@ export default {
           key: 'p_operation',
           field: 'operation',
           title: this.$t('operation'),
-          width: '60px',
+          width: '80px',
           fixed: 'right',
           slots: {
             default: 'operation_default',
