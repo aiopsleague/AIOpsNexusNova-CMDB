@@ -175,6 +175,8 @@ class GrafanaConfigCRUD(object):
             abort(400, ErrFormat.value_is_required)
         result = []
         for vm in var_mapping:
+            if not isinstance(vm, dict):
+                abort(400, ErrFormat.value_is_required)
             grafana_var = str((vm or {}).get("grafana_var") or "").strip()
             ci_attr = str((vm or {}).get("ci_attr") or "").strip()
             if not grafana_var or not ci_attr:
