@@ -1,6 +1,6 @@
 <template>
   <div class="ci-detail-grafana">
-    <a-spin :spinning="loading" :style="{ width: '100%', height: '100%' }">
+    <a-spin :spinning="loading" class="ci-detail-grafana-spin">
       <iframe
         v-if="iframeUrl"
         :src="iframeUrl"
@@ -72,10 +72,17 @@ export default {
 <style lang="less" scoped>
 .ci-detail-grafana {
   height: 100%;
-  .ci-detail-grafana-iframe {
+  .ci-detail-grafana-spin {
     width: 100%;
     height: 100%;
-    min-height: 600px;
+    /deep/ .ant-spin-container {
+      height: 100%;
+    }
+  }
+  .ci-detail-grafana-iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
     border: none;
   }
 }
