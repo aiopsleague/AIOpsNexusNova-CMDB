@@ -196,6 +196,12 @@
           <RelatedItsm ref="relatedITSM" />
         </div>
       </a-tab-pane>
+      <a-tab-pane key="tab_6">
+        <span slot="tab"><a-icon type="dashboard" />{{ $t('cmdb.ci.grafana') }}</span>
+        <div :style="{ padding: '24px', height: '100%' }">
+          <CiDetailGrafana v-if="ciId" :ciId="ciId" />
+        </div>
+      </a-tab-pane>
     </a-tabs>
     <a-empty
       v-else
@@ -229,6 +235,7 @@ import RelatedItsm from './ciDetailRelatedItsm.vue'
 import CIRollbackForm from './ciRollbackForm.vue'
 import OperateTypeTag from '../../operation_history/components/OperateTypeTag.vue'
 import QRCodeButton from '@/modules/cmdb/components/QRCodeButton/index.vue'
+import CiDetailGrafana from './ciDetailGrafana.vue'
 
 export default {
   name: 'CiDetailTab',
@@ -243,7 +250,8 @@ export default {
     CIDetailTableTitle,
     CIRelationTable,
     OperateTypeTag,
-    QRCodeButton
+    QRCodeButton,
+    CiDetailGrafana
   },
   props: {
     typeId: {
