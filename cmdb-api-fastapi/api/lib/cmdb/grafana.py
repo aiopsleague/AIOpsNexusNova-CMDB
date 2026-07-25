@@ -32,7 +32,7 @@ def resolve_ci_grafana(ci_id):
         return dict(configured=True, result=None)
 
     def search_fn(connection):
-        return GrafanaClient(connection["url"], connection["api_key"]).search_dashboard(str(unique_value))
+        return GrafanaClient(connection["url"], connection["api_key"], timeout=2).search_dashboard(str(unique_value))
 
     try:
         picked = pick_dashboard(connections, config["mappings"], ci_type_id, str(unique_value), search_fn)
