@@ -41,6 +41,11 @@
             <a-icon type="share-alt" />
             {{ $t('cmdb.ci.share') }}
           </a>
+
+          <a class="instance-detail-header-resource" @click="goToResourceDetail">
+            <ops-icon type="ops-cmdb-resource" />
+            {{ $t('cmdb.ci.resourceDetail') }}
+          </a>
         </div>
       </div>
 
@@ -250,6 +255,12 @@ export default {
         })
     },
 
+    goToResourceDetail() {
+      localStorage.setItem('ops_ci_typeid', this.CITypeId)
+      localStorage.setItem('ops_ci_detail_id', this.CIId)
+      this.$router.push('/cmdb/instances/types')
+    },
+
     clickCollect() {
       if (this.favorId) {
         this.$emit('deleteCollect', this.favorId)
@@ -382,6 +393,11 @@ export default {
 
     &-share {
       margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    &-resource {
+      margin-left: 12px;
       flex-shrink: 0;
     }
   }

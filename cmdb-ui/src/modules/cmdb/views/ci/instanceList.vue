@@ -292,6 +292,15 @@ export default {
     setTimeout(() => {
       this.columnDrop()
     }, 1000)
+
+    // auto-open CI detail drawer if navigated from resource search
+    const autoOpenCiId = localStorage.getItem('ops_ci_detail_id')
+    if (autoOpenCiId) {
+      localStorage.removeItem('ops_ci_detail_id')
+      this.$nextTick(() => {
+        this.openDetail(autoOpenCiId)
+      })
+    }
   },
   beforeDestroy() {
     // window.onkeypress = null

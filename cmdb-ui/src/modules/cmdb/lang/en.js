@@ -934,6 +934,7 @@ if __name__ == "__main__":
         newUpdateField: 'Add a Attribute',
         attributeSettings: 'Attribute Settings',
         share: 'Share',
+        resourceDetail: 'Resource Detail',
         noPermission: 'No Permission',
         rollback: 'Rollback',
         rollbackHeader: 'Instance Rollback',

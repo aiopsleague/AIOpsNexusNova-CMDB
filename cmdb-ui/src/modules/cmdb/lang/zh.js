@@ -930,6 +930,7 @@ if __name__ == "__main__":
         newUpdateField: '新增修改字段',
         attributeSettings: '字段设置',
         share: '分享',
+        resourceDetail: '资源详情',
         noPermission: '暂无权限',
         rollback: '回滚',
         rollbackHeader: '实例回滚',
