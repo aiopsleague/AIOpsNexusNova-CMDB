@@ -199,7 +199,7 @@
       <a-tab-pane key="tab_6">
         <span slot="tab"><a-icon type="dashboard" />{{ $t('cmdb.ci.grafana') }}</span>
         <div :style="{ padding: '24px', height: '100%' }">
-          <CiDetailGrafana v-if="ciId" :ciId="ciId" />
+          <CiDetailGrafana v-if="ciId" :key="ciId" :ciId="ciId" />
         </div>
       </a-tab-pane>
     </a-tabs>
