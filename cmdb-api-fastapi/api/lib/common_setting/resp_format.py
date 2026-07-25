@@ -30,6 +30,13 @@ class ErrFormat(CommonErrFormat):
     employee_id_not_found = _l("Employee id [{}] not found")  # 员工ID [{}] 不存在
     value_is_required = _l("Value is required")  # 值是必须的
     email_already_exists = _l("Email already exists")  # 邮箱已存在
+
+    grafana_connection_not_found = _l("Grafana connection [{}] not found")  # Grafana连接 [{}] 不存在
+    grafana_mapping_not_found = _l("Grafana mapping [{}] not found")  # Grafana映射 [{}] 不存在
+    grafana_name_required = _l("Grafana name is required")  # Grafana名称是必须的
+    grafana_url_required = _l("Grafana url is required")  # Grafana地址是必须的
+    grafana_api_key_required = _l("Grafana api key is required")  # Grafana API Key是必须的
+    grafana_test_failed = _l("Grafana connection test failed: {}")  # Grafana连接测试失败: {}
     query_column_none_keep_value_empty = _l("Query {} none keep value empty")  # 查询 {} 空值时请保持value为空"
     not_support_operator = _l("Not support operator: {}")  # 不支持的操作符: {}
     not_support_relation = _l("Not support relation: {}")  # 不支持的关系: {}
