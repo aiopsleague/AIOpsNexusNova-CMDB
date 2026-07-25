@@ -37,6 +37,7 @@ class ErrFormat(CommonErrFormat):
     grafana_url_required = _l("Grafana url is required")  # Grafana地址是必须的
     grafana_api_key_required = _l("Grafana api key is required")  # Grafana API Key是必须的
     grafana_test_failed = _l("Grafana connection test failed: {}")  # Grafana连接测试失败: {}
+    grafana_config_broken = _l("Grafana config is broken, please check SECRET_KEY or contact admin")  # Grafana配置解析失败，请检查SECRET_KEY或联系管理员
     query_column_none_keep_value_empty = _l("Query {} none keep value empty")  # 查询 {} 空值时请保持value为空"
     not_support_operator = _l("Not support operator: {}")  # 不支持的操作符: {}
     not_support_relation = _l("Not support relation: {}")  # 不支持的关系: {}

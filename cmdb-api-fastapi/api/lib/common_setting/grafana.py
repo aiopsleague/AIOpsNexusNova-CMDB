@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import json
 
+from api.core.context import current_app
 from api.core.errors import abort
 from api.extensions import db
 from api.lib.common_setting.grafana_client import GrafanaClient
@@ -27,8 +28,11 @@ class GrafanaConfigCRUD(object):
             return {"connections": [], "mappings": []}
         try:
             config = json.loads(AESCrypto().decrypt(record.get("data") or ""))
-        except Exception:
-            return {"connections": [], "mappings": []}
+        except Exception as e:
+            # 解密/解析失败（例如 SECRET_KEY 变更）时不能返回空配置，
+            # 否则后续写操作会用空配置覆盖已有记录，导致配置被清空
+            current_app.logger.error("Failed to decrypt grafana config: %s", e)
+            abort(400, ErrFormat.grafana_config_broken)
         config.setdefault("connections", [])
         config.setdefault("mappings", [])
         return config
@@ -47,6 +51,13 @@ class GrafanaConfigCRUD(object):
     @staticmethod
     def _next_id(items):
         return max([i.get("id", 0) for i in items] or [0]) + 1
+
+    @staticmethod
+    def _to_int(value):
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            abort(400, ErrFormat.value_is_required)
 
     @staticmethod
     def _mask(connection):
@@ -78,6 +89,7 @@ class GrafanaConfigCRUD(object):
         return self._mask(connection)
 
     def update_connection(self, _id, data):
+        _id = self._to_int(_id)
         config = self.get_config()
         connection = next((c for c in config["connections"] if c.get("id") == _id), None)
         if not connection:
@@ -100,6 +112,7 @@ class GrafanaConfigCRUD(object):
         return self._mask(connection)
 
     def delete_connection(self, _id):
+        _id = self._to_int(_id)
         config = self.get_config()
         before = len(config["connections"])
         config["connections"] = [c for c in config["connections"] if c.get("id") != _id]
@@ -129,14 +142,16 @@ class GrafanaConfigCRUD(object):
         connection_id = data.get("connection_id")
         if not ci_type_id or not connection_id:
             abort(400, ErrFormat.value_is_required)
+        ci_type_id = self._to_int(ci_type_id)
+        connection_id = self._to_int(connection_id)
 
         config = self.get_config()
         if not any(c.get("id") == connection_id for c in config["connections"]):
             abort(404, ErrFormat.grafana_connection_not_found.format(connection_id))
 
         mapping = dict(id=self._next_id(config["mappings"]),
-                       ci_type_id=int(ci_type_id),
-                       connection_id=int(connection_id),
+                       ci_type_id=ci_type_id,
+                       connection_id=connection_id,
                        dashboard_uid=(data.get("dashboard_uid") or "").strip(),
                        var_name=(data.get("var_name") or "").strip() or "ci_name")
         config["mappings"].append(mapping)
@@ -144,17 +159,19 @@ class GrafanaConfigCRUD(object):
         return mapping
 
     def update_mapping(self, _id, data):
+        _id = self._to_int(_id)
         config = self.get_config()
         mapping = next((m for m in config["mappings"] if m.get("id") == _id), None)
         if not mapping:
             abort(404, ErrFormat.grafana_mapping_not_found.format(_id))
 
         if "ci_type_id" in data and data["ci_type_id"]:
-            mapping["ci_type_id"] = int(data["ci_type_id"])
+            mapping["ci_type_id"] = self._to_int(data["ci_type_id"])
         if "connection_id" in data and data["connection_id"]:
-            if not any(c.get("id") == data["connection_id"] for c in config["connections"]):
-                abort(404, ErrFormat.grafana_connection_not_found.format(data["connection_id"]))
-            mapping["connection_id"] = int(data["connection_id"])
+            connection_id = self._to_int(data["connection_id"])
+            if not any(c.get("id") == connection_id for c in config["connections"]):
+                abort(404, ErrFormat.grafana_connection_not_found.format(connection_id))
+            mapping["connection_id"] = connection_id
         if "dashboard_uid" in data:
             mapping["dashboard_uid"] = (data["dashboard_uid"] or "").strip()
         if "var_name" in data:
@@ -164,6 +181,7 @@ class GrafanaConfigCRUD(object):
         return mapping
 
     def delete_mapping(self, _id):
+        _id = self._to_int(_id)
         config = self.get_config()
         before = len(config["mappings"])
         config["mappings"] = [m for m in config["mappings"] if m.get("id") != _id]
