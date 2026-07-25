@@ -233,6 +233,7 @@ def ci_type_attribute_view_delete(type_id: int = None):
 
 
 @router.get("/ci_types/can_define_computed")
+@router.head("/ci_types/can_define_computed", include_in_schema=False)
 @role_required(PermEnum.CONFIG)
 def ci_type_can_define_computed_get():
     return dict(code=200)
