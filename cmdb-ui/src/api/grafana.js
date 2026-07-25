@@ -67,3 +67,25 @@ export function deleteGrafanaMapping(id) {
         method: 'delete',
     })
 }
+
+export function getGrafanaConnectionsHealth() {
+    return axios({
+        url: `/common-setting/v1/grafana/connections/health`,
+        method: 'get',
+    })
+}
+
+export function getGrafanaDashboards(connectionId, namespace) {
+    return axios({
+        url: `/common-setting/v1/grafana/connections/${connectionId}/dashboards`,
+        method: 'get',
+        params: { namespace: namespace || 'default' },
+    })
+}
+
+export function getGrafanaDashboardVariables(connectionId, name) {
+    return axios({
+        url: `/common-setting/v1/grafana/connections/${connectionId}/dashboards/${name}/variables`,
+        method: 'get',
+    })
+}
