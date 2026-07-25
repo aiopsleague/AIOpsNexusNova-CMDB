@@ -88,3 +88,18 @@ def test_test_connection_raises_on_failure():
         m.return_value.raise_for_status.side_effect = Exception("401")
         with pytest.raises(Exception):
             client.test_connection()
+
+
+def test_rewrite_dashboard_html():
+    from api.lib.common_setting.grafana_client import rewrite_dashboard_html
+    html = '<html><head><base href="/" /></head><body>{"settings":{"appSubUrl":""}}</body></html>'
+    out = rewrite_dashboard_html(html, "/api/v0.1/grafana/proxy/1")
+    assert '<base href="/api/v0.1/grafana/proxy/1/" />' in out
+    assert '"appSubUrl":"/api/v0.1/grafana/proxy/1"' in out
+    assert '<base href="/" />' not in out
+
+
+def test_rewrite_dashboard_html_without_markers_is_noop():
+    from api.lib.common_setting.grafana_client import rewrite_dashboard_html
+    html = '<html><head></head><body>"appSubUrl":"/already"</body></html>'
+    assert rewrite_dashboard_html(html, "/p") == html

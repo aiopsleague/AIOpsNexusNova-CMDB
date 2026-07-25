@@ -42,6 +42,20 @@ def _slug_from(dash):
     return parts[-1] if len(parts) >= 3 else None
 
 
+def rewrite_dashboard_html(html, proxy_prefix):
+    """Rewrite the grafana index page so all relative asset URLs (via <base>)
+    and frontend API calls (via bootData appSubUrl) go through the proxy.
+
+    :param html: grafana index.html text
+    :param proxy_prefix: e.g. "/api/v0.1/grafana/proxy/1" (no trailing slash)
+    """
+    prefix = proxy_prefix.rstrip("/")
+    html = html.replace('<base href="/" />', '<base href="{}/" />'.format(prefix))
+    html = html.replace('<base href="/">', '<base href="{}/">'.format(prefix))
+    html = html.replace('"appSubUrl":""', '"appSubUrl":"{}"'.format(prefix))
+    return html
+
+
 def _first_hit(search_fn, connection):
     try:
         dashboards = search_fn(connection) or []

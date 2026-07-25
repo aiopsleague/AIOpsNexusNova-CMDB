@@ -44,6 +44,7 @@ def resolve_ci_grafana(ci_id):
         return dict(configured=True, result=None)
 
     return dict(configured=True, result=dict(
+        connection_id=picked["connection"]["id"],
         grafana_url=picked["connection"]["url"],
         uid=picked["uid"],
         slug=picked["slug"],

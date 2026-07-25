@@ -70,6 +70,14 @@ class GrafanaConfigCRUD(object):
     def list_connections(self):
         return [self._mask(c) for c in self.get_config()["connections"]]
 
+    def get_connection(self, _id):
+        """Return the connection dict with PLAINTEXT api_key — backend internal use only."""
+        _id = self._to_int(_id)
+        connection = next((c for c in self.get_config()["connections"] if c.get("id") == _id), None)
+        if not connection:
+            abort(404, ErrFormat.grafana_connection_not_found.format(_id))
+        return connection
+
     def create_connection(self, data):
         if not (data.get("name") or "").strip():
             abort(400, ErrFormat.grafana_name_required)
