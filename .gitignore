@@ -81,3 +81,6 @@ cmdb-ui/package-lock.json
 
 # Local dev runtime (dev.sh)
 .dev/
+
+
+cmdb-api-fastpi/celerybeat-schedule*
