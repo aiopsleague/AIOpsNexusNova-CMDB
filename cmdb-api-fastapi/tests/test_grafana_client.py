@@ -80,6 +80,15 @@ def test_pick_dashboard_skips_disabled_instances():
     assert picked["mapping"] is None
 
 
+def test_pick_dashboard_skips_disabled_mapping():
+    mappings = [{"id": 1, "ci_type_id": 3, "connection_id": 2, "dashboard_name": "xyz",
+                 "var_mapping": [], "enable": 0}]
+    picked = pick_dashboard([CONN1, CONN2], mappings, 3, "host-01", _ok_search([DASH]))
+    # 映射停用 → 视同无映射 → 全局搜索（CONN1 先命中）
+    assert picked["connection"] is CONN1
+    assert picked["mapping"] is None
+
+
 def test_pick_dashboard_all_disabled():
     assert pick_dashboard([CONN3_DISABLED], [], 3, "host-01", _ok_search([DASH])) is None
 
@@ -90,21 +99,34 @@ def test_build_vars_fallback_without_mapping():
     assert build_vars(None, {}, "host-01") == [{"name": "ci_name", "value": "host-01"}]
 
 
-def test_build_vars_from_mapping():
-    mapping = {"var_mapping": [{"grafana_var": "instance", "ci_attr": "ip"},
-                               {"grafana_var": "maintype", "ci_attr": "os"}]}
-    ci = {"ip": "10.0.0.1", "os": "linux"}
+def test_build_vars_field_and_fixed():
+    mapping = {"var_mapping": [
+        {"grafana_var": "instance", "map_type": "field", "value": "ip", "remark": ""},
+        {"grafana_var": "env", "map_type": "fixed", "value": "prod", "remark": ""},
+    ]}
+    ci = {"ip": "10.0.0.1"}
     assert build_vars(mapping, ci, "x") == [{"name": "instance", "value": "10.0.0.1"},
-                                            {"name": "maintype", "value": "linux"}]
+                                            {"name": "env", "value": "prod"}]
+
+
+def test_build_vars_legacy_ci_attr_compat():
+    mapping = {"var_mapping": [{"grafana_var": "instance", "ci_attr": "ip"}]}
+    ci = {"ip": "10.0.0.1"}
+    assert build_vars(mapping, ci, "x") == [{"name": "instance", "value": "10.0.0.1"}]
 
 
 def test_build_vars_skips_empty_values():
-    mapping = {"var_mapping": [{"grafana_var": "a", "ci_attr": "x"},
-                               {"grafana_var": "b", "ci_attr": "y"},
-                               {"grafana_var": "c", "ci_attr": "z"},
-                               {"grafana_var": "d", "ci_attr": "w"}]}
+    mapping = {"var_mapping": [
+        {"grafana_var": "a", "map_type": "field", "value": "x"},
+        {"grafana_var": "b", "map_type": "field", "value": "y"},
+        {"grafana_var": "c", "map_type": "field", "value": "z"},
+        {"grafana_var": "d", "map_type": "field", "value": "w"},
+        {"grafana_var": "e", "map_type": "fixed", "value": ""},
+        {"grafana_var": "f", "map_type": "fixed", "value": "keep"},
+    ]}
     ci = {"x": "", "y": None, "z": [], "w": "keep"}
-    assert build_vars(mapping, ci, "v") == [{"name": "d", "value": "keep"}]
+    assert build_vars(mapping, ci, "v") == [{"name": "d", "value": "keep"},
+                                            {"name": "f", "value": "keep"}]
 
 
 # ---------------- http client ----------------
@@ -158,10 +180,10 @@ def test_list_dashboards_fallback_to_search_on_404():
     assert result == [{"name": "abc123", "title": "host-01"}]
 
 
-def test_get_dashboard_variables_excludes_datasource():
+def test_get_dashboard_variables_with_description():
     client = GrafanaClient("http://g:3000/", "key")
     payload = {"dashboard": {"templating": {"list": [
-        {"name": "instance", "type": "query"},
+        {"name": "instance", "type": "query", "description": "实例IP"},
         {"name": "datasource", "type": "datasource"},
         {"name": "maintype", "type": "query"},
         {"type": "query"},
@@ -170,7 +192,8 @@ def test_get_dashboard_variables_excludes_datasource():
         m.return_value.json.return_value = payload
         m.return_value.raise_for_status.return_value = None
         result = client.get_dashboard_variables("rYdddlPWo")
-    assert result == ["instance", "maintype"]
+    assert result == [{"name": "instance", "description": "实例IP"},
+                      {"name": "maintype", "description": ""}]
     args, kwargs = m.call_args
     assert args[0] == "http://g:3000/api/dashboards/uid/rYdddlPWo"
 

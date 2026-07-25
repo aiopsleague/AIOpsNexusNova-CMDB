@@ -50,12 +50,14 @@ class GrafanaClient(object):
                 for i in items]
 
     def get_dashboard_variables(self, name):
-        """Return template variable names of a dashboard (datasource excluded)."""
+        """Return template variables of a dashboard (datasource excluded)
+        as [{"name", "description"}]."""
         resp = requests.get("{}/api/dashboards/uid/{}".format(self.url, name),
                             headers=self._headers(), timeout=self.timeout)
         resp.raise_for_status()
         templating = (resp.json().get("dashboard") or {}).get("templating") or {}
-        return [v.get("name") for v in (templating.get("list") or [])
+        return [{"name": v.get("name"), "description": v.get("description") or ""}
+                for v in (templating.get("list") or [])
                 if v.get("name") and v.get("type") != "datasource"]
 
 
@@ -102,7 +104,8 @@ def pick_dashboard(connections, mappings, ci_type_id, unique_value, search_fn):
         return None
 
     searched_ids = set()
-    mapping = next((m for m in mappings if m.get("ci_type_id") == ci_type_id), None)
+    mapping = next((m for m in mappings
+                    if m.get("ci_type_id") == ci_type_id and m.get("enable", 1) != 0), None)
     if mapping:
         conn = next((c for c in enabled if c.get("id") == mapping.get("connection_id")), None)
         if conn:
@@ -128,16 +131,24 @@ def pick_dashboard(connections, mappings, ci_type_id, unique_value, search_fn):
 def build_vars(mapping, ci, unique_value):
     """Build the template-var list for the iframe url.
 
-    :param mapping: matched mapping dict or None
-    :param ci: CI dict (attribute values keyed by attr name)
-    :param unique_value: CI unique attr value (fallback value)
+    var_mapping item: {"grafana_var", "map_type": "field"|"fixed", "value", "remark"}
+    旧格式 {"grafana_var", "ci_attr"} 按 field + value=ci_attr 兼容读取。
     """
     if not mapping:
         return [dict(name=DEFAULT_VAR_NAME, value=unique_value)]
     vars_ = []
     for vm in mapping.get("var_mapping") or []:
-        value = ci.get(vm.get("ci_attr") or "")
-        if value is None or value == "" or value == []:
+        name = vm.get("grafana_var")
+        value_ref = vm.get("value", vm.get("ci_attr"))
+        if not name:
             continue
-        vars_.append(dict(name=vm.get("grafana_var"), value=value))
+        if (vm.get("map_type") or "field") == "fixed":
+            if value_ref is None or value_ref == "":
+                continue
+            vars_.append(dict(name=name, value=value_ref))
+        else:
+            value = ci.get(value_ref or "")
+            if value is None or value == "" or value == []:
+                continue
+            vars_.append(dict(name=name, value=value))
     return vars_
