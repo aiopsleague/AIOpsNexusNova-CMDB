@@ -65,10 +65,19 @@ class GrafanaConfigCRUD(object):
         masked["api_key"] = API_KEY_MASK if connection.get("api_key") else ""
         return masked
 
+    @staticmethod
+    def _to_enable(value):
+        return 0 if value in (0, "0", False) else 1
+
     # ---------------- connections ----------------
 
     def list_connections(self):
-        return [self._mask(c) for c in self.get_config()["connections"]]
+        result = []
+        for c in self.get_config()["connections"]:
+            masked = self._mask(c)
+            masked["enable"] = self._to_enable(c.get("enable", 1))
+            result.append(masked)
+        return result
 
     def get_connection(self, _id):
         """Return the connection dict with PLAINTEXT api_key — backend internal use only."""
@@ -91,6 +100,7 @@ class GrafanaConfigCRUD(object):
                           name=data["name"].strip(),
                           url=data["url"].strip().rstrip("/"),
                           api_key=data["api_key"].strip(),
+                          enable=self._to_enable(data.get("enable", 1)),
                           remark=(data.get("remark") or "").strip())
         config["connections"].append(connection)
         self._save(config)
@@ -115,6 +125,8 @@ class GrafanaConfigCRUD(object):
             connection["api_key"] = data["api_key"].strip()
         if "remark" in data:
             connection["remark"] = (data["remark"] or "").strip()
+        if "enable" in data:
+            connection["enable"] = self._to_enable(data["enable"])
 
         self._save(config)
         return self._mask(connection)
@@ -140,15 +152,41 @@ class GrafanaConfigCRUD(object):
         except Exception as e:
             abort(400, ErrFormat.grafana_test_failed.format(str(e)))
 
+    def check_health(self):
+        """Per-connection liveness: [{"id", "ok", "error"}]. Never raises."""
+        result = []
+        for c in self.get_config()["connections"]:
+            try:
+                GrafanaClient(c["url"], c["api_key"]).test_connection()
+                result.append({"id": c["id"], "ok": True, "error": ""})
+            except Exception as e:
+                result.append({"id": c["id"], "ok": False, "error": str(e)})
+        return result
+
     # ---------------- mappings ----------------
 
     def list_mappings(self):
         return self.get_config()["mappings"]
 
+    @staticmethod
+    def _valid_var_mapping(var_mapping):
+        var_mapping = var_mapping or []
+        if not isinstance(var_mapping, list):
+            abort(400, ErrFormat.value_is_required)
+        result = []
+        for vm in var_mapping:
+            grafana_var = str((vm or {}).get("grafana_var") or "").strip()
+            ci_attr = str((vm or {}).get("ci_attr") or "").strip()
+            if not grafana_var or not ci_attr:
+                abort(400, ErrFormat.value_is_required)
+            result.append({"grafana_var": grafana_var, "ci_attr": ci_attr})
+        return result
+
     def create_mapping(self, data):
         ci_type_id = data.get("ci_type_id")
         connection_id = data.get("connection_id")
-        if not ci_type_id or not connection_id:
+        dashboard_name = (data.get("dashboard_name") or "").strip()
+        if not ci_type_id or not connection_id or not dashboard_name:
             abort(400, ErrFormat.value_is_required)
         ci_type_id = self._to_int(ci_type_id)
         connection_id = self._to_int(connection_id)
@@ -160,8 +198,10 @@ class GrafanaConfigCRUD(object):
         mapping = dict(id=self._next_id(config["mappings"]),
                        ci_type_id=ci_type_id,
                        connection_id=connection_id,
-                       dashboard_uid=(data.get("dashboard_uid") or "").strip(),
-                       var_name=(data.get("var_name") or "").strip() or "ci_name")
+                       namespace=(data.get("namespace") or "").strip() or "default",
+                       dashboard_name=dashboard_name,
+                       dashboard_title=(data.get("dashboard_title") or "").strip(),
+                       var_mapping=self._valid_var_mapping(data.get("var_mapping")))
         config["mappings"].append(mapping)
         self._save(config)
         return mapping
@@ -180,10 +220,16 @@ class GrafanaConfigCRUD(object):
             if not any(c.get("id") == connection_id for c in config["connections"]):
                 abort(404, ErrFormat.grafana_connection_not_found.format(connection_id))
             mapping["connection_id"] = connection_id
-        if "dashboard_uid" in data:
-            mapping["dashboard_uid"] = (data["dashboard_uid"] or "").strip()
-        if "var_name" in data:
-            mapping["var_name"] = (data["var_name"] or "").strip() or "ci_name"
+        if "namespace" in data:
+            mapping["namespace"] = (data["namespace"] or "").strip() or "default"
+        if "dashboard_name" in data:
+            if not (data["dashboard_name"] or "").strip():
+                abort(400, ErrFormat.value_is_required)
+            mapping["dashboard_name"] = data["dashboard_name"].strip()
+        if "dashboard_title" in data:
+            mapping["dashboard_title"] = (data["dashboard_title"] or "").strip()
+        if "var_mapping" in data:
+            mapping["var_mapping"] = self._valid_var_mapping(data["var_mapping"])
 
         self._save(config)
         return mapping
