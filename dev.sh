@@ -15,6 +15,7 @@
 #   ./dev.sh restart [服务...|all]      # 重启全部（含 db）或指定服务
 #   ./dev.sh status                     # 查看各服务状态
 #   ./dev.sh logs [api|worker|ui]       # 跟踪某个服务的日志（默认 api）
+#   ./dev.sh init [fastapi|flask]       # 数据库初始化（建表/缓存/ACL/部门等）
 #
 # 服务名：db、fastapi、flask、ui、worker、init、all（all 与留空等价，= db+fastapi+worker+ui）
 # 选项：
@@ -146,8 +147,11 @@ detect_flask() {  # 检测旧版后端的运行方式，结果写入全局数组
 
 api_start() {
     if [[ "$BACKEND" == fastapi ]]; then
-        [[ -x "$FASTAPI_DIR/.venv/bin/uvicorn" ]] || { c_red "找不到 $FASTAPI_DIR/.venv，请先创建虚拟环境安装依赖"; return 1; }
-        start_proc api "$FASTAPI_DIR" .venv/bin/uvicorn main:app --host 0.0.0.0 --port "$API_PORT" --reload
+        if [[ ! -d "$FASTAPI_DIR/.venv" ]]; then
+            c_yellow "首次运行，使用 uv 安装依赖..."
+            ( cd "$FASTAPI_DIR" && uv sync ) || { c_red "uv sync 失败"; return 1; }
+        fi
+        start_proc api "$FASTAPI_DIR" uv run uvicorn main:app --host 0.0.0.0 --port "$API_PORT" --reload
     else
         detect_flask || return 1
         start_proc api "$FLASK_DIR" env FLASK_APP=autoapp.py FLASK_ENV=development \
@@ -162,8 +166,8 @@ api_stop() {
 
 worker_start() {
     if [[ "$BACKEND" == fastapi ]]; then
-        [[ -x "$FASTAPI_DIR/.venv/bin/celery" ]] || { c_red "找不到 $FASTAPI_DIR/.venv"; return 1; }
-        start_proc worker "$FASTAPI_DIR" .venv/bin/celery -A celery_worker.celery worker --beat -E \
+        [[ -d "$FASTAPI_DIR/.venv" ]] || { c_red "找不到 $FASTAPI_DIR/.venv，请先运行 uv sync"; return 1; }
+        start_proc worker "$FASTAPI_DIR" uv run celery -A celery_worker.celery worker --beat -E \
             -Q one_cmdb_async,acl_async,beat_tasks --loglevel=info
     else
         detect_flask || return 1
@@ -186,10 +190,10 @@ run_init() {
     local cmds=(db-setup common-check-new-columns cmdb-init-cache cmdb-init-acl init-import-user-from-acl init-department)
     local failed=0 c old_pwd="$PWD"
     if [[ "$BACKEND" == fastapi ]]; then
-        [[ -x "$FASTAPI_DIR/.venv/bin/python" ]] || { c_red "找不到 $FASTAPI_DIR/.venv"; return 1; }
+        [[ -d "$FASTAPI_DIR/.venv" ]] || { c_red "找不到 $FASTAPI_DIR/.venv，请先运行 uv sync"; return 1; }
         cd "$FASTAPI_DIR"
         for c in "${cmds[@]}"; do
-            .venv/bin/python cli.py "$c" || { c_red "[warn] $c 执行失败（已初始化的库上属预期），跳过"; failed=1; }
+            uv run python cli.py "$c" || { c_red "[warn] $c 执行失败（已初始化的库上属预期），跳过"; failed=1; }
         done
     else
         detect_flask || return 1
@@ -202,27 +206,17 @@ run_init() {
     [[ "$failed" == 1 ]] && c_yellow "初始化完成（部分命令报错已跳过，详见上方输出）" || c_green "初始化完成"
 }
 
-# ---------- 前端 ----------
-pick_node() {  # 优先 node 16（package.json engines），退化到 node 14（实测可用），同主版本取最新
-    local d best=""
-    for d in "$HOME"/.nvm/versions/node/v16*/bin "$HOME"/.nvm/versions/node/v14*/bin; do
-        [[ -x "$d/node" ]] && best="$d"
-    done
-    [[ -n "$best" ]] && { echo "$best"; return 0; }
-    if command -v node >/dev/null; then dirname "$(command -v node)"; return 0; fi
-    return 1
-}
 
 ui_start() {
-    local dir="$ROOT/cmdb-ui" node_bin
-    node_bin="$(pick_node)" || { c_red "找不到可用的 Node.js"; return 1; }
-    c_yellow "前端使用 Node：$("$node_bin/node" -v)"
+    local dir="$ROOT/cmdb-ui" 
+    
     if [[ ! -d "$dir/node_modules" ]]; then
         c_yellow "首次运行，安装前端依赖（需要几分钟）..."
-        ( cd "$dir" && PATH="$node_bin:$PATH" yarn install --ignore-engines --network-timeout 1000000 )
+        # cd "$dir" && PATH="$node_bin:$PATH" yarn install --ignore-engines --network-timeout 1000000
     fi
     # yarn run 会校验 engines（要求 node 16），直接调 vue-cli-service 绕开
-    start_proc ui "$dir" env PATH="$node_bin:$PATH" ./node_modules/.bin/vue-cli-service serve
+    # start_proc ui "$dir" env PATH="$node_bin:$PATH" ./node_modules/.bin/vue-cli-service serve
+    start_proc ui "$dir" env yarn run serve
     wait_http "http://127.0.0.1:$UI_PORT/" "前端" 240
 }
 
@@ -339,6 +333,9 @@ while [[ $# -gt 0 ]]; do
                 [[ "$1" == fastapi || "$1" == api ]] && BACKEND=fastapi
             elif [[ "$CMD" == logs && -z "$LOGS_NAME" ]]; then
                 LOGS_NAME="$1"
+            elif [[ "$CMD" == init ]]; then
+                [[ "$1" == flask ]] && BACKEND=flask
+                [[ "$1" == fastapi || "$1" == api ]] && BACKEND=fastapi
             else
                 c_red "未知参数：$1"; exit 2
             fi ;;
@@ -353,6 +350,7 @@ case "$CMD" in
     restart) do_restart ;;
     status)  do_status ;;
     logs)    name="${LOGS_NAME:-api}"; tail -f "$RUN_DIR/$name.log" ;;
+    init)    run_init ;;
     *)
         sed -n '2,29p' "$0"
         exit 2
