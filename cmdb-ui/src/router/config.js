@@ -89,6 +89,12 @@ export const generatorDynamicRouter = async () => {
           meta: { title: 'cs.menu.auth', appName: 'backend', icon: 'ops-setting-auth', selectedIcon: 'ops-setting-auth', permission: ['acl_admin'] },
           component: () => import(/* webpackChunkName: "setting" */ '@/views/setting/auth/index')
         },
+        {
+          path: '/setting/grafana',
+          name: 'setting_grafana',
+          meta: { title: 'cs.menu.grafana', appName: 'backend', icon: 'ops-setting-basic', selectedIcon: 'ops-setting-basic-selected', permission: ['acl_admin'] },
+          component: () => import(/* webpackChunkName: "setting" */ '@/views/setting/grafana/index')
+        },
       ]
     }, ])
   return routes
