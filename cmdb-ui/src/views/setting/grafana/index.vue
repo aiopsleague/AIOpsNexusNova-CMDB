@@ -54,7 +54,10 @@
           {{ connectionName(record.connection_id) }}
         </template>
         <template slot="var_mapping" slot-scope="text, record">
-          {{ (record.var_mapping || []).map((vm) => `${vm.grafana_var}←${vm.ci_attr}`).join(', ') || '-' }}
+          {{ (record.var_mapping || []).map((vm) => `${vm.grafana_var}←${vm.value || '-'}`).join(', ') || '-' }}
+        </template>
+        <template slot="enable" slot-scope="text, record">
+          <a-switch :checked="record.enable !== 0" @change="(checked) => handleMappingToggleEnable(record, checked)" />
         </template>
         <template slot="action" slot-scope="text, record">
           <a-space>
@@ -100,10 +103,11 @@
       :title="mappingForm.id ? $t('cs.grafana.editMapping') : $t('cs.grafana.addMapping')"
       :visible="mappingModalVisible"
       :confirm-loading="saving"
+      width="900px"
       @ok="handleSaveMapping"
       @cancel="mappingModalVisible = false"
     >
-      <a-form-model ref="mappingForm" :model="mappingForm" :rules="mappingRules" :label-col="{ span: 6 }" :wrapper-col="{ span: 16 }">
+      <a-form-model ref="mappingForm" :model="mappingForm" :rules="mappingRules" :label-col="{ span: 4 }" :wrapper-col="{ span: 18 }">
         <a-form-model-item :label="$t('cs.grafana.ciType')" prop="ci_type_id">
           <a-select v-model="mappingForm.ci_type_id" show-search option-filter-prop="children" @change="handleCiTypeChange">
             <a-select-option v-for="t in ciTypes" :key="t.id" :value="t.id">
@@ -133,31 +137,66 @@
           <a-input v-model="mappingForm.dashboard_title" read-only />
         </a-form-model-item>
         <a-form-model-item :label="$t('cs.grafana.varMapping')">
-          <div v-for="(vm, idx) in mappingForm.var_mapping" :key="idx" class="var-mapping-row">
-            <a-auto-complete
-              v-model="vm.grafana_var"
-              :data-source="variableOptions"
-              :placeholder="$t('cs.grafana.grafanaVar')"
-              class="var-mapping-input"
-              @change="(v) => handleVarChange(vm, v)"
-            />
-            <a-icon type="swap-right" class="var-mapping-arrow" />
-            <a-select
-              v-model="vm.ci_attr"
-              show-search
-              option-filter-prop="children"
-              :placeholder="$t('cs.grafana.ciAttr')"
-              class="var-mapping-input"
-            >
-              <a-select-option v-for="a in ciAttrOptions" :key="a.name" :value="a.name">
-                {{ a.alias || a.name }}
-              </a-select-option>
-            </a-select>
-            <a-icon type="minus-circle" class="var-mapping-delete" @click="mappingForm.var_mapping.splice(idx, 1)" />
-          </div>
+          <a-table
+            :columns="varMappingColumns"
+            :data-source="mappingForm.var_mapping"
+            :pagination="false"
+            size="small"
+            rowKey="_key"
+            :scroll="{ y: 240 }"
+            style="margin-bottom: 8px"
+          >
+            <template slot="grafana_var" slot-scope="text, record">
+              <a-auto-complete
+                v-model="record.grafana_var"
+                :data-source="variableOptions"
+                :placeholder="$t('cs.grafana.grafanaVar')"
+                style="width: 100%"
+                @change="(v) => handleVarChange(record, v)"
+              />
+            </template>
+            <template slot="map_type" slot-scope="text, record">
+              <a-select v-model="record.map_type" style="width: 100%" @change="() => handleMappingTypeChange(record)">
+                <a-select-option value="fixed">{{ $t('cs.grafana.fixed') }}</a-select-option>
+                <a-select-option value="field">{{ $t('cs.grafana.field') }}</a-select-option>
+              </a-select>
+            </template>
+            <template slot="target" slot-scope="text, record">
+              <a-select
+                v-if="record.map_type === 'field'"
+                v-model="record.value"
+                show-search
+                option-filter-prop="children"
+                :placeholder="$t('cs.grafana.ciAttr')"
+                style="width: 100%"
+              >
+                <a-select-option v-for="a in ciAttrOptions" :key="a.name" :value="a.name">
+                  {{ a.alias || a.name }}({{ a.name }})
+                </a-select-option>
+              </a-select>
+              <a-input
+                v-else
+                v-model="record.value"
+                :placeholder="$t('cs.grafana.targetPlaceholder')"
+                style="width: 100%"
+              />
+            </template>
+            <template slot="remark" slot-scope="text, record">
+              <a-input v-model="record.remark" :placeholder="$t('cs.grafana.remark')" style="width: 100%" />
+            </template>
+            <template slot="no_var_prefix" slot-scope="text, record">
+              <a-checkbox :checked="record.no_var_prefix" @change="(e) => { record.no_var_prefix = e.target.checked }" style="display: flex; justify-content: center;" />
+            </template>
+            <template slot="action" slot-scope="text, record, index">
+              <a-icon type="minus-circle" style="cursor: pointer; color: #f5222d; font-size: 16px;" @click="removeVarMapping(index)" />
+            </template>
+          </a-table>
           <a-button type="dashed" size="small" icon="plus" @click="addVarMapping">
             {{ $t('cs.grafana.addVarMapping') }}
           </a-button>
+        </a-form-model-item>
+        <a-form-model-item :label="$t('cs.grafana.mappingEnable')">
+          <a-switch :checked="mappingForm.enable !== 0" @change="(checked) => { mappingForm.enable = checked ? 1 : 0 }" />
         </a-form-model-item>
       </a-form-model>
     </a-modal>
@@ -194,7 +233,8 @@ export default {
       connectionModalVisible: false,
       mappingModalVisible: false,
       connectionForm: { id: null, name: '', url: '', api_key: '', remark: '', enable: 1 },
-      mappingForm: { id: null, ci_type_id: undefined, connection_id: undefined, namespace: 'default', dashboard_name: '', dashboard_title: '', var_mapping: [] },
+      mappingForm: { id: null, ci_type_id: undefined, connection_id: undefined, namespace: 'default', dashboard_name: '', dashboard_title: '', var_mapping: [], enable: 1 },
+      varMappingKeyCounter: 0,
       healthMap: {},
       dashboards: [],
       variableOptions: [],
@@ -213,8 +253,17 @@ export default {
         { title: this.$t('cs.grafana.namespace'), dataIndex: 'namespace', width: 100 },
         { title: this.$t('cs.grafana.dashboardTitle'), dataIndex: 'dashboard_title' },
         { title: this.$t('cs.grafana.dashboardName'), dataIndex: 'dashboard_name' },
+        { title: this.$t('cs.grafana.mappingEnable'), scopedSlots: { customRender: 'enable' }, width: 80 },
         { title: this.$t('cs.grafana.varMapping'), scopedSlots: { customRender: 'var_mapping' } },
         { title: this.$t('cs.grafana.operation'), scopedSlots: { customRender: 'action' }, width: 160 },
+      ],
+      varMappingColumns: [
+        { title: this.$t('cs.grafana.source'), dataIndex: 'grafana_var', scopedSlots: { customRender: 'grafana_var' } },
+        { title: this.$t('cs.grafana.mappingType'), dataIndex: 'map_type', scopedSlots: { customRender: 'map_type' }, width: 100 },
+        { title: this.$t('cs.grafana.target'), dataIndex: 'target', scopedSlots: { customRender: 'target' } },
+        { title: this.$t('cs.grafana.remark'), dataIndex: 'remark', scopedSlots: { customRender: 'remark' } },
+        { title: this.$t('cs.grafana.noVarPrefix'), scopedSlots: { customRender: 'no_var_prefix' }, width: 70 },
+        { title: this.$t('cs.grafana.operation'), scopedSlots: { customRender: 'action' }, width: 50 },
       ],
     }
   },
@@ -282,17 +331,31 @@ export default {
       this.$nextTick(() => this.$refs.connectionForm && this.$refs.connectionForm.clearValidate())
     },
     openMappingModal(record = null) {
-      this.mappingForm = record
-        ? {
-            id: record.id,
-            ci_type_id: record.ci_type_id,
-            connection_id: record.connection_id,
-            namespace: record.namespace || 'default',
-            dashboard_name: record.dashboard_name,
-            dashboard_title: record.dashboard_title,
-            var_mapping: (record.var_mapping || []).map((vm) => ({ ...vm })),
-          }
-        : { id: null, ci_type_id: undefined, connection_id: undefined, namespace: 'default', dashboard_name: '', dashboard_title: '', var_mapping: [] }
+      if (record) {
+        const mapped = (record.var_mapping || []).map((vm, idx) => ({
+          _key: idx + 1,
+          grafana_var: vm.grafana_var,
+          map_type: vm.map_type || 'field',
+          value: vm.value || vm.ci_attr || '',
+          remark: vm.remark || '',
+          enable: vm.enable !== undefined ? vm.enable : 1,
+          no_var_prefix: vm.no_var_prefix === true || vm.no_var_prefix === 1 || vm.no_var_prefix === '1',
+        }))
+        this.varMappingKeyCounter = mapped.length
+        this.mappingForm = {
+          id: record.id,
+          ci_type_id: record.ci_type_id,
+          connection_id: record.connection_id,
+          namespace: record.namespace || 'default',
+          dashboard_name: record.dashboard_name,
+          dashboard_title: record.dashboard_title,
+          enable: record.enable === undefined ? 1 : record.enable,
+          var_mapping: mapped,
+        }
+      } else {
+        this.varMappingKeyCounter = 0
+        this.mappingForm = { id: null, ci_type_id: undefined, connection_id: undefined, namespace: 'default', dashboard_name: '', dashboard_title: '', var_mapping: [], enable: 1 }
+      }
       this.mappingModalVisible = true
       this.$nextTick(() => this.$refs.mappingForm && this.$refs.mappingForm.clearValidate())
       if (this.mappingForm.ci_type_id) this.handleCiTypeChange(this.mappingForm.ci_type_id)
@@ -321,7 +384,8 @@ export default {
     async loadVariables(connectionId, name) {
       try {
         const res = await getGrafanaDashboardVariables(connectionId, name)
-        this.variableOptions = res.variables || []
+        // a-auto-complete data-source expects strings or {value, text} objects
+        this.variableOptions = (res.variables || []).map((v) => v.name)
       } catch (e) {
         this.variableOptions = []
       }
@@ -337,12 +401,29 @@ export default {
     },
     handleVarChange(vm, value) {
       vm.grafana_var = value
-      if (!vm.ci_attr && this.ciAttrOptions.some((a) => a.name === value)) {
-        vm.ci_attr = value
+      // Auto-fill target if map_type is 'field' and variable name matches a CI attribute name
+      if (vm.map_type === 'field' && !vm.value && this.ciAttrOptions.some((a) => a.name === value)) {
+        vm.value = value
       }
     },
     addVarMapping() {
-      this.mappingForm.var_mapping.push({ grafana_var: undefined, ci_attr: undefined })
+      this.mappingForm.var_mapping.push({
+        _key: ++this.varMappingKeyCounter,
+        grafana_var: undefined,
+        map_type: 'field',
+        value: '',
+        remark: '',
+        enable: 1,
+        no_var_prefix: false,
+      })
+    },
+    removeVarMapping(index) {
+      this.mappingForm.var_mapping.splice(index, 1)
+    },
+    handleMappingTypeChange(record) {
+      if (record.map_type === 'fixed') {
+        record.value = ''
+      }
     },
     handleSaveConnection() {
       this.$refs.connectionForm.validate(async (valid) => {
@@ -366,11 +447,24 @@ export default {
     handleSaveMapping() {
       this.$refs.mappingForm.validate(async (valid) => {
         if (!valid) return
-        const incomplete = this.mappingForm.var_mapping.some((vm) => !vm.grafana_var || !vm.ci_attr)
+        const varMappings = this.mappingForm.var_mapping || []
+
+        // Check each row has required fields
+        const incomplete = varMappings.some(
+          (vm) => !vm.grafana_var || !vm.value
+        )
         if (incomplete) {
           this.$message.error(this.$t('cs.grafana.varMappingIncomplete'))
           return
         }
+
+        // Check for duplicate grafana_var
+        const varNames = varMappings.map((vm) => vm.grafana_var)
+        if (new Set(varNames).size !== varNames.length) {
+          this.$message.error(this.$t('cs.grafana.varMappingDuplicated'))
+          return
+        }
+
         this.saving = true
         try {
           const { id, ...data } = this.mappingForm
@@ -397,6 +491,11 @@ export default {
       this.$message.success(this.$t('deleteSuccess'))
       await this.loadAll()
     },
+    async handleMappingToggleEnable(record, checked) {
+      await putGrafanaMapping(record.id, { enable: checked ? 1 : 0 })
+      this.$set(record, 'enable', checked ? 1 : 0)
+      this.$message.success(this.$t('saveSuccess'))
+    },
     handleTest() {
       this.$refs.connectionForm.validate(async (valid) => {
         if (!valid) return
@@ -421,23 +520,6 @@ export default {
   overflow: auto;
   .grafana-card {
     margin-bottom: 16px;
-  }
-  .var-mapping-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-    .var-mapping-input {
-      flex: 1;
-    }
-    .var-mapping-arrow,
-    .var-mapping-delete {
-      flex-shrink: 0;
-    }
-    .var-mapping-delete {
-      cursor: pointer;
-      color: #f5222d;
-    }
   }
 }
 </style>

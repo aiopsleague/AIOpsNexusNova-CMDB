@@ -56,7 +56,8 @@ export default {
           let url = `${apiBase}/v0.1/grafana/proxy/${r.connection_id}/d/${r.uid}${r.slug ? '/' + r.slug : ''}?kiosk`
           ;(r.vars || []).forEach((v) => {
             if (v.name && v.value !== undefined && v.value !== null && v.value !== '') {
-              url += `&var-${v.name}=${encodeURIComponent(v.value)}`
+              const prefix = v.no_var_prefix ? '' : 'var-'
+              url += `&${prefix}${v.name}=${encodeURIComponent(v.value)}`
             }
           })
           this.iframeUrl = url

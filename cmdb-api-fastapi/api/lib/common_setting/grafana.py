@@ -166,10 +166,39 @@ class GrafanaConfigCRUD(object):
     # ---------------- mappings ----------------
 
     def list_mappings(self):
-        return self.get_config()["mappings"]
+        """Return mappings with normalized var_mapping items and enable field.
+
+        Legacy stored data may still have ``{grafana_var, ci_attr}`` items;
+        this normalizes every item to the extended shape so the frontend
+        always receives a consistent format.
+        """
+        mappings = self.get_config()["mappings"]
+        result = []
+        for m in mappings:
+            entry = dict(m)
+            entry["enable"] = self._to_enable(m.get("enable", 1))
+            normalized = []
+            for vm in m.get("var_mapping") or []:
+                normalized.append({
+                    "grafana_var": vm.get("grafana_var", ""),
+                    "map_type": vm.get("map_type") or "field",
+                    "value": vm.get("value") or vm.get("ci_attr") or "",
+                    "remark": vm.get("remark") or "",
+                    "enable": 0 if vm.get("enable") in (0, "0", False) else 1,
+                    "no_var_prefix": True if vm.get("no_var_prefix") in (True, 1, "1") else False,
+                })
+            entry["var_mapping"] = normalized
+            result.append(entry)
+        return result
 
     @staticmethod
     def _valid_var_mapping(var_mapping):
+        """Validate and normalize var_mapping items.
+
+        Supports both legacy ``{grafana_var, ci_attr}`` and extended
+        ``{grafana_var, map_type, value, remark, enable}`` format.
+        Always returns the extended (normalized) shape.
+        """
         var_mapping = var_mapping or []
         if not isinstance(var_mapping, list):
             abort(400, ErrFormat.value_is_required)
@@ -178,10 +207,30 @@ class GrafanaConfigCRUD(object):
             if not isinstance(vm, dict):
                 abort(400, ErrFormat.value_is_required)
             grafana_var = str((vm or {}).get("grafana_var") or "").strip()
-            ci_attr = str((vm or {}).get("ci_attr") or "").strip()
-            if not grafana_var or not ci_attr:
+            if not grafana_var:
                 abort(400, ErrFormat.value_is_required)
-            result.append({"grafana_var": grafana_var, "ci_attr": ci_attr})
+
+            map_type = vm.get("map_type") or "field"
+            if map_type not in ("field", "fixed"):
+                abort(400, ErrFormat.value_is_required)
+
+            # Backward compat: new "value" field takes precedence over legacy "ci_attr"
+            value = str(vm.get("value") or vm.get("ci_attr") or "").strip()
+            if not value:
+                abort(400, ErrFormat.value_is_required)
+
+            remark = str(vm.get("remark") or "").strip()
+            enable = 0 if vm.get("enable") in (0, "0", False) else 1
+            no_var_prefix = True if vm.get("no_var_prefix") in (True, 1, "1") else False
+
+            result.append({
+                "grafana_var": grafana_var,
+                "map_type": map_type,
+                "value": value,
+                "remark": remark,
+                "enable": enable,
+                "no_var_prefix": no_var_prefix,
+            })
         return result
 
     def create_mapping(self, data):
@@ -203,6 +252,7 @@ class GrafanaConfigCRUD(object):
                        namespace=(data.get("namespace") or "").strip() or "default",
                        dashboard_name=dashboard_name,
                        dashboard_title=(data.get("dashboard_title") or "").strip(),
+                       enable=self._to_enable(data.get("enable", 1)),
                        var_mapping=self._valid_var_mapping(data.get("var_mapping")))
         config["mappings"].append(mapping)
         self._save(config)
@@ -232,6 +282,8 @@ class GrafanaConfigCRUD(object):
             mapping["dashboard_title"] = (data["dashboard_title"] or "").strip()
         if "var_mapping" in data:
             mapping["var_mapping"] = self._valid_var_mapping(data["var_mapping"])
+        if "enable" in data:
+            mapping["enable"] = self._to_enable(data["enable"])
 
         self._save(config)
         return mapping
