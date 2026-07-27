@@ -3,7 +3,7 @@ from unittest import mock
 
 import pytest
 
-from api.lib.common_setting.grafana_client import GrafanaClient, build_vars, pick_dashboard
+from api.lib.common_setting.grafana_client import GrafanaClient, build_vars, evaluate_filter_rules, pick_dashboard
 
 CONN1 = {"id": 1, "name": "g1", "url": "http://g1:3000", "api_key": "k1"}
 CONN2 = {"id": 2, "name": "g2", "url": "http://g2:3000/", "api_key": "k2"}
@@ -24,7 +24,7 @@ def _fail_search(conn):
 def test_pick_dashboard_mapping_with_name():
     mappings = [{"id": 1, "ci_type_id": 3, "connection_id": 2, "dashboard_name": "rYdddlPWo",
                  "var_mapping": [{"grafana_var": "instance", "ci_attr": "instance"}]}]
-    picked = pick_dashboard([CONN1, CONN2], mappings, 3, "host-01", _fail_search)
+    picked = pick_dashboard([CONN1, CONN2], mappings, 3, {}, "host-01", _fail_search)
     assert picked["connection"] is CONN2
     assert picked["uid"] == "rYdddlPWo"
     assert picked["slug"] is None
@@ -33,7 +33,7 @@ def test_pick_dashboard_mapping_with_name():
 
 def test_pick_dashboard_mapping_without_name_searches_that_instance():
     mappings = [{"id": 1, "ci_type_id": 3, "connection_id": 1, "dashboard_name": "", "var_mapping": []}]
-    picked = pick_dashboard([CONN1, CONN2], mappings, 3, "host-01", _ok_search([DASH]))
+    picked = pick_dashboard([CONN1, CONN2], mappings, 3, {}, "host-01", _ok_search([DASH]))
     assert picked["connection"] is CONN1
     assert picked["uid"] == "abc123"
     assert picked["slug"] == "host-01"
@@ -48,7 +48,7 @@ def test_pick_dashboard_mapping_miss_falls_back_to_global_search():
         calls.append(conn["id"])
         return [DASH] if conn["id"] == 2 else []
 
-    picked = pick_dashboard([CONN1, CONN2], mappings, 3, "host-01", search_fn)
+    picked = pick_dashboard([CONN1, CONN2], mappings, 3, {}, "host-01", search_fn)
     assert picked["connection"] is CONN2
     assert picked["mapping"] is None
     assert calls == [1, 2]
@@ -58,24 +58,24 @@ def test_pick_dashboard_no_mapping_searches_all_in_order():
     def search_fn(conn):
         return [DASH] if conn["id"] == 2 else []
 
-    picked = pick_dashboard([CONN1, CONN2], [], 3, "host-01", search_fn)
+    picked = pick_dashboard([CONN1, CONN2], [], 3, {}, "host-01", search_fn)
     assert picked["connection"] is CONN2
     assert picked["mapping"] is None
 
 
 def test_pick_dashboard_nothing_found():
-    assert pick_dashboard([CONN1], [], 3, "host-01", _ok_search([])) is None
-    assert pick_dashboard([CONN1], [], 3, "host-01", _fail_search) is None
+    assert pick_dashboard([CONN1], [], 3, {}, "host-01", _ok_search([])) is None
+    assert pick_dashboard([CONN1], [], 3, {}, "host-01", _fail_search) is None
 
 
 def test_pick_dashboard_no_connections():
-    assert pick_dashboard([], [], 3, "host-01", _ok_search([DASH])) is None
+    assert pick_dashboard([], [], 3, {}, "host-01", _ok_search([DASH])) is None
 
 
 def test_pick_dashboard_skips_disabled_instances():
     # 映射指向停用实例 → 回退全局搜索启用实例
     mappings = [{"id": 1, "ci_type_id": 3, "connection_id": 3, "dashboard_name": "xyz", "var_mapping": []}]
-    picked = pick_dashboard([CONN1, CONN3_DISABLED], mappings, 3, "host-01", _ok_search([DASH]))
+    picked = pick_dashboard([CONN1, CONN3_DISABLED], mappings, 3, {}, "host-01", _ok_search([DASH]))
     assert picked["connection"] is CONN1
     assert picked["mapping"] is None
 
@@ -83,14 +83,147 @@ def test_pick_dashboard_skips_disabled_instances():
 def test_pick_dashboard_skips_disabled_mapping():
     mappings = [{"id": 1, "ci_type_id": 3, "connection_id": 2, "dashboard_name": "xyz",
                  "var_mapping": [], "enable": 0}]
-    picked = pick_dashboard([CONN1, CONN2], mappings, 3, "host-01", _ok_search([DASH]))
+    picked = pick_dashboard([CONN1, CONN2], mappings, 3, {}, "host-01", _ok_search([DASH]))
     # 映射停用 → 视同无映射 → 全局搜索（CONN1 先命中）
     assert picked["connection"] is CONN1
     assert picked["mapping"] is None
 
 
 def test_pick_dashboard_all_disabled():
-    assert pick_dashboard([CONN3_DISABLED], [], 3, "host-01", _ok_search([DASH])) is None
+    assert pick_dashboard([CONN3_DISABLED], [], 3, {}, "host-01", _ok_search([DASH])) is None
+
+
+# ---------------- evaluate_filter_rules ----------------
+
+
+def test_evaluate_filter_rules_none_or_empty():
+    assert evaluate_filter_rules(None, {"os_type": "Linux"}) is True
+    assert evaluate_filter_rules({}, {"os_type": "Linux"}) is True
+    assert evaluate_filter_rules({"rules": []}, {"os_type": "Linux"}) is True
+
+
+def test_evaluate_filter_rules_equal():
+    rules = {"logic": "and", "rules": [{"field": "os_type", "operator": "equal", "value": "Linux"}]}
+    assert evaluate_filter_rules(rules, {"os_type": "Linux"}) is True
+    assert evaluate_filter_rules(rules, {"os_type": "Windows"}) is False
+    assert evaluate_filter_rules(rules, {}) is False  # missing field -> ""
+
+
+def test_evaluate_filter_rules_not_equal():
+    rules = {"logic": "and", "rules": [{"field": "env", "operator": "not_equal", "value": "test"}]}
+    assert evaluate_filter_rules(rules, {"env": "prod"}) is True
+    assert evaluate_filter_rules(rules, {"env": "test"}) is False
+
+
+def test_evaluate_filter_rules_contains():
+    rules = {"logic": "and", "rules": [{"field": "hostname", "operator": "contains", "value": "prod"}]}
+    assert evaluate_filter_rules(rules, {"hostname": "web-prod-01"}) is True
+    assert evaluate_filter_rules(rules, {"hostname": "web-test-01"}) is False
+
+
+def test_evaluate_filter_rules_not_contains():
+    rules = {"logic": "and", "rules": [{"field": "hostname", "operator": "not_contains", "value": "test"}]}
+    assert evaluate_filter_rules(rules, {"hostname": "web-prod-01"}) is True
+    assert evaluate_filter_rules(rules, {"hostname": "web-test-01"}) is False
+
+
+def test_evaluate_filter_rules_in():
+    rules = {"logic": "and", "rules": [{"field": "os_type", "operator": "in",
+                                         "value": ["Linux", "CentOS", "Ubuntu"]}]}
+    assert evaluate_filter_rules(rules, {"os_type": "Linux"}) is True
+    assert evaluate_filter_rules(rules, {"os_type": "CentOS"}) is True
+    assert evaluate_filter_rules(rules, {"os_type": "Windows"}) is False
+
+
+def test_evaluate_filter_rules_not_in():
+    rules = {"logic": "and", "rules": [{"field": "os_type", "operator": "not_in",
+                                         "value": ["Windows", "Win10"]}]}
+    assert evaluate_filter_rules(rules, {"os_type": "Linux"}) is True
+    assert evaluate_filter_rules(rules, {"os_type": "Windows"}) is False
+
+
+def test_evaluate_filter_rules_and_logic():
+    rules = {"logic": "and", "rules": [
+        {"field": "main_type", "operator": "equal", "value": "Server"},
+        {"field": "os_type", "operator": "equal", "value": "Linux"},
+    ]}
+    assert evaluate_filter_rules(rules, {"main_type": "Server", "os_type": "Linux"}) is True
+    assert evaluate_filter_rules(rules, {"main_type": "Server", "os_type": "Windows"}) is False
+    assert evaluate_filter_rules(rules, {"main_type": "Network", "os_type": "Linux"}) is False
+
+
+def test_evaluate_filter_rules_or_logic():
+    rules = {"logic": "or", "rules": [
+        {"field": "env", "operator": "equal", "value": "production"},
+        {"field": "env", "operator": "equal", "value": "staging"},
+    ]}
+    assert evaluate_filter_rules(rules, {"env": "production"}) is True
+    assert evaluate_filter_rules(rules, {"env": "staging"}) is True
+    assert evaluate_filter_rules(rules, {"env": "test"}) is False
+
+
+# ---------------- pick_dashboard with filter_rules ----------------
+
+
+def test_pick_dashboard_filter_rules_match():
+    """CI with os_type=Linux matches mapping with filter_rules."""
+    mappings = [
+        {"id": 1, "ci_type_id": 3, "connection_id": 1, "dashboard_name": "linux-dash",
+         "filter_rules": {"logic": "and", "rules": [
+             {"field": "os_type", "operator": "equal", "value": "Linux"}]}},
+        {"id": 2, "ci_type_id": 3, "connection_id": 2, "dashboard_name": "win-dash",
+         "filter_rules": {"logic": "and", "rules": [
+             {"field": "os_type", "operator": "equal", "value": "Windows"}]}},
+    ]
+    ci = {"os_type": "Linux"}
+    picked = pick_dashboard([CONN1, CONN2], mappings, 3, ci, "host-01", _fail_search)
+    assert picked["connection"] is CONN1
+    assert picked["uid"] == "linux-dash"
+    assert picked["mapping"] is mappings[0]
+
+
+def test_pick_dashboard_filter_rules_falls_back_to_no_filter():
+    """CI with os_type=Unknown matches no filter, falls back to mapping without filter."""
+    mappings = [
+        {"id": 1, "ci_type_id": 3, "connection_id": 1, "dashboard_name": "linux-dash",
+         "filter_rules": {"logic": "and", "rules": [
+             {"field": "os_type", "operator": "equal", "value": "Linux"}]}},
+        {"id": 2, "ci_type_id": 3, "connection_id": 2, "dashboard_name": "default-dash"},
+    ]
+    ci = {"os_type": "Unknown"}
+    picked = pick_dashboard([CONN1, CONN2], mappings, 3, ci, "host-01", _fail_search)
+    assert picked["connection"] is CONN2
+    assert picked["uid"] == "default-dash"
+    assert picked["mapping"] is mappings[1]
+
+
+def test_pick_dashboard_filter_rules_no_fallback_global_search():
+    """No filter match and no fallback → global search."""
+    mappings = [
+        {"id": 1, "ci_type_id": 3, "connection_id": 1, "dashboard_name": "linux-dash",
+         "filter_rules": {"logic": "and", "rules": [
+             {"field": "os_type", "operator": "equal", "value": "Linux"}]}},
+    ]
+    ci = {"os_type": "Windows"}
+    picked = pick_dashboard([CONN1, CONN2], mappings, 3, ci, "host-01", _ok_search([DASH]))
+    assert picked["connection"] is CONN1  # CONN1 searched via global fallback
+    assert picked["uid"] == "abc123"
+    assert picked["mapping"] is None
+
+
+def test_pick_dashboard_filter_rules_disabled_mapping_skipped():
+    """Disabled mapping with matching filter is skipped."""
+    mappings = [
+        {"id": 1, "ci_type_id": 3, "connection_id": 1, "dashboard_name": "linux-dash",
+         "enable": 0,
+         "filter_rules": {"logic": "and", "rules": [
+             {"field": "os_type", "operator": "equal", "value": "Linux"}]}},
+        {"id": 2, "ci_type_id": 3, "connection_id": 2, "dashboard_name": "default-dash"},
+    ]
+    ci = {"os_type": "Linux"}
+    picked = pick_dashboard([CONN1, CONN2], mappings, 3, ci, "host-01", _fail_search)
+    assert picked["connection"] is CONN2
+    assert picked["uid"] == "default-dash"
 
 
 # ---------------- build_vars ----------------

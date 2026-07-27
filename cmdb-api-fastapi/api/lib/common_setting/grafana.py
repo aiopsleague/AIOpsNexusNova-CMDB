@@ -18,6 +18,8 @@ class GrafanaConfigCRUD(object):
     AES-encrypted as a whole, shaped: {"connections": [...], "mappings": [...]}.
     """
 
+    VALID_OPERATORS = {"equal", "not_equal", "contains", "not_contains", "in", "not_in"}
+
     @staticmethod
     def _get_record(to_dict=False):
         return CommonData.get_by(first=True, data_type=DATA_TYPE, to_dict=to_dict)
@@ -188,8 +190,40 @@ class GrafanaConfigCRUD(object):
                     "var_type": vm.get("var_type") or "normal",
                 })
             entry["var_mapping"] = normalized
+            entry["filter_rules"] = m.get("filter_rules") or None
             result.append(entry)
         return result
+
+    @staticmethod
+    def _valid_filter_rules(filter_rules):
+        """Validate filter_rules; None is valid (no filter)."""
+        if filter_rules is None:
+            return None
+        if not isinstance(filter_rules, dict):
+            abort(400, ErrFormat.value_is_required)
+        logic = filter_rules.get("logic") or "and"
+        if logic not in ("and", "or"):
+            abort(400, ErrFormat.value_is_required)
+        rules = filter_rules.get("rules")
+        if not rules or not isinstance(rules, list) or len(rules) == 0:
+            abort(400, ErrFormat.value_is_required)
+        for rule in rules:
+            if not isinstance(rule, dict):
+                abort(400, ErrFormat.value_is_required)
+            field = str(rule.get("field") or "").strip()
+            if not field:
+                abort(400, ErrFormat.value_is_required)
+            op = rule.get("operator") or "equal"
+            if op not in GrafanaConfigCRUD.VALID_OPERATORS:
+                abort(400, ErrFormat.value_is_required)
+            value = rule.get("value")
+            if op in ("in", "not_in"):
+                if not isinstance(value, list) or len(value) == 0:
+                    abort(400, ErrFormat.value_is_required)
+            else:
+                if value is None or (isinstance(value, str) and not value.strip()):
+                    abort(400, ErrFormat.value_is_required)
+        return {"logic": logic, "rules": rules}
 
     @staticmethod
     def _valid_var_mapping(var_mapping):
@@ -255,7 +289,8 @@ class GrafanaConfigCRUD(object):
                        dashboard_name=dashboard_name,
                        dashboard_title=(data.get("dashboard_title") or "").strip(),
                        enable=self._to_enable(data.get("enable", 1)),
-                       var_mapping=self._valid_var_mapping(data.get("var_mapping")))
+                       var_mapping=self._valid_var_mapping(data.get("var_mapping")),
+                       filter_rules=self._valid_filter_rules(data.get("filter_rules")))
         config["mappings"].append(mapping)
         self._save(config)
         return mapping
@@ -284,6 +319,8 @@ class GrafanaConfigCRUD(object):
             mapping["dashboard_title"] = (data["dashboard_title"] or "").strip()
         if "var_mapping" in data:
             mapping["var_mapping"] = self._valid_var_mapping(data["var_mapping"])
+        if "filter_rules" in data:
+            mapping["filter_rules"] = self._valid_filter_rules(data["filter_rules"])
         if "enable" in data:
             mapping["enable"] = self._to_enable(data["enable"])
 

@@ -36,7 +36,7 @@ def resolve_ci_grafana(ci_id):
         return GrafanaClient(connection["url"], connection["api_key"], timeout=2).search_dashboard(str(unique_value))
 
     try:
-        picked = pick_dashboard(connections, config["mappings"], ci_type_id, str(unique_value), search_fn)
+        picked = pick_dashboard(connections, config["mappings"], ci_type_id, ci, str(unique_value), search_fn)
     except Exception as e:
         current_app.logger.warning("grafana resolve failed for ci {}: {}".format(ci_id, e))
         return dict(configured=True, result=None)

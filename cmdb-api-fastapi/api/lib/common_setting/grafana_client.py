@@ -104,12 +104,54 @@ def _first_hit(search_fn, connection):
     return dashboards[0] if dashboards else None
 
 
-def pick_dashboard(connections, mappings, ci_type_id, unique_value, search_fn):
+def evaluate_filter_rules(filter_rules, ci_attrs):
+    """Evaluate whether a CI instance matches the filter rules.
+
+    :param filter_rules: dict {"logic": "and"|"or", "rules": [...]} or None
+    :param ci_attrs: dict of CI attribute name -> value
+    :return: True if the CI matches (or no rules defined), False otherwise
+    """
+    if not filter_rules or not filter_rules.get("rules"):
+        return True
+
+    results = []
+    for rule in filter_rules["rules"]:
+        field_value = str(ci_attrs.get(rule.get("field", ""), "") or "")
+        target = rule.get("value")
+        op = rule.get("operator", "equal")
+
+        if op == "equal":
+            results.append(field_value == str(target))
+        elif op == "not_equal":
+            results.append(field_value != str(target))
+        elif op == "contains":
+            results.append(str(target) in field_value)
+        elif op == "not_contains":
+            results.append(str(target) not in field_value)
+        elif op == "in":
+            results.append(field_value in (target if isinstance(target, list) else []))
+        elif op == "not_in":
+            results.append(field_value not in (target if isinstance(target, list) else []))
+        else:
+            results.append(False)
+
+    if not results:
+        return True
+
+    if filter_rules.get("logic") == "or":
+        return any(results)
+    else:  # "and" (default)
+        return all(results)
+
+
+def pick_dashboard(connections, mappings, ci_type_id, ci_attrs, unique_value, search_fn):
     """Decide which grafana dashboard to show for a CI.
 
     :param connections: list of {"id", "name", "url", "api_key", "remark", "enable"?}
-    :param mappings: list of {"id", "ci_type_id", "connection_id", "dashboard_name", "var_mapping"}
+    :param mappings: list of {"id", "ci_type_id", "connection_id", "dashboard_name", "var_mapping",
+                              "filter_rules"?}
     :param ci_type_id: int, the CI's type id
+    :param ci_attrs: dict of CI attribute name -> value
     :param unique_value: str, the CI's unique attribute value (search keyword)
     :param search_fn: callable(connection) -> list of dashboard dicts; may raise
     :return: dict(connection=..., uid=..., slug=..., mapping=...|None) or None
@@ -118,21 +160,41 @@ def pick_dashboard(connections, mappings, ci_type_id, unique_value, search_fn):
     if not enabled:
         return None
 
-    searched_ids = set()
-    mapping = next((m for m in mappings
-                    if m.get("ci_type_id") == ci_type_id and m.get("enable", 1) != 0), None)
-    if mapping:
-        conn = next((c for c in enabled if c.get("id") == mapping.get("connection_id")), None)
-        if conn:
-            name = (mapping.get("dashboard_name") or "").strip()
-            if name:
-                return dict(connection=conn, uid=name, slug=None, mapping=mapping)
-            searched_ids.add(conn.get("id"))
-            dash = _first_hit(search_fn, conn)
-            if dash:
-                return dict(connection=conn, uid=dash.get("uid"), slug=_slug_from(dash), mapping=mapping)
-            # 映射实例搜不到 → 继续全局兜底
+    # Collect enabled mappings for this CI type, split into filtered and fallback groups
+    type_mappings = [m for m in mappings
+                     if m.get("ci_type_id") == ci_type_id and m.get("enable", 1) != 0]
+    filtered = [m for m in type_mappings if m.get("filter_rules") and m["filter_rules"].get("rules")]
+    fallback = [m for m in type_mappings if not m.get("filter_rules") or not m["filter_rules"].get("rules")]
 
+    searched_ids = set()
+
+    def _resolve(mapping):
+        conn = next((c for c in enabled if c.get("id") == mapping.get("connection_id")), None)
+        if not conn:
+            return None
+        name = (mapping.get("dashboard_name") or "").strip()
+        if name:
+            return dict(connection=conn, uid=name, slug=None, mapping=mapping)
+        searched_ids.add(conn.get("id"))
+        dash = _first_hit(search_fn, conn)
+        if dash:
+            return dict(connection=conn, uid=dash.get("uid"), slug=_slug_from(dash), mapping=mapping)
+        return None
+
+    # 1. Priority: filter_rules match
+    for mapping in filtered:
+        if evaluate_filter_rules(mapping.get("filter_rules"), ci_attrs):
+            result = _resolve(mapping)
+            if result:
+                return result
+
+    # 2. Fallback: no filter_rules (catch-all for this CI type)
+    for mapping in fallback:
+        result = _resolve(mapping)
+        if result:
+            return result
+
+    # 3. Global fallback: search all connections
     for conn in enabled:
         if conn.get("id") in searched_ids:
             continue

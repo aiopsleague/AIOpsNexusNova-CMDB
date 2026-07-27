@@ -56,6 +56,12 @@
         <template slot="var_mapping" slot-scope="text, record">
           {{ (record.var_mapping || []).map((vm) => `${vm.grafana_var}←${vm.value || '-'}`).join(', ') || '-' }}
         </template>
+        <template slot="filter_rules" slot-scope="text, record">
+          <span v-if="record.filter_rules && record.filter_rules.rules && record.filter_rules.rules.length">
+            {{ record.filter_rules.rules.map((r) => `${r.field} ${r.operator} ${Array.isArray(r.value) ? '(' + r.value.join(',') + ')' : r.value}`).join(' ' + (record.filter_rules.logic || 'and') + ' ') }}
+          </span>
+          <span v-else>-</span>
+        </template>
         <template slot="enable" slot-scope="text, record">
           <a-switch :checked="record.enable !== 0" @change="(checked) => handleMappingToggleEnable(record, checked)" />
         </template>
@@ -135,6 +141,75 @@
         </a-form-model-item>
         <a-form-model-item :label="$t('cs.grafana.dashboardTitle')" prop="dashboard_title">
           <a-input v-model="mappingForm.dashboard_title" read-only />
+        </a-form-model-item>
+        <a-form-model-item :label="$t('cs.grafana.filterRules')">
+          <a-collapse :bordered="false" :activeKey="filterRulesActiveKey">
+            <a-collapse-panel key="filter_rules_panel" :showArrow="true">
+              <template slot="header">
+                <span style="font-size: 13px; color: rgba(0,0,0,0.65)">
+                  {{ filterRulesList.length ? $t('cs.grafana.filterSummary', { count: filterRulesList.length }) : $t('cs.grafana.filterRulesOptional') }}
+                </span>
+              </template>
+              <div v-if="filterRulesList.length" style="margin-bottom: 8px;">
+                <span style="font-size: 12px; color: rgba(0,0,0,0.65); margin-right: 8px;">{{ $t('cs.grafana.filterLogic') }}:</span>
+                <a-radio-group v-model="filterRulesLogic" size="small" buttonStyle="solid">
+                  <a-radio-button value="and">{{ $t('cs.grafana.filterLogicAnd') }}</a-radio-button>
+                  <a-radio-button value="or">{{ $t('cs.grafana.filterLogicOr') }}</a-radio-button>
+                </a-radio-group>
+              </div>
+              <div
+                v-for="(rule, index) in filterRulesList"
+                :key="index"
+                style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;"
+              >
+                <a-select
+                  v-model="rule.field"
+                  show-search
+                  option-filter-prop="children"
+                  :placeholder="$t('cs.grafana.filterField')"
+                  style="flex: 2;"
+                  size="small"
+                >
+                  <a-select-option v-for="a in ciAttrOptions" :key="a.name" :value="a.name">
+                    {{ a.alias || a.name }}({{ a.name }})
+                  </a-select-option>
+                </a-select>
+                <a-select
+                  v-model="rule.operator"
+                  style="flex: 1; min-width: 100px;"
+                  size="small"
+                >
+                  <a-select-option v-for="op in filterRuleOperators" :key="op.value" :value="op.value">
+                    {{ op.label }}
+                  </a-select-option>
+                </a-select>
+                <a-select
+                  v-if="rule.operator === 'in' || rule.operator === 'not_in'"
+                  v-model="rule.value"
+                  mode="tags"
+                  :placeholder="$t('cs.grafana.filterValue')"
+                  style="flex: 3; min-width: 140px;"
+                  size="small"
+                  :openOnFocus="false"
+                />
+                <a-input
+                  v-else
+                  v-model="rule.value"
+                  :placeholder="$t('cs.grafana.filterValue')"
+                  style="flex: 3; min-width: 100px;"
+                  size="small"
+                />
+                <a-icon
+                  type="minus-circle"
+                  style="cursor: pointer; color: #f5222d; font-size: 14px; flex-shrink: 0;"
+                  @click="removeFilterRule(index)"
+                />
+              </div>
+              <a-button type="dashed" size="small" icon="plus" @click="addFilterRule">
+                {{ $t('cs.grafana.filterAddCondition') }}
+              </a-button>
+            </a-collapse-panel>
+          </a-collapse>
         </a-form-model-item>
         <a-form-model-item :label="$t('cs.grafana.varMapping')">
           <a-table
@@ -238,6 +313,9 @@ export default {
       connectionForm: { id: null, name: '', url: '', api_key: '', remark: '', enable: 1 },
       mappingForm: { id: null, ci_type_id: undefined, connection_id: undefined, namespace: 'default', dashboard_name: '', dashboard_title: '', var_mapping: [], enable: 1 },
       varMappingKeyCounter: 0,
+      filterRulesLogic: 'and',
+      filterRulesList: [],
+      filterRulesActiveKey: '',
       healthMap: {},
       dashboards: [],
       variableOptions: [],
@@ -256,6 +334,7 @@ export default {
         { title: this.$t('cs.grafana.namespace'), dataIndex: 'namespace', width: 100 },
         { title: this.$t('cs.grafana.dashboardTitle'), dataIndex: 'dashboard_title' },
         { title: this.$t('cs.grafana.dashboardName'), dataIndex: 'dashboard_name' },
+        { title: this.$t('cs.grafana.filterRules'), scopedSlots: { customRender: 'filter_rules' }, width: 200 },
         { title: this.$t('cs.grafana.mappingEnable'), scopedSlots: { customRender: 'enable' }, width: 80 },
         { title: this.$t('cs.grafana.varMapping'), scopedSlots: { customRender: 'var_mapping' } },
         { title: this.$t('cs.grafana.operation'), scopedSlots: { customRender: 'action' }, width: 160 },
@@ -287,6 +366,16 @@ export default {
     },
     dashboardOptions() {
       return this.dashboards.map((d) => ({ value: d.name, text: `${d.title} (${d.name})` }))
+    },
+    filterRuleOperators() {
+      return [
+        { value: 'equal', label: this.$t('cs.grafana.op_equal') },
+        { value: 'not_equal', label: this.$t('cs.grafana.op_not_equal') },
+        { value: 'contains', label: this.$t('cs.grafana.op_contains') },
+        { value: 'not_contains', label: this.$t('cs.grafana.op_not_contains') },
+        { value: 'in', label: this.$t('cs.grafana.op_in') },
+        { value: 'not_in', label: this.$t('cs.grafana.op_not_in') },
+      ]
     },
   },
   mounted() {
@@ -355,8 +444,27 @@ export default {
           enable: record.enable === undefined ? 1 : record.enable,
           var_mapping: mapped,
         }
+        const fr = record.filter_rules
+        if (fr && fr.rules && fr.rules.length) {
+          this.filterRulesLogic = fr.logic || 'and'
+          this.filterRulesList = fr.rules.map((r) => ({
+            field: r.field || '',
+            operator: r.operator || 'equal',
+            value: r.operator === 'in' || r.operator === 'not_in'
+              ? (Array.isArray(r.value) ? [...r.value] : (r.value ? [r.value] : []))
+              : (Array.isArray(r.value) ? r.value.join(',') : (r.value || '')),
+          }))
+          this.filterRulesActiveKey = 'filter_rules_panel'
+        } else {
+          this.filterRulesLogic = 'and'
+          this.filterRulesList = []
+          this.filterRulesActiveKey = ''
+        }
       } else {
         this.varMappingKeyCounter = 0
+        this.filterRulesLogic = 'and'
+        this.filterRulesList = []
+        this.filterRulesActiveKey = ''
         this.mappingForm = { id: null, ci_type_id: undefined, connection_id: undefined, namespace: 'default', dashboard_name: '', dashboard_title: '', var_mapping: [], enable: 1 }
       }
       this.mappingModalVisible = true
@@ -428,6 +536,16 @@ export default {
         record.value = ''
       }
     },
+    addFilterRule() {
+      this.filterRulesList.push({ field: undefined, operator: 'equal', value: '' })
+      this.filterRulesActiveKey = 'filter_rules_panel'
+    },
+    removeFilterRule(index) {
+      this.filterRulesList.splice(index, 1)
+      if (!this.filterRulesList.length) {
+        this.filterRulesActiveKey = ''
+      }
+    },
     handleSaveConnection() {
       this.$refs.connectionForm.validate(async (valid) => {
         if (!valid) return
@@ -471,6 +589,19 @@ export default {
         this.saving = true
         try {
           const { id, ...data } = this.mappingForm
+          // Build filter_rules from the form state
+          if (this.filterRulesList.length) {
+            data.filter_rules = {
+              logic: this.filterRulesLogic,
+              rules: this.filterRulesList.map((r) => ({
+                field: r.field,
+                operator: r.operator,
+                value: r.value,
+              })),
+            }
+          } else {
+            data.filter_rules = null
+          }
           if (id) {
             await putGrafanaMapping(id, data)
           } else {
