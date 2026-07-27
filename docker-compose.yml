@@ -1,31 +1,104 @@
-services:
+# =============================================================================
+# CMDB — Production Docker Compose
+# =============================================================================
+# 与 docker-compose-dev.yml 共用数据卷，两套不能同时运行。
+#
+# 快速开始:
+#   1. cp .env.example .env && vim .env          # 修改密码和密钥
+#   2. docker compose up -d                       # 启动所有服务
+#   3. docker compose logs -f cmdb-api            # 观察 API 初始化日志
+#   4. 浏览器打开 http://<host>:${NGINX_PORT:-80}
+#
+# 管理:
+#   docker compose down                           # 停止（保留数据）
+#   docker compose down -v                        # 停止并删除数据卷
+#   docker compose restart cmdb-api               # 重启 API
+#   docker compose exec cmdb-api python cli.py --help  # 管理命令
+#
+# 架构:
+#   nginx (:80) → Vue SPA (静态文件)
+#               → /api → FastAPI (:5000, 内部)
+#   FastAPI     → MySQL (:3306, 内部)
+#               → Redis (:6379, 内部)
+#   Celery Worker + Beat → Redis (broker/result)
+# =============================================================================
+# ---- Reusable anchors -------------------------------------------------------
+x-common-env: &common-env
+  TZ: Asia/Shanghai
+  SECRET_KEY: "${SECRET_KEY:?SECRET_KEY is required}"
+  MYSQL_HOST: mysql
+  MYSQL_PORT: 3306
+  MYSQL_USER: "${MYSQL_USER:-cmdb}"
+  MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}"
+  MYSQL_PASSWORD: "${MYSQL_PASSWORD:?MYSQL_PASSWORD is required}"
+  MYSQL_DATABASE: "${MYSQL_DATABASE:-cmdb}"
+  CACHE_REDIS_HOST: redis
+  CACHE_REDIS_PORT: 6379
+  CELERY_BROKER_URL: redis://redis:6379/2
+  CELERY_RESULT_BACKEND: redis://redis:6379/2
+
+x-api-build: &api-build
+  context: .
+  dockerfile: docker/Dockerfile-API-Dev
+
+x-healthy-deps: &healthy-deps
   cmdb-db:
-    image: registry.cn-hangzhou.aliyuncs.com/veops/cmdb-db:2.5
+    condition: service_healthy
+  cmdb-cache:
+    condition: service_healthy
+
+# ---- Services ---------------------------------------------------------------
+services:
+
+  # ===== MySQL 8.0 ===========================================================
+  cmdb-db:
+    image: mysql:8.0.42
     container_name: cmdb-db
-    env_file:
-      - .env
+    restart: unless-stopped
     environment:
       TZ: Asia/Shanghai
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}"
+      MYSQL_DATABASE: "${MYSQL_DATABASE:-cmdb}"
+      MYSQL_USER: "${MYSQL_USER:-cmdb}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
     volumes:
       - db-data:/var/lib/mysql
-      - ./docs/mysqld.cnf:/etc/mysql/conf.d/mysqld.cnf
-      - ./docs/cmdb.sql:/docker-entrypoint-initdb.d/cmdb.sql
+      - ./docs/mysqld.cnf:/etc/mysql/conf.d/mysqld.cnf:ro
+      - ./docs/cmdb.sql:/docker-entrypoint-initdb.d/cmdb.sql:ro
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-p$MYSQL_ROOT_PASSWORD"]
+      test:
+        - CMD
+        - mysqladmin
+        - ping
+        - -h
+        - localhost
+        - -p$$MYSQL_ROOT_PASSWORD
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 12
+      start_period: 60s
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     networks:
-      new:
+      cmdb-network:
         aliases:
           - mysql
-    ports:
-      - '23306:3306'
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    logging:
+      driver: json-file
+      options:
+        max-size: 50m
+        max-file: "3"
 
+  # ===== Redis 6.2 ===========================================================
   cmdb-cache:
-    image: registry.cn-hangzhou.aliyuncs.com/veops/cmdb-cache:2.5
+    image: redis:6.2
     container_name: cmdb-cache
+    restart: unless-stopped
     environment:
       TZ: Asia/Shanghai
     volumes:
@@ -35,79 +108,147 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 20s
     networks:
-      new:
+      cmdb-network:
         aliases:
           - redis
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    logging:
+      driver: json-file
+      options:
+        max-size: 30m
+        max-file: "3"
 
+  # ===== FastAPI (Backend) ===================================================
   cmdb-api:
-    image: registry.cn-hangzhou.aliyuncs.com/veops/cmdb-api:2.6.1
+    build: *api-build
     container_name: cmdb-api
-    env_file:
-      - .env
-    environment:
-      TZ: Asia/Shanghai
-      WAIT_HOSTS: cmdb-db:3306, cmdb-cache:6379
-      SYSTEM_DEFAULT_LANGUAGE:  # en-US, zh-CN
-    depends_on:
-      cmdb-db:
-        condition: service_healthy
-      cmdb-cache:
-        condition: service_healthy
+    restart: unless-stopped
+    environment: *common-env
+    depends_on: *healthy-deps
+    networks:
+      - cmdb-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    logging:
+      driver: json-file
+      options:
+        max-size: 50m
+        max-file: "5"
     command:
       - /bin/sh
       - -c
       - |
-        sed -i "s#USE_ACL = False#USE_ACL = True#g" settings.py
-        /wait
-        flask db-setup
-        flask common-check-new-columns
-        gunicorn --workers=4 autoapp:app -b 0.0.0.0:5000 -D
-        
-        celery -A celery_worker.celery worker -E -Q one_cmdb_async --autoscale=4,1 --logfile=one_cmdb_async.log -D
-        celery -A celery_worker.celery worker -E -Q acl_async --logfile=one_acl_async.log --autoscale=4,1 -D
-        
-        nohup flask cmdb-trigger > trigger.log 2>&1 &
-        flask cmdb-init-cache
-        flask cmdb-init-acl
-        flask init-import-user-from-acl
-        flask init-department
-        nohup flask cmdb-patch -v 2.4.17 &
+        echo "=== CMDB API — Running init commands ==="
+        python cli.py db-setup
+        python cli.py common-check-new-columns
+        python cli.py cmdb-init-cache
+        python cli.py cmdb-init-acl
+        python cli.py init-import-user-from-acl
+        python cli.py init-department
+        echo "=== Starting uvicorn on :5000 ==="
+        exec uvicorn main:app \
+          --host 0.0.0.0 \
+          --port 5000 \
+          --proxy-headers \
+          --forwarded-allow-ips='*' \
+          --no-access-log
 
-        celery -A celery_worker.celery worker --beat -E -Q beat_tasks --loglevel=info --autoscale=3,1 --max-tasks-per-child=10 > counter.log 2>&1
+  # ===== Celery Worker =======================================================
+  cmdb-worker:
+    build: *api-build
+    container_name: cmdb-worker
+    restart: unless-stopped
+    environment: *common-env
+    depends_on: *healthy-deps
     networks:
-      new:
-        aliases:
-          - cmdb-api
-    healthcheck:
-      timeout: 3s
-      interval: 5s
-      retries: 10
-      test: "ps aux|grep -v grep|grep -v '1 root'|grep gunicorn || exit 1"
+      - cmdb-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    logging:
+      driver: json-file
+      options:
+        max-size: 50m
+        max-file: "5"
+    command: >
+      celery -A celery_worker.celery worker
+      -E
+      -Q one_cmdb_async,acl_async
+      --loglevel=warning
+      --concurrency=4
 
+  # ===== Celery Beat (定时调度) ==============================================
+  cmdb-beat:
+    build: *api-build
+    container_name: cmdb-beat
+    restart: unless-stopped
+    environment: *common-env
+    depends_on: *healthy-deps
+    networks:
+      - cmdb-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 64M
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    command: >
+      celery -A celery_worker.celery beat
+      --loglevel=warning
+
+  # ===== Nginx + Vue SPA (Frontend) ==========================================
   cmdb-ui:
-    image: registry.cn-hangzhou.aliyuncs.com/veops/cmdb-ui:2.6.1
+    build:
+      context: .
+      dockerfile: docker/Dockerfile-UI
     container_name: cmdb-ui
-    depends_on:
-      cmdb-api:
-        condition: service_healthy
-    environment:
-      TZ: Asia/Shanghai
-      CMDB_API_HOST: cmdb-api:5000
-      NGINX_PORT: 80
+    restart: unless-stopped
     volumes:
-      - ./docs/nginx.cmdb.conf.example:/etc/nginx/conf.d/nginx.cmdb.conf.example
-    command:
-      - /bin/sh
-      - -c
-      - |
-        envsubst '$$CMDB_API_HOST  $$NGINX_PORT' < /etc/nginx/conf.d/nginx.cmdb.conf.example > /etc/nginx/conf.d/cmdb.conf
-        nginx -g  'daemon off;'
-    networks:
-      - new
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     ports:
-      - "8000:80"
+      - "${NGINX_PORT:-80}:80"
+    depends_on:
+      - cmdb-api
+    networks:
+      - cmdb-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 64M
+    logging:
+      driver: json-file
+      options:
+        max-size: 30m
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
 
+# ---- Named Volumes ----------------------------------------------------------
 volumes:
   db-data:
     driver: local
@@ -116,7 +257,8 @@ volumes:
     driver: local
     name: cmdb_cache-data
 
+# ---- Network ----------------------------------------------------------------
 networks:
-  new:
+  cmdb-network:
     driver: bridge
     name: cmdb_network
