@@ -60,6 +60,14 @@ export function getCIGrafana(ciId) {
   })
 }
 
+//  检查CI类型是否有监控配置
+export function checkCITypeMonitoring(ciTypeId) {
+  return axios({
+    url: urlPrefix + `/ci_type/${ciTypeId}/monitoring/check`,
+    method: 'GET'
+  })
+}
+
 //  获取移动端CI详情
 export function getCIMobileDetail(ciId) {
   return axios({

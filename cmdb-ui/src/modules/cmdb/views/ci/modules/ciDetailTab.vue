@@ -196,10 +196,10 @@
           <RelatedItsm ref="relatedITSM" />
         </div>
       </a-tab-pane>
-      <a-tab-pane key="tab_6">
-        <span slot="tab"><a-icon type="dashboard" />{{ $t('cmdb.ci.grafana') }}</span>
+      <a-tab-pane key="tab_6" v-if="hasMonitoring">
+        <span slot="tab"><a-icon type="dashboard" />{{ $t('cmdb.ci.monitoring') }}</span>
         <div :style="{ padding: '24px', height: '100%' }">
-          <CiDetailGrafana v-if="ciId" :key="ciId" :ciId="ciId" />
+          <CiDetailMonitoring v-if="ciId" :key="ciId" :ciId="ciId" :toolType="monitoringToolType" />
         </div>
       </a-tab-pane>
     </a-tabs>
@@ -221,7 +221,7 @@ import _ from 'lodash'
 import { getCITypeGroupById, getCITypes } from '@/modules/cmdb/api/CIType'
 import { getCITypeAttributesById } from '@/modules/cmdb/api/CITypeAttr'
 import { getCIHistory } from '@/modules/cmdb/api/history'
-import { getCIById, searchCI } from '@/modules/cmdb/api/ci'
+import { checkCITypeMonitoring, getCIById, searchCI } from '@/modules/cmdb/api/ci'
 
 import RelationMixin from './ciDetailMixin/relationMixin.js'
 
@@ -235,7 +235,7 @@ import RelatedItsm from './ciDetailRelatedItsm.vue'
 import CIRollbackForm from './ciRollbackForm.vue'
 import OperateTypeTag from '../../operation_history/components/OperateTypeTag.vue'
 import QRCodeButton from '@/modules/cmdb/components/QRCodeButton/index.vue'
-import CiDetailGrafana from './ciDetailGrafana.vue'
+import CiDetailMonitoring from './ciDetailMonitoring.vue'
 
 export default {
   name: 'CiDetailTab',
@@ -251,7 +251,7 @@ export default {
     CIRelationTable,
     OperateTypeTag,
     QRCodeButton,
-    CiDetailGrafana
+    CiDetailMonitoring
   },
   props: {
     typeId: {
@@ -281,6 +281,8 @@ export default {
       localAttrList: [],
       localAttributes: {},
       tableHeight: this.attributeHistoryTableHeight || (this.$store.state.windowHeight - 130),
+      hasMonitoring: false,
+      monitoringToolType: 'grafana',
       initQueryLoading: true,
       ciHistoryStatsList: [
         {
@@ -361,6 +363,7 @@ export default {
       if (this.hasPermission) {
         this.getAttributes(effectiveTypeId)
         this.loadAttrList(effectiveTypeId)
+        this.checkMonitoring(effectiveTypeId)
         this.getCIHistory()
         const ciTypeRes = await getCITypes()
         this.ci_types = ciTypeRes.ci_types
@@ -467,6 +470,16 @@ export default {
             this.hasPermission = false
           }
         })
+    },
+
+    async checkMonitoring(typeIdOverride) {
+      const typeId = typeIdOverride || this.typeId
+      try {
+        const res = await checkCITypeMonitoring(typeId)
+        this.hasMonitoring = res.has_monitoring || false
+      } catch (e) {
+        this.hasMonitoring = false
+      }
     },
 
     getCIHistory() {

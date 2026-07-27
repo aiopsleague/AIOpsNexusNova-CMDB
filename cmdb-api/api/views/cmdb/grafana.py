@@ -10,6 +10,7 @@ from api.core.context import current_app
 from api.core.context import request
 from api.core.errors import abort
 
+from api.lib.cmdb.grafana import check_ci_type_monitoring
 from api.lib.cmdb.grafana import resolve_ci_grafana
 from api.lib.common_setting.grafana import GrafanaConfigCRUD
 from api.lib.common_setting.grafana_client import rewrite_dashboard_html
@@ -22,6 +23,12 @@ PROXY_TIMEOUT = 30
 # headers that must not be forwarded back to the browser as-is
 _HOP_BY_HOP = {"connection", "keep-alive", "transfer-encoding", "content-encoding",
                "content-length", "te", "trailer", "upgrade"}
+
+
+@router.get("/ci_type/{ci_type_id:int}/monitoring/check")
+def ci_type_monitoring_check(ci_type_id: int):
+    """Check whether a CI type has any monitoring dashboard mapping configured."""
+    return check_ci_type_monitoring(ci_type_id)
 
 
 @router.get("/ci/{ci_id:int}/grafana")
