@@ -3,9 +3,9 @@
 # CMDB — Docker 镜像构建脚本
 # =============================================================================
 # 用法:
-#   ./docker/build.sh              # 构建 cmdb-api:latest 和 cmdb-ui:latest
-#   ./docker/build.sh --push       # 构建并推送到 REGISTRY
-#   REGISTRY=my-registry.com/cmdb ./docker/build.sh --push
+#   ./build.sh              # 构建 cmdb-api:latest 和 cmdb-ui:latest
+#   ./build.sh --push       # 构建并推送到 REGISTRY
+#   REGISTRY=my-registry.com/cmdb ./build.sh --push
 #
 # 环境变量:
 #   REGISTRY        镜像仓库前缀，如 registry.cn-hangzhou.aliyuncs.com/veops
@@ -17,7 +17,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+PROJECT_DIR="$SCRIPT_DIR"
 
 PUSH=false
 case "${1:-}" in
@@ -40,7 +40,7 @@ echo ">>> Building API image: $API_IMAGE"
 docker build \
   -f docker/Dockerfile-API \
   -t "$API_IMAGE" \
-  $BUILD_ARGS \
+  ${BUILD_ARGS:-} \
   .
 
 # ---- 构建 UI 镜像 -------------------------------------------------------------
@@ -49,7 +49,7 @@ echo ">>> Building UI image: $UI_IMAGE"
 docker build \
   -f docker/Dockerfile-UI \
   -t "$UI_IMAGE" \
-  $BUILD_ARGS \
+  ${BUILD_ARGS:-} \
   .
 
 echo ">>> Build complete"

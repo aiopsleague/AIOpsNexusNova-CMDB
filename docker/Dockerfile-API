@@ -1,7 +1,7 @@
 # ================================= API ================================
-FROM python:3.11-alpine AS cmdb-api
+FROM python:3.13-alpine AS cmdb-api
 
-LABEL description="Python3.11,cmdb"
+LABEL description="Python3.13,cmdb"
 
 COPY cmdb-api /data/apps/cmdb
 
@@ -13,13 +13,16 @@ RUN apk add --no-cache tzdata gcc musl-dev libffi-dev openldap-dev python3-dev j
 
 ENV TZ=Asia/Shanghai
 
-RUN pip install  --no-cache-dir -r requirements.txt \
-    && cp ./settings.example.py settings.py \
-    && sed -i "s#{user}:{password}@127.0.0.1:3306/{db}#cmdb:123456@mysql:3306/cmdb#g" settings.py \
-    && sed -i "s#redis://127.0.0.1#redis://redis#g" settings.py \
-    && sed -i "s#CACHE_REDIS_HOST = '127.0.0.1'#CACHE_REDIS_HOST = 'redis'#g" settings.py
+RUN pip install --no-cache-dir -i https://mirrors.aliyun.com/pypi/simple uv \
+    && mkdir -p /root/.config/uv \
+    && echo '[[index]]' > /root/.config/uv/uv.toml \
+    && echo 'url = "https://mirrors.aliyun.com/pypi/simple/"' >> /root/.config/uv/uv.toml \
+    && uv sync --no-dev \
+    && uv cache clean
 
-ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.7.3/wait /wait
+ADD docker/wait /wait
 RUN chmod +x /wait
+
+ENV PATH="/data/apps/cmdb/.venv/bin:$PATH"
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000"]

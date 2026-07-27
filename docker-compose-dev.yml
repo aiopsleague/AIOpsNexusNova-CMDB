@@ -60,11 +60,11 @@ services:
   cmdb-api:
     build:
       context: .
-      dockerfile: docker/Dockerfile-API-Dev
+      dockerfile: docker/Dockerfile-API
       pull: false
     container_name: cmdb-api
     environment:
-      TZ: UTC
+      TZ: Asia/Shanghai
       SECRET_KEY: dev-secret-key
       MYSQL_HOST: mysql
       MYSQL_PORT: 3306
@@ -99,11 +99,11 @@ services:
   cmdb-worker:
     build:
       context: .
-      dockerfile: docker/Dockerfile-API-Dev
+      dockerfile: docker/Dockerfile-API
       pull: false
     container_name: cmdb-worker
     environment:
-      TZ: UTC
+      TZ: Asia/Shanghai
       SECRET_KEY: dev-secret-key
       MYSQL_HOST: mysql
       MYSQL_PORT: 3306
@@ -128,6 +128,7 @@ services:
     container_name: cmdb-ui
     working_dir: /data/apps/cmdb-ui
     environment:
+      TZ: Asia/Shanghai
       # vue.config.js 里 devServer proxy 的 target，容器内指向 cmdb-api 服务
       DEV_API_TARGET: http://cmdb-api:5000
     volumes:
