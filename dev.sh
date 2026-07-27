@@ -2,7 +2,7 @@
 # dev.sh — 本地开发环境一键启停
 #
 # 依赖（MySQL/Redis）用 docker 在本地跑，后端和前端直接在宿主机跑。
-# 后端默认是新版 FastAPI（cmdb-api-fastapi），也支持旧版 Flask（cmdb-api）。
+# 后端默认是新版 FastAPI（cmdb-api），也支持旧版 Flask（cmdb-api）。
 #
 # 用法：
 #   ./dev.sh start                      # 启动全部服务：db + fastapi + worker + ui
@@ -131,7 +131,7 @@ db_stop() {
 }
 
 # ---------- 后端 ----------
-FASTAPI_DIR="$ROOT/cmdb-api-fastapi"
+FASTAPI_DIR="$ROOT/cmdb-api"
 FLASK_DIR="$ROOT/cmdb-api"
 
 detect_flask() {  # 检测旧版后端的运行方式，结果写入全局数组 FLASK_RUN
@@ -207,16 +207,39 @@ run_init() {
 }
 
 
+# ---------- Node.js（nvm）----------
+# 项目默认使用 Node 16.x，通过 nvm 管理版本
+setup_node() {
+    local nvm_dir="${NVM_DIR:-$HOME/.nvm}"
+    if [[ ! -s "$nvm_dir/nvm.sh" ]]; then
+        c_red "未找到 nvm，请先安装：curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash"
+        return 1
+    fi
+    # 加载 nvm（nvm.sh 兼容 set -u，但不能直接 source，需要先让 bash 忽略未绑定变量）
+    set +u
+    source "$nvm_dir/nvm.sh"
+    set -u
+    # 切换到项目所需版本（不存在则自动安装）
+    local node_version="${NODE_VERSION:-16}"
+    if ! nvm use "$node_version" >/dev/null 2>&1; then
+        c_yellow "Node $node_version 未安装，nvm 自动安装中..."
+        nvm install "$node_version" || { c_red "Node $node_version 安装失败"; return 1; }
+        nvm use "$node_version" || { c_red "nvm use $node_version 失败"; return 1; }
+    fi
+    node_bin="$(dirname "$(command -v node)")"
+    c_green "Node $(node -v)（nvm，$node_version.x）就绪"
+}
+
 ui_start() {
-    local dir="$ROOT/cmdb-ui" 
-    
+    local dir="$ROOT/cmdb-ui"
+
+    setup_node || return 1
+
     if [[ ! -d "$dir/node_modules" ]]; then
         c_yellow "首次运行，安装前端依赖（需要几分钟）..."
-        # cd "$dir" && PATH="$node_bin:$PATH" yarn install --ignore-engines --network-timeout 1000000
+        cd "$dir" && PATH="$node_bin:$PATH" yarn install --ignore-engines --network-timeout 1000000
     fi
-    # yarn run 会校验 engines（要求 node 16），直接调 vue-cli-service 绕开
-    # start_proc ui "$dir" env PATH="$node_bin:$PATH" ./node_modules/.bin/vue-cli-service serve
-    start_proc ui "$dir" env yarn run serve
+    start_proc ui "$dir" env PATH="$node_bin:$PATH" yarn run serve
     wait_http "http://127.0.0.1:$UI_PORT/" "前端" 240
 }
 
