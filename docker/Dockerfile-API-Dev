@@ -1,7 +1,9 @@
 # ================================= API (FastAPI, dev) ================================
 # 构建上下文为项目根目录：
-#   docker build -f docker/Dockerfile-API-fastapi.dev .
-FROM docker.m.daocloud.io/library/python:3.11
+#   docker build -f docker/Dockerfile-API-Dev .
+# docker.m.daocloud.io/library/python:3.11
+
+FROM python:3.11
 
 LABEL description="Python3.11, cmdb-api FastAPI dev"
 
@@ -12,12 +14,12 @@ RUN apt-get update \
 
 WORKDIR /data/apps/cmdb
 
-COPY cmdb-api-fastapi/Pipfile ./
+COPY cmdb-api/Pipfile ./
 
 RUN pip install --no-cache-dir pipenv -i https://mirrors.aliyun.com/pypi/simple/ \
     && pipenv install --system --skip-lock
 
-COPY cmdb-api-fastapi .
+COPY cmdb-api .
 
 # 容器内必须 UTC：否则 JWT iat 会落在未来，Access-Token 全部失效
 ENV TZ=UTC
