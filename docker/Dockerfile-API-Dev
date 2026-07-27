@@ -1,7 +1,9 @@
 # ================================= API (FastAPI, dev) ================================
 # 构建上下文为项目根目录：
-#   docker build -f docker/Dockerfile-API-fastapi.dev .
-FROM docker.m.daocloud.io/library/python:3.11
+#   docker build -f docker/Dockerfile-API-Dev .
+# docker.m.daocloud.io/library/python:3.11
+
+FROM python:3.11
 
 LABEL description="Python3.11, cmdb-api FastAPI dev"
 

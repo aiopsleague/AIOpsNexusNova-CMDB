@@ -122,7 +122,7 @@ services:
     command: celery -A celery_worker.celery worker --beat -E -Q one_cmdb_async,acl_async,beat_tasks --loglevel=info
 
   cmdb-ui:
-    image: docker.m.daocloud.io/library/node:16.20
+    image: node:16.20
     container_name: cmdb-dev-ui
     working_dir: /data/apps/cmdb-ui
     environment:
