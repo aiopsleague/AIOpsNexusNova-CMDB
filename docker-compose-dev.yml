@@ -94,7 +94,7 @@ services:
         python cli.py cmdb-init-acl
         python cli.py init-import-user-from-acl
         python cli.py init-department
-        exec uvicorn main:app --host 0.0.0.0 --port 5000 --reload
+        uv run uvicorn main:app --host 0.0.0.0 --port 5000 --reload
 
   cmdb-worker:
     build:
@@ -121,7 +121,7 @@ services:
     networks:
       - cmdb-network
     # 开发环境合跑：三个队列 + beat 定时调度都在一个进程里
-    command: celery -A celery_worker.celery worker --beat -E -Q one_cmdb_async,acl_async,beat_tasks --loglevel=info
+    command: uv run celery -A celery_worker.celery worker --beat -E -Q one_cmdb_async,acl_async,beat_tasks --loglevel=info
 
   cmdb-ui:
     image: node:16.20
