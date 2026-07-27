@@ -31,10 +31,43 @@ def file_extension_allow_view_get():
     return extensions
 
 
+def _get_mimetype_from_filename(filename: str) -> str:
+    """根据文件扩展名检测 MIME 类型"""
+    if not filename or "." not in filename:
+        return "application/octet-stream"
+    ext = filename.rsplit(".", 1)[-1].lower()
+    ext_to_mime = {
+        "svg": "image/svg+xml",
+        "png": "image/png",
+        "jpg": "image/jpeg",
+        "jpeg": "image/jpeg",
+        "gif": "image/gif",
+        "webp": "image/webp",
+        "bmp": "image/bmp",
+        "ico": "image/vnd.microsoft.icon",
+        "tif": "image/tiff",
+        "tiff": "image/tiff",
+        "pdf": "application/pdf",
+        "txt": "text/plain",
+        "csv": "text/csv",
+        "json": "application/json",
+        "xls": "application/vnd.ms-excel",
+        "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "doc": "application/msword",
+        "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "ppt": "application/vnd.ms-powerpoint",
+        "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "zip": "application/zip",
+        "7z": "application/x-7z-compressed",
+    }
+    return ext_to_mime.get(ext, "application/octet-stream")
+
+
 @router.get(f'{prefix}/{{_filename}}')
 def get_file_view_get(_filename: str = None):
     file_stream = CommonFileCRUD.get_file(_filename)
-    return send_file(file_stream, as_attachment=True, download_name=_filename)
+    mimetype = _get_mimetype_from_filename(_filename)
+    return send_file(file_stream, as_attachment=False, download_name=_filename, mimetype=mimetype)
 
 
 @router.post(f'{prefix}')
