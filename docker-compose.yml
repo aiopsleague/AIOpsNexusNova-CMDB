@@ -137,7 +137,12 @@ services:
     networks:
       - cmdb-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      # test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/health')"
       interval: 15s
       timeout: 5s
       retries: 5
@@ -158,11 +163,17 @@ services:
       - -c
       - |
         echo "=== CMDB API — Running init commands ==="
+        echo "=== Running database migrations ==="
         python cli.py db-setup
+        echo "=== Running initial data setup ==="
         python cli.py common-check-new-columns
+        echo "=== Running cache initialization ==="
         python cli.py cmdb-init-cache
-        python cli.py cmdb-init-acl
-        python cli.py init-import-user-from-acl
+        echo "=== Running ACL initialization ==="
+        python cli.py cmdb-init-acl || true
+        echo "=== Running user import from ACL ==="
+        python cli.py init-import-user-from-acl || true
+        echo "=== Running department initialization ==="
         python cli.py init-department
         echo "=== Starting uvicorn on :5000 ==="
         exec uvicorn main:app \
