@@ -83,4 +83,4 @@ cmdb-ui/package-lock.json
 .dev/
 
 
-cmdb-api-fastapi/celerybeat-schedule*
+cmdb-api/celerybeat-schedule*
