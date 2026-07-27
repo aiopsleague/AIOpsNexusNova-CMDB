@@ -9,6 +9,7 @@ const cs_zh = {
     dingding: '钉钉',
     feishu: '飞书',
     auth: '认证设置',
+    observability: '可观测设置',
     grafana: 'Grafana设置',
     authority: '权限管理',
     sys: '系统角色',

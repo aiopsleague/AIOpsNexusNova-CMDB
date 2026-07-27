@@ -9,6 +9,7 @@ const cs_en = {
     dingding: 'DingTalk',
     feishu: 'Feishu',
     auth: 'Auth Settings',
+    observability: 'Observability',
     grafana: 'Grafana',
     authority: 'Authority Management',
     sys: 'System Role',
