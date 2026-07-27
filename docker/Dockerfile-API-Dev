@@ -14,12 +14,12 @@ RUN apt-get update \
 
 WORKDIR /data/apps/cmdb
 
-COPY cmdb-api-fastapi/Pipfile ./
+COPY cmdb-api/Pipfile ./
 
 RUN pip install --no-cache-dir pipenv -i https://mirrors.aliyun.com/pypi/simple/ \
     && pipenv install --system --skip-lock
 
-COPY cmdb-api-fastapi .
+COPY cmdb-api .
 
 # 容器内必须 UTC：否则 JWT iat 会落在未来，Access-Token 全部失效
 ENV TZ=UTC

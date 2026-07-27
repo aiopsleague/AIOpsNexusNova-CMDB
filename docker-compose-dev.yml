@@ -61,6 +61,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile-API-Dev
+      pull: false
     container_name: cmdb-dev-api
     environment:
       TZ: UTC
@@ -99,6 +100,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile-API-Dev
+      pull: false
     container_name: cmdb-dev-worker
     environment:
       TZ: UTC
