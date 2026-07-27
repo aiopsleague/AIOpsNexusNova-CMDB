@@ -13,7 +13,7 @@
 #   cmdb-api 会等数据库 healthy 后再启动。
 services:
   cmdb-db:
-    image: registry.cn-hangzhou.aliyuncs.com/veops/cmdb-db:2.5
+    image: mysql:8.0.42
     container_name: cmdb-dev-db
     environment:
       TZ: Asia/Shanghai
@@ -39,7 +39,7 @@ services:
       - '23306:3306'
 
   cmdb-cache:
-    image: registry.cn-hangzhou.aliyuncs.com/veops/cmdb-cache:2.5
+    image: redis:6.2
     container_name: cmdb-dev-cache
     environment:
       TZ: Asia/Shanghai
@@ -60,7 +60,7 @@ services:
   cmdb-api:
     build:
       context: .
-      dockerfile: docker/Dockerfile-API-fastapi.dev
+      dockerfile: docker/Dockerfile-API-Dev
     container_name: cmdb-dev-api
     environment:
       TZ: UTC
@@ -73,7 +73,7 @@ services:
       CELERY_RESULT_BACKEND: redis://redis:6379/2
     volumes:
       # 源码挂载：改代码后 uvicorn --reload 自动重载
-      - ./cmdb-api-fastapi:/data/apps/cmdb
+      - ./cmdb-api:/data/apps/cmdb
     ports:
       - '5000:5000'
     depends_on:
@@ -98,7 +98,7 @@ services:
   cmdb-worker:
     build:
       context: .
-      dockerfile: docker/Dockerfile-API-fastapi.dev
+      dockerfile: docker/Dockerfile-API-Dev
     container_name: cmdb-dev-worker
     environment:
       TZ: UTC
@@ -110,7 +110,7 @@ services:
       CELERY_BROKER_URL: redis://redis:6379/2
       CELERY_RESULT_BACKEND: redis://redis:6379/2
     volumes:
-      - ./cmdb-api-fastapi:/data/apps/cmdb
+      - ./cmdb-api:/data/apps/cmdb
     depends_on:
       cmdb-db:
         condition: service_healthy
