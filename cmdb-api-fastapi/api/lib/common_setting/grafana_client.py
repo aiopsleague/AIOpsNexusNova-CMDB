@@ -27,27 +27,42 @@ class GrafanaClient(object):
         resp.raise_for_status()
         return True
 
-    def search_dashboard(self, query):
+    def search_dashboard(self, query, limit=5000):
         """Return list of dashboard dicts ({uid, title, url, ...})."""
         resp = requests.get("{}/api/search".format(self.url),
-                            params={"query": query, "type": "dash-db"},
+                            params={"query": query, "type": "dash-db", "limit": limit},
                             headers=self._headers(), timeout=self.timeout)
         resp.raise_for_status()
         return resp.json()
 
     def list_dashboards(self, namespace="default"):
-        """Return [{"name", "title"}] via the k8s-style API; fall back to
-        classic /api/search on 404 (older grafana)."""
-        resp = requests.get(
-            "{}/apis/dashboard.grafana.app/v2alpha1/namespaces/{}/dashboards".format(self.url, namespace),
-            headers=self._headers(), timeout=self.timeout)
-        if resp.status_code == 404:
-            return [{"name": d.get("uid"), "title": d.get("title")} for d in self.search_dashboard("")]
-        resp.raise_for_status()
-        items = resp.json().get("items") or []
+        """Return [{"name", "title"}] via the k8s-style API with pagination;
+        fall back to classic /api/search on 404 (older grafana)."""
+        base_url = "{}/apis/dashboard.grafana.app/v2alpha1/namespaces/{}/dashboards".format(
+            self.url, namespace)
+        params = {"limit": 5}
+        all_items = []
+        while True:
+            resp = requests.get(base_url, headers=self._headers(),
+                                params=params, timeout=self.timeout)
+            
+            if resp.status_code == 404:
+                if all_items:
+                    break
+                return [{"name": d.get("uid"), "title": d.get("title")}
+                        for d in self.search_dashboard("")]
+            resp.raise_for_status()
+            body = resp.json()
+            items = body.get("items") or []
+            all_items.extend(items)
+            continue_token = (body.get("metadata") or {}).get("continue")
+            if not continue_token or not items:
+                break
+            params = {"continue": continue_token}
+
         return [{"name": i.get("metadata", {}).get("name"),
                  "title": i.get("spec", {}).get("title") or i.get("metadata", {}).get("name")}
-                for i in items]
+                for i in all_items]
 
     def get_dashboard_variables(self, name):
         """Return template variables of a dashboard (datasource excluded)
