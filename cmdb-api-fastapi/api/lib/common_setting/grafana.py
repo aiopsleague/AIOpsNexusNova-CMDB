@@ -185,7 +185,7 @@ class GrafanaConfigCRUD(object):
                     "value": vm.get("value") or vm.get("ci_attr") or "",
                     "remark": vm.get("remark") or "",
                     "enable": 0 if vm.get("enable") in (0, "0", False) else 1,
-                    "no_var_prefix": True if vm.get("no_var_prefix") in (True, 1, "1") else False,
+                    "var_type": vm.get("var_type") or "normal",
                 })
             entry["var_mapping"] = normalized
             result.append(entry)
@@ -221,7 +221,9 @@ class GrafanaConfigCRUD(object):
 
             remark = str(vm.get("remark") or "").strip()
             enable = 0 if vm.get("enable") in (0, "0", False) else 1
-            no_var_prefix = True if vm.get("no_var_prefix") in (True, 1, "1") else False
+            var_type = vm.get("var_type") or "normal"
+            if var_type not in ("normal", "native"):
+                abort(400, ErrFormat.value_is_required)
 
             result.append({
                 "grafana_var": grafana_var,
@@ -229,7 +231,7 @@ class GrafanaConfigCRUD(object):
                 "value": value,
                 "remark": remark,
                 "enable": enable,
-                "no_var_prefix": no_var_prefix,
+                "var_type": var_type,
             })
         return result
 

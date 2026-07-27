@@ -311,7 +311,9 @@ const cs_zh = {
     mappingEnable: '启用',
     targetPlaceholder: '请输入目标值',
     varMappingDuplicated: '变量映射中存在重复的Grafana变量',
-    noVarPrefix: '无var前缀',
+    varType: '变量类型',
+    varTypeNormal: '普通变量',
+    varTypeNative: '原生变量',
   },
   duty: {
     basicSetting: '基础设置',

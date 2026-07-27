@@ -181,11 +181,14 @@
                 style="width: 100%"
               />
             </template>
+            <template slot="var_type" slot-scope="text, record">
+              <a-select v-model="record.var_type" style="width: 100%" size="small">
+                <a-select-option value="normal">{{ $t('cs.grafana.varTypeNormal') }}</a-select-option>
+                <a-select-option value="native">{{ $t('cs.grafana.varTypeNative') }}</a-select-option>
+              </a-select>
+            </template>
             <template slot="remark" slot-scope="text, record">
               <a-input v-model="record.remark" :placeholder="$t('cs.grafana.remark')" style="width: 100%" />
-            </template>
-            <template slot="no_var_prefix" slot-scope="text, record">
-              <a-checkbox :checked="record.no_var_prefix" @change="(e) => { record.no_var_prefix = e.target.checked }" style="display: flex; justify-content: center;" />
             </template>
             <template slot="action" slot-scope="text, record, index">
               <a-icon type="minus-circle" style="cursor: pointer; color: #f5222d; font-size: 16px;" @click="removeVarMapping(index)" />
@@ -242,9 +245,9 @@ export default {
       connectionColumns: [
         { title: this.$t('cs.grafana.name'), dataIndex: 'name' },
         { title: this.$t('cs.grafana.url'), dataIndex: 'url' },
-        { title: this.$t('cs.grafana.remark'), dataIndex: 'remark' },
         { slots: { title: 'statusTitle' }, scopedSlots: { customRender: 'status' }, width: 110 },
         { title: this.$t('cs.grafana.enable'), scopedSlots: { customRender: 'enable' }, width: 80 },
+        { title: this.$t('cs.grafana.remark'), dataIndex: 'remark' },
         { title: this.$t('cs.grafana.operation'), scopedSlots: { customRender: 'action' }, width: 220 },
       ],
       mappingColumns: [
@@ -259,10 +262,10 @@ export default {
       ],
       varMappingColumns: [
         { title: this.$t('cs.grafana.source'), dataIndex: 'grafana_var', scopedSlots: { customRender: 'grafana_var' } },
+        { title: this.$t('cs.grafana.varType'), scopedSlots: { customRender: 'var_type' }, width: 110 },
         { title: this.$t('cs.grafana.mappingType'), dataIndex: 'map_type', scopedSlots: { customRender: 'map_type' }, width: 100 },
         { title: this.$t('cs.grafana.target'), dataIndex: 'target', scopedSlots: { customRender: 'target' } },
         { title: this.$t('cs.grafana.remark'), dataIndex: 'remark', scopedSlots: { customRender: 'remark' } },
-        { title: this.$t('cs.grafana.noVarPrefix'), scopedSlots: { customRender: 'no_var_prefix' }, width: 70 },
         { title: this.$t('cs.grafana.operation'), scopedSlots: { customRender: 'action' }, width: 50 },
       ],
     }
@@ -339,7 +342,7 @@ export default {
           value: vm.value || vm.ci_attr || '',
           remark: vm.remark || '',
           enable: vm.enable !== undefined ? vm.enable : 1,
-          no_var_prefix: vm.no_var_prefix === true || vm.no_var_prefix === 1 || vm.no_var_prefix === '1',
+          var_type: vm.var_type || 'normal',
         }))
         this.varMappingKeyCounter = mapped.length
         this.mappingForm = {
@@ -414,7 +417,7 @@ export default {
         value: '',
         remark: '',
         enable: 1,
-        no_var_prefix: false,
+        var_type: 'normal',
       })
     },
     removeVarMapping(index) {

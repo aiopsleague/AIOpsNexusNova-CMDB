@@ -131,27 +131,27 @@ def pick_dashboard(connections, mappings, ci_type_id, unique_value, search_fn):
 def build_vars(mapping, ci, unique_value):
     """Build the template-var list for the iframe url.
 
-    var_mapping item: {"grafana_var", "map_type": "field"|"fixed", "value", "remark", "no_var_prefix"}
+    var_mapping item: {"grafana_var", "map_type": "field"|"fixed", "value", "remark", "var_type"}
     旧格式 {"grafana_var", "ci_attr"} 按 field + value=ci_attr 兼容读取。
 
-    Returns list of {"name", "value", "no_var_prefix"} dicts.
+    Returns list of {"name", "value", "var_type"} dicts.
     """
     if not mapping:
-        return [dict(name=DEFAULT_VAR_NAME, value=unique_value, no_var_prefix=False)]
+        return [dict(name=DEFAULT_VAR_NAME, value=unique_value, var_type="normal")]
     vars_ = []
     for vm in mapping.get("var_mapping") or []:
         name = vm.get("grafana_var")
         value_ref = vm.get("value", vm.get("ci_attr"))
-        no_var_prefix = True if vm.get("no_var_prefix") in (True, 1, "1") else False
+        var_type = vm.get("var_type") or "normal"
         if not name:
             continue
         if (vm.get("map_type") or "field") == "fixed":
             if value_ref is None or value_ref == "":
                 continue
-            vars_.append(dict(name=name, value=value_ref, no_var_prefix=no_var_prefix))
+            vars_.append(dict(name=name, value=value_ref, var_type=var_type))
         else:
             value = ci.get(value_ref or "")
             if value is None or value == "" or value == []:
                 continue
-            vars_.append(dict(name=name, value=value, no_var_prefix=no_var_prefix))
+            vars_.append(dict(name=name, value=value, var_type=var_type))
     return vars_

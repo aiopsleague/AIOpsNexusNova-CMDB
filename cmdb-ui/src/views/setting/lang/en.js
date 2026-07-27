@@ -312,7 +312,9 @@ const cs_en = {
     mappingEnable: 'Enable',
     targetPlaceholder: 'Enter target value',
     varMappingDuplicated: 'Duplicate Grafana variables in mapping',
-    noVarPrefix: 'No var- prefix',
+    varType: 'Variable Type',
+    varTypeNormal: 'Normal',
+    varTypeNative: 'Native',
   },
   duty: {
     basicSetting: 'Basic Settings',
