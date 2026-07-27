@@ -108,7 +108,7 @@ wait_http() {  # $1=url $2=名字 $3=超时秒
 # ---------- docker 依赖 ----------
 db_start() {
     c_yellow "启动 MySQL / Redis 容器..."
-    ( cd "$ROOT" && docker compose up -d cmdb-db cmdb-cache )
+    ( cd "$ROOT" && docker compose -f docker-compose-dev.yml up -d cmdb-db cmdb-cache )
     c_yellow "等待数据库 healthy（首次导入 cmdb.sql 需要几分钟）..."
     for name in cmdb-db cmdb-cache; do
         for _ in $(seq 1 90); do
@@ -127,7 +127,7 @@ db_start() {
 
 db_stop() {
     c_yellow "停止 MySQL / Redis 容器（数据保留在卷 cmdb_db-data / cmdb_cache-data）..."
-    ( cd "$ROOT" && docker compose stop cmdb-db cmdb-cache )
+    ( cd "$ROOT" && docker compose -f docker-compose-dev.yml down cmdb-db cmdb-cache )
 }
 
 # ---------- 后端 ----------
