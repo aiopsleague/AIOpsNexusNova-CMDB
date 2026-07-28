@@ -68,6 +68,11 @@ module.exports = {
         },
         target: process.env.DEV_API_TARGET || 'http://localhost:5000',
         changeOrigin: true,
+        onProxyReq: function (proxyReq) {
+          // 模拟 nginx 的 proxy_set_header X-Real-IP $remote_addr
+          // 使得开发环境下 API 的 IP 白名单认证可以正常工作
+          proxyReq.setHeader('X-Real-IP', '127.0.0.1')
+        },
       },
     },
   },

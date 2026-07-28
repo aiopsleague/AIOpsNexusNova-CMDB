@@ -94,7 +94,7 @@ services:
         python cli.py cmdb-init-acl
         python cli.py init-import-user-from-acl
         python cli.py init-department
-        uv run uvicorn main:app --host 0.0.0.0 --port 5000 --reload
+        uv run uvicorn main:app --host 0.0.0.0 --port 5000 --reload --proxy-headers --forwarded-allow-ips='*'
 
   cmdb-worker:
     build:
