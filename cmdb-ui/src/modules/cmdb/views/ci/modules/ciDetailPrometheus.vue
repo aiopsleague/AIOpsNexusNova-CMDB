@@ -153,12 +153,13 @@ export default {
         { title: this.$t('cmdb.ci.alertSeverity'), dataIndex: 'labels.severity', key: 'severity', scopedSlots: { customRender: 'severity' }, width: 110 },
       ]
       // Dynamic columns from display_columns config
-      // Values are flattened to _d_<key> top-level properties by the backend
+      // Backend flattens values to _d_<safe_key> where dots are replaced with "__"
       ;(this.displayColumns || []).forEach((col) => {
+        const safeKey = '_d_' + col.key.replace(/\./g, '__')
         const title = isZh ? (col.title_zh || col.key) : (col.title_en || col.key)
         cols.push({
           title,
-          dataIndex: '_d_' + col.key,
+          dataIndex: safeKey,
           key: col.key,
           ellipsis: true,
         })

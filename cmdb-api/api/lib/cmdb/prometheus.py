@@ -109,15 +109,23 @@ def resolve_ci_prometheus_alerts(ci_id):
                 # Extract rule name from labels
                 a["rule_name"] = a.get("labels", {}).get("alertname", "")
                 all_alerts.append(a)
-    # Flatten display_columns values into top-level _d_<key> fields on each alert
-    # (ant-design-vue 1.x dataIndex does not support nested lookups or
-    # customRender reliably, so we flatten into simple top-level properties.)
+    # Flatten display_columns values into top-level _d_<safe_key> fields on each alert.
+    # Keys with a "labels." or "annotations." prefix read from the corresponding
+    # source only.  Bare keys first check labels, then fall back to annotations.
+    # Dots in the original key are replaced with "__" for safe dataIndex access.
     for a in all_alerts:
         alert_labels = a.get("labels", {})
         alert_annotations = a.get("annotations", {})
         for dc in merged_display_columns:
-            key = dc["key"]
-            a["_d_" + key] = alert_labels.get(key) or alert_annotations.get(key) or ""
+            raw_key = dc["key"]
+            if raw_key.startswith("labels."):
+                value = alert_labels.get(raw_key[7:], "")
+            elif raw_key.startswith("annotations."):
+                value = alert_annotations.get(raw_key[12:], "")
+            else:
+                value = alert_labels.get(raw_key) or alert_annotations.get(raw_key) or ""
+            safe_key = "_d_" + raw_key.replace(".", "__")
+            a[safe_key] = value
 
     # Sort: critical > warning > info, then by activeAt descending
     severity_order = {"critical": 0, "warning": 1, "info": 2}
