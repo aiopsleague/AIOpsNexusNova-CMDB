@@ -306,13 +306,24 @@ export default {
     openConnectionModal(record = null) {
       if (record) {
         this.connectionForm = {
-          id: record.id, name: record.name, url: record.url,
+          id: record.id,
+          name: record.name,
+          url: record.url,
           auth_type: record.auth_type || 'none',
           auth_data: { ...(record.auth_data || {}) },
-          remark: record.remark, enable: record.enable === undefined ? 1 : record.enable,
+          remark: record.remark,
+          enable: record.enable === undefined ? 1 : record.enable,
         }
       } else {
-        this.connectionForm = { id: null, name: '', url: '', auth_type: 'none', auth_data: {}, remark: '', enable: 1 }
+        this.connectionForm = {
+          id: null,
+          name: '',
+          url: '',
+          auth_type: 'none',
+          auth_data: {},
+          remark: '',
+          enable: 1,
+        }
       }
       this.connectionModalVisible = true
       this.$nextTick(() => this.$refs.connectionForm && this.$refs.connectionForm.clearValidate())
