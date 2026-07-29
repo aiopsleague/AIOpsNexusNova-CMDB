@@ -77,3 +77,8 @@ dev = [
 name = "aliyun"
 url = "https://mirrors.aliyun.com/pypi/simple"
 default = true
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]

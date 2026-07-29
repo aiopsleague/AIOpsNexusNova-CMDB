@@ -68,6 +68,22 @@ export function checkCITypeMonitoring(ciTypeId) {
   })
 }
 
+//  获取CI的Prometheus告警
+export function getCIPrometheusAlerts(ciId) {
+  return axios({
+    url: urlPrefix + `/ci/${ciId}/prometheus/alerts`,
+    method: 'GET'
+  })
+}
+
+//  检查CI类型是否有Prometheus配置
+export function checkCIPrometheus(ciTypeId) {
+  return axios({
+    url: urlPrefix + `/ci_type/${ciTypeId}/prometheus/check`,
+    method: 'GET'
+  })
+}
+
 //  获取移动端CI详情
 export function getCIMobileDetail(ciId) {
   return axios({
