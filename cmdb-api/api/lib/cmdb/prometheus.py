@@ -127,8 +127,8 @@ def resolve_ci_prometheus_alerts(ci_id):
             safe_key = "_d_" + raw_key.replace(".", "__")
             a[safe_key] = value
 
-    # Sort: critical > warning > info, then by activeAt descending
-    severity_order = {"critical": 0, "warning": 1, "info": 2}
+    # Sort: disaster > emergency > critical > important > warning > info
+    severity_order = {"disaster": 0, "emergency": 1, "critical": 2, "important": 3, "warning": 4, "info": 5}
     all_alerts.sort(key=lambda a: (
         severity_order.get(a.get("labels", {}).get("severity", "").lower(), 3),
         a.get("activeAt", ""),

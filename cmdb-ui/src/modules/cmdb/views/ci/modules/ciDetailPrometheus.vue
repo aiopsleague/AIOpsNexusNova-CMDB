@@ -9,11 +9,32 @@
           <div class="stat-value">{{ alerts.length }}</div>
         </div>
       </div>
+      <div class="prom-stat-card prom-stat-disaster">
+        <div class="stat-icon"><a-icon type="close-circle" /></div>
+        <div class="stat-content">
+          <div class="stat-label">{{ $t('cmdb.ci.alertDisaster') }}</div>
+          <div class="stat-value">{{ severityCounts.disaster }}</div>
+        </div>
+      </div>
+      <div class="prom-stat-card prom-stat-emergency">
+        <div class="stat-icon"><a-icon type="close-circle" /></div>
+        <div class="stat-content">
+          <div class="stat-label">{{ $t('cmdb.ci.alertEmergency') }}</div>
+          <div class="stat-value">{{ severityCounts.emergency }}</div>
+        </div>
+      </div>
       <div class="prom-stat-card prom-stat-critical">
         <div class="stat-icon"><a-icon type="close-circle" /></div>
         <div class="stat-content">
           <div class="stat-label">{{ $t('cmdb.ci.alertCritical') }}</div>
           <div class="stat-value">{{ severityCounts.critical }}</div>
+        </div>
+      </div>
+      <div class="prom-stat-card prom-stat-important">
+        <div class="stat-icon"><a-icon type="exclamation-circle" /></div>
+        <div class="stat-content">
+          <div class="stat-label">{{ $t('cmdb.ci.alertImportant') }}</div>
+          <div class="stat-value">{{ severityCounts.important }}</div>
         </div>
       </div>
       <div class="prom-stat-card prom-stat-warning">
@@ -136,11 +157,13 @@ export default {
   },
   computed: {
     severityCounts() {
-      return {
-        critical: this.alerts.filter((a) => this._severity(a) === 'critical').length,
-        warning: this.alerts.filter((a) => this._severity(a) === 'warning').length,
-        info: this.alerts.filter((a) => this._severity(a) === 'info').length,
-      }
+      const counts = { disaster: 0, emergency: 0, critical: 0, important: 0, warning: 0, info: 0 }
+      this.alerts.forEach((a) => {
+        const s = this._severity(a)
+        if (counts.hasOwnProperty(s)) counts[s]++
+        else counts.info++
+      })
+      return counts
     },
     lastRefreshText() {
       if (!this.lastRefreshTime) return '-'
@@ -211,13 +234,17 @@ export default {
     },
     severityStatus(severity) {
       const s = (severity || '').toLowerCase()
-      if (s === 'critical') return 'error'
+      if (s === 'disaster' || s === 'emergency') return 'error'
+      if (s === 'critical' || s === 'important') return 'error'
       if (s === 'warning') return 'warning'
       return 'processing'
     },
     severityStatusText(severity) {
       const s = (severity || '').toLowerCase()
+      if (s === 'disaster') return this.$t('cmdb.ci.alertDisaster')
+      if (s === 'emergency') return this.$t('cmdb.ci.alertEmergency')
       if (s === 'critical') return this.$t('cmdb.ci.alertCritical')
+      if (s === 'important') return this.$t('cmdb.ci.alertImportant')
       if (s === 'warning') return this.$t('cmdb.ci.alertWarning')
       return this.$t('cmdb.ci.alertInfo')
     },
@@ -271,7 +298,10 @@ export default {
     .stat-value { font-size: 22px; font-weight: 600; color: #262626; line-height: 1; }
   }
   &.prom-stat-total .stat-icon { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+  &.prom-stat-disaster .stat-icon { background: linear-gradient(135deg, #820014 0%, #5c0011 100%); }
+  &.prom-stat-emergency .stat-icon { background: linear-gradient(135deg, #cf1322 0%, #a8071a 100%); }
   &.prom-stat-critical .stat-icon { background: linear-gradient(135deg, #f5222d 0%, #cf1322 100%); }
+  &.prom-stat-important .stat-icon { background: linear-gradient(135deg, #fa541c 0%, #d4380d 100%); }
   &.prom-stat-warning .stat-icon { background: linear-gradient(135deg, #fa8c16 0%, #d46b08 100%); }
   &.prom-stat-info .stat-icon { background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%); }
 }
