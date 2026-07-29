@@ -1,135 +1,175 @@
 <template>
   <div class="ci-detail-prometheus">
-    <!-- Stats Bar -->
-    <div class="prom-alert-stats">
-      <div class="prom-stat-card prom-stat-total">
-        <div class="stat-icon"><a-icon type="alert" /></div>
-        <div class="stat-content">
-          <div class="stat-label">{{ $t('cmdb.ci.alertFiring') }}</div>
-          <div class="stat-value">{{ alerts.length }}</div>
+    <!-- Connection error warning banner: always show when there are unhealthy connections -->
+    <a-alert
+      v-if="unhealthyConnections.length > 0"
+      type="warning"
+      banner
+      closable
+      class="prom-connection-alert"
+    >
+      <template slot="message">
+        <span class="prom-alert-title">{{ $t('cmdb.ci.prometheusConnectionError') }}</span>
+      </template>
+      <template slot="description">
+        <div class="prom-alert-desc">
+          <span>{{ $t('cmdb.ci.prometheusConnectionErrorDesc') }}</span>
+          <span class="prom-alert-count">
+            <a-badge status="success" :text="`${healthyCount} ${$t('cmdb.ci.prometheusConnectionHealthy')}`" />
+            <a-badge status="error" :text="`${unhealthyConnections.length} ${$t('cmdb.ci.prometheusConnectionUnhealthy')}`" />
+          </span>
+          <a-button size="small" type="link" @click="loadAlerts" :loading="loading">
+            <a-icon type="reload" />{{ $t('cmdb.ci.prometheusConnectionRetry') }}
+          </a-button>
         </div>
-      </div>
-      <div class="prom-stat-card prom-stat-disaster">
-        <div class="stat-icon"><a-icon type="close-circle" /></div>
-        <div class="stat-content">
-          <div class="stat-label">{{ $t('cmdb.ci.alertDisaster') }}</div>
-          <div class="stat-value">{{ severityCounts.disaster }}</div>
-        </div>
-      </div>
-      <div class="prom-stat-card prom-stat-emergency">
-        <div class="stat-icon"><a-icon type="close-circle" /></div>
-        <div class="stat-content">
-          <div class="stat-label">{{ $t('cmdb.ci.alertEmergency') }}</div>
-          <div class="stat-value">{{ severityCounts.emergency }}</div>
-        </div>
-      </div>
-      <div class="prom-stat-card prom-stat-critical">
-        <div class="stat-icon"><a-icon type="close-circle" /></div>
-        <div class="stat-content">
-          <div class="stat-label">{{ $t('cmdb.ci.alertCritical') }}</div>
-          <div class="stat-value">{{ severityCounts.critical }}</div>
-        </div>
-      </div>
-      <div class="prom-stat-card prom-stat-important">
-        <div class="stat-icon"><a-icon type="exclamation-circle" /></div>
-        <div class="stat-content">
-          <div class="stat-label">{{ $t('cmdb.ci.alertImportant') }}</div>
-          <div class="stat-value">{{ severityCounts.important }}</div>
-        </div>
-      </div>
-      <div class="prom-stat-card prom-stat-warning">
-        <div class="stat-icon"><a-icon type="exclamation-circle" /></div>
-        <div class="stat-content">
-          <div class="stat-label">{{ $t('cmdb.ci.alertWarning') }}</div>
-          <div class="stat-value">{{ severityCounts.warning }}</div>
-        </div>
-      </div>
-      <div class="prom-stat-card prom-stat-info">
-        <div class="stat-icon"><a-icon type="info-circle" /></div>
-        <div class="stat-content">
-          <div class="stat-label">{{ $t('cmdb.ci.alertInfo') }}</div>
-          <div class="stat-value">{{ severityCounts.info }}</div>
-        </div>
-      </div>
-      <div class="prom-refresh-area">
-        <span class="last-refresh">{{ $t('cmdb.ci.alertLastRefresh') }}: {{ lastRefreshText }}</span>
-        <a-button size="small" @click="loadAlerts" :loading="loading">
-          <a-icon type="reload" />{{ $t('cmdb.ci.alertRefresh') }}
-        </a-button>
-      </div>
-    </div>
+      </template>
+    </a-alert>
 
-    <!-- Alert Table -->
-    <a-spin :spinning="loading">
-      <a-table
-        v-if="alerts.length"
-        :columns="columns"
-        :data-source="alerts"
-        :pagination="false"
-        rowKey="fingerprint"
-        size="small"
-        :expandRowByClick="true"
-        class="prom-alert-table"
-      >
-        <template slot="severity" slot-scope="text, record">
-          <a-badge
-            :status="severityStatus(record.labels.severity)"
-            :text="severityStatusText(record.labels.severity)"
-          />
-        </template>
-        <template slot="activeAt" slot-scope="text">
-          {{ text | formatTime }}
-        </template>
-        <template slot="duration" slot-scope="text, record">
-          {{ formatDuration(record.activeAt) }}
-        </template>
-        <template slot="expandedRowRender" slot-scope="record">
-          <div class="prom-alert-detail">
-            <div class="prom-alert-detail-section">
-              <div class="prom-alert-detail-title">{{ $t('cmdb.ci.alertLabels') }}</div>
-              <div class="prom-alert-detail-tags">
-                <a-tag v-for="(val, key) in record.labels" :key="key" color="blue">
-                  {{ key }}={{ val }}
-                </a-tag>
-              </div>
-            </div>
-            <div v-if="record.annotations && Object.keys(record.annotations).length" class="prom-alert-detail-section">
-              <div class="prom-alert-detail-title">{{ $t('cmdb.ci.alertAnnotations') }}</div>
-              <div v-if="record.annotations.summary" class="prom-alert-annotation">
-                <strong>Summary:</strong> {{ record.annotations.summary }}
-              </div>
-              <div v-if="record.annotations.description" class="prom-alert-annotation">
-                <strong>Description:</strong> {{ record.annotations.description }}
-              </div>
-            </div>
-            <div class="prom-alert-detail-section">
-              <a-row :gutter="16">
-                <a-col :span="12">
-                  <span class="prom-alert-detail-title">{{ $t('cmdb.ci.alertRuleName') }}:</span>
-                  {{ record.rule_name || '-' }}
-                </a-col>
-                <a-col :span="12">
-                  <span class="prom-alert-detail-title">{{ $t('cmdb.ci.alertValue') }}:</span>
-                  {{ record.value || '-' }}
-                </a-col>
-              </a-row>
-            </div>
+    <!-- All connections broken & no alerts: show clean empty state (matching Grafana pattern) -->
+    <a-empty
+      v-if="allConnectionsUnhealthy && !loading && alerts.length === 0"
+      :image-style="{ height: '100px' }"
+      :style="{ paddingTop: '10%' }"
+    >
+      <img slot="image" :src="require('@/assets/data_empty.png')" />
+      <span slot="description">
+        {{ $t('cmdb.ci.alertConnectionFailed') }}
+      </span>
+    </a-empty>
+
+    <!-- Normal data display (stats + table) -->
+    <div v-else class="prom-normal-content">
+      <!-- Stats Bar -->
+      <div class="prom-alert-stats">
+        <div class="prom-stat-card prom-stat-total">
+          <div class="stat-icon"><a-icon type="alert" /></div>
+          <div class="stat-content">
+            <div class="stat-label">{{ $t('cmdb.ci.alertFiring') }}</div>
+            <div class="stat-value">{{ alerts.length }}</div>
           </div>
-        </template>
-      </a-table>
+        </div>
+        <div class="prom-stat-card prom-stat-disaster">
+          <div class="stat-icon"><a-icon type="close-circle" /></div>
+          <div class="stat-content">
+            <div class="stat-label">{{ $t('cmdb.ci.alertDisaster') }}</div>
+            <div class="stat-value">{{ severityCounts.disaster }}</div>
+          </div>
+        </div>
+        <div class="prom-stat-card prom-stat-emergency">
+          <div class="stat-icon"><a-icon type="close-circle" /></div>
+          <div class="stat-content">
+            <div class="stat-label">{{ $t('cmdb.ci.alertEmergency') }}</div>
+            <div class="stat-value">{{ severityCounts.emergency }}</div>
+          </div>
+        </div>
+        <div class="prom-stat-card prom-stat-critical">
+          <div class="stat-icon"><a-icon type="close-circle" /></div>
+          <div class="stat-content">
+            <div class="stat-label">{{ $t('cmdb.ci.alertCritical') }}</div>
+            <div class="stat-value">{{ severityCounts.critical }}</div>
+          </div>
+        </div>
+        <div class="prom-stat-card prom-stat-important">
+          <div class="stat-icon"><a-icon type="exclamation-circle" /></div>
+          <div class="stat-content">
+            <div class="stat-label">{{ $t('cmdb.ci.alertImportant') }}</div>
+            <div class="stat-value">{{ severityCounts.important }}</div>
+          </div>
+        </div>
+        <div class="prom-stat-card prom-stat-warning">
+          <div class="stat-icon"><a-icon type="exclamation-circle" /></div>
+          <div class="stat-content">
+            <div class="stat-label">{{ $t('cmdb.ci.alertWarning') }}</div>
+            <div class="stat-value">{{ severityCounts.warning }}</div>
+          </div>
+        </div>
+        <div class="prom-stat-card prom-stat-info">
+          <div class="stat-icon"><a-icon type="info-circle" /></div>
+          <div class="stat-content">
+            <div class="stat-label">{{ $t('cmdb.ci.alertInfo') }}</div>
+            <div class="stat-value">{{ severityCounts.info }}</div>
+          </div>
+        </div>
+        <div class="prom-refresh-area">
+          <span class="last-refresh">{{ $t('cmdb.ci.alertLastRefresh') }}: {{ lastRefreshText }}</span>
+          <a-button size="small" @click="loadAlerts" :loading="loading">
+            <a-icon type="reload" />{{ $t('cmdb.ci.alertRefresh') }}
+          </a-button>
+        </div>
+      </div>
 
-      <!-- Empty states -->
-      <a-empty
-        v-else-if="!loading"
-        :image-style="{ height: '100px' }"
-        :style="{ paddingTop: '10%' }"
-      >
-        <img slot="image" :src="require('@/assets/data_empty.png')" />
-        <span slot="description">
-          {{ errorMsg ? errorMsg : configured ? $t('cmdb.ci.alertNoData') : $t('cmdb.ci.alertNoConfig') }}
-        </span>
-      </a-empty>
-    </a-spin>
+      <!-- Alert Table -->
+      <a-spin :spinning="loading">
+        <a-table
+          v-if="alerts.length"
+          :columns="columns"
+          :data-source="alerts"
+          :pagination="false"
+          rowKey="fingerprint"
+          size="small"
+          :expandRowByClick="true"
+          class="prom-alert-table"
+        >
+          <template slot="severity" slot-scope="text, record">
+            <a-badge
+              :status="severityStatus(record.labels.severity)"
+              :text="severityStatusText(record.labels.severity)"
+            />
+          </template>
+          <template slot="activeAt" slot-scope="text">
+            {{ text | formatTime }}
+          </template>
+          <template slot="duration" slot-scope="text, record">
+            {{ formatDuration(record.activeAt) }}
+          </template>
+          <template slot="expandedRowRender" slot-scope="record">
+            <div class="prom-alert-detail">
+              <div class="prom-alert-detail-section">
+                <div class="prom-alert-detail-title">{{ $t('cmdb.ci.alertLabels') }}</div>
+                <div class="prom-alert-detail-tags">
+                  <a-tag v-for="(val, key) in record.labels" :key="key" color="blue">
+                    {{ key }}={{ val }}
+                  </a-tag>
+                </div>
+              </div>
+              <div v-if="record.annotations && Object.keys(record.annotations).length" class="prom-alert-detail-section">
+                <div class="prom-alert-detail-title">{{ $t('cmdb.ci.alertAnnotations') }}</div>
+                <div v-if="record.annotations.summary" class="prom-alert-annotation">
+                  <strong>Summary:</strong> {{ record.annotations.summary }}
+                </div>
+                <div v-if="record.annotations.description" class="prom-alert-annotation">
+                  <strong>Description:</strong> {{ record.annotations.description }}
+                </div>
+              </div>
+              <div class="prom-alert-detail-section">
+                <a-row :gutter="16">
+                  <a-col :span="12">
+                    <span class="prom-alert-detail-title">{{ $t('cmdb.ci.alertRuleName') }}:</span>
+                    {{ record.rule_name || '-' }}
+                  </a-col>
+                  <a-col :span="12">
+                    <span class="prom-alert-detail-title">{{ $t('cmdb.ci.alertValue') }}:</span>
+                    {{ record.value || '-' }}
+                  </a-col>
+                </a-row>
+              </div>
+            </div>
+          </template>
+        </a-table>
+
+        <!-- Empty states -->
+        <a-empty
+          v-else-if="!loading"
+          :image-style="{ height: '100px' }"
+          :style="{ paddingTop: '10%' }"
+        >
+          <img slot="image" :src="require('@/assets/data_empty.png')" />
+          <span slot="description">
+            {{ emptyDescription }}
+          </span>
+        </a-empty>
+      </a-spin>
+    </div>
   </div>
 </template>
 
@@ -151,11 +191,29 @@ export default {
       errorMsg: '',
       alerts: [],
       displayColumns: [],
+      connectionStatuses: [],
       lastRefreshTime: null,
       refreshTimer: null,
     }
   },
   computed: {
+    unhealthyConnections() {
+      console.log('connectionStatuses:', this.connectionStatuses)
+      return this.connectionStatuses.filter((s) => !s.ok)
+    },
+    healthyCount() {
+      return this.connectionStatuses.filter((s) => s.ok).length
+    },
+    allConnectionsUnhealthy() {
+      // True only when there are connections AND all of them are unhealthy
+      return this.connectionStatuses.length > 0 && this.unhealthyConnections.length === this.connectionStatuses.length
+    },
+    emptyDescription() {
+      if (this.errorMsg) return this.errorMsg
+      if (!this.configured) return this.$t('cmdb.ci.alertNoConfig')
+      if (this.unhealthyConnections.length > 0) return this.$t('cmdb.ci.alertConnectionFailed')
+      return this.$t('cmdb.ci.alertNoData')
+    },
     severityCounts() {
       const counts = { disaster: 0, emergency: 0, critical: 0, important: 0, warning: 0, info: 0 }
       this.alerts.forEach((a) => {
@@ -213,12 +271,15 @@ export default {
         this.configured = res.configured !== false
         this.alerts = res.alerts || []
         this.displayColumns = res.display_columns || []
+        this.connectionStatuses = res.connection_status || []
         this.lastRefreshTime = Date.now()
       } catch (e) {
         this.alerts = []
+        this.connectionStatuses = []
         this.errorMsg = e.message || 'Connection error'
       } finally {
         this.loading = false
+        this.$emit('connectionStatusChange', this.connectionStatuses)
       }
     },
     startAutoRefresh() {
@@ -266,6 +327,34 @@ export default {
 .ci-detail-prometheus {
   height: 100%;
 }
+
+.prom-connection-alert {
+  flex-shrink: 0;
+  margin-bottom: 12px;
+}
+
+.prom-alert-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.prom-alert-desc {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.prom-alert-count {
+  display: flex;
+  gap: 12px;
+}
+
+.prom-normal-content {
+  height: calc(100% - 60px);
+}
+
 .prom-alert-stats {
   display: flex;
   gap: 16px;

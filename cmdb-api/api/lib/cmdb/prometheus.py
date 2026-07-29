@@ -30,10 +30,21 @@ def check_ci_prometheus(ci_type_id):
     return {"has_prometheus": len(type_mappings) > 0}
 
 
+def _check_prometheus_connection_status(connection):
+    """Quick health check on a single Prometheus connection. Never raises."""
+    try:
+        PrometheusClient(connection["url"], connection.get("auth_type"), connection.get("auth_data")).health_check()
+        return {"id": connection["id"], "ok": True, "error": ""}
+    except Exception as e:
+        current_app.logger.warning("prometheus connection {} health check failed: {}".format(connection["id"], e))
+        return {"id": connection["id"], "ok": False, "error": str(e)}
+
+
 def resolve_ci_prometheus_alerts(ci_id):
     """Return active Prometheus alerts for a CI.
 
-    Returns ``{"configured": bool, "has_prometheus": bool, "alerts": [...]}``.
+    Returns ``{"configured": bool, "has_prometheus": bool, "alerts": [...], "connection_status": [...]}``.
+    ``connection_status`` is a list of ``{"id": int, "ok": bool, "error": str}`` per connection used.
     """
     ci_obj = CI.get_by_id(ci_id) or abort(404, ErrFormat.ci_not_found.format("id={}".format(ci_id)))
     CIManager.valid_ci_only_read(ci_obj)
@@ -50,14 +61,17 @@ def resolve_ci_prometheus_alerts(ci_id):
     has_prometheus = bool(connections and type_mappings)
 
     if not connections:
-        return dict(configured=False, has_prometheus=False, alerts=[])
+        return dict(configured=False, has_prometheus=False, alerts=[], connection_status=[])
 
     if not type_mappings:
-        return dict(configured=True, has_prometheus=False, alerts=[])
+        return dict(configured=True, has_prometheus=False, alerts=[], connection_status=[])
 
     # Collect all alerts across all matching mappings
     all_alerts = []
     seen_fingerprints = set()
+
+    # Track connection status per unique connection used
+    connection_status_map = {}  # connection_id -> {"id", "ok", "error"}
 
     # Collect display_columns from all type mappings (dedup by key, first wins)
     merged_display_columns = []
@@ -94,11 +108,22 @@ def resolve_ci_prometheus_alerts(ci_id):
         if not label_matchers:
             continue
 
+        conn_id = connection["id"]
+        # Check connection health first — query_alerts() swallows exceptions internally,
+        # so we must explicitly verify the connection is reachable before querying.
+        if conn_id not in connection_status_map:
+            connection_status_map[conn_id] = _check_prometheus_connection_status(connection)
+
+        if not connection_status_map[conn_id]["ok"]:
+            continue
+
         try:
             client = PrometheusClient(connection["url"], connection.get("auth_type"), connection.get("auth_data"))
             alerts = client.query_alerts(label_matchers)
         except Exception as e:
-            current_app.logger.warning("prometheus query failed for ci {}: {}".format(ci_id, e))
+            # Catch any unexpected errors not covered by query_alerts internal handling
+            current_app.logger.warning("prometheus query failed for ci {} connection {}: {}".format(ci_id, conn_id, e))
+            connection_status_map[conn_id] = {"id": conn_id, "ok": False, "error": str(e)}
             continue
 
         for a in alerts:
@@ -109,6 +134,9 @@ def resolve_ci_prometheus_alerts(ci_id):
                 # Extract rule name from labels
                 a["rule_name"] = a.get("labels", {}).get("alertname", "")
                 all_alerts.append(a)
+
+    connection_status = list(connection_status_map.values())
+
     # Flatten display_columns values into top-level _d_<safe_key> fields on each alert.
     # Keys with a "labels." or "annotations." prefix read from the corresponding
     # source only.  Bare keys first check labels, then fall back to annotations.
@@ -139,4 +167,5 @@ def resolve_ci_prometheus_alerts(ci_id):
         has_prometheus=has_prometheus,
         display_columns=merged_display_columns,
         alerts=all_alerts,
+        connection_status=connection_status,
     )

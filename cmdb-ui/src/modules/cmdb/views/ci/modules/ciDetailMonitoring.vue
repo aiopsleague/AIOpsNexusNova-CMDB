@@ -1,6 +1,6 @@
 <template>
   <div class="ci-detail-monitoring">
-    <CiDetailGrafana v-if="toolType === 'grafana'" :ciId="ciId" />
+    <CiDetailGrafana v-if="toolType === 'grafana'" :ciId="ciId" @connectionStatusChange="onConnectionStatusChange" />
     <!-- 未来扩展:
     <CiDetailZabbix v-else-if="toolType === 'zabbix'" :ciId="ciId" />
     -->
@@ -31,6 +31,11 @@ export default {
     toolType: {
       type: String,
       default: 'grafana',
+    },
+  },
+  methods: {
+    onConnectionStatusChange(status) {
+      this.$emit('connectionStatusChange', status)
     },
   },
 }

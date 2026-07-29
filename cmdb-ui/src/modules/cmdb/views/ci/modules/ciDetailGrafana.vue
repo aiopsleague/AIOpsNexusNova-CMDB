@@ -1,5 +1,27 @@
 <template>
   <div class="ci-detail-grafana">
+    <!-- Connection error warning banner -->
+    <a-alert
+      v-if="connectionStatus && !connectionStatus.ok"
+      type="warning"
+      banner
+      closable
+      class="grafana-connection-alert"
+    >
+      <template slot="message">
+        <span class="grafana-alert-title">{{ $t('cmdb.ci.grafanaConnectionError') }}</span>
+      </template>
+      <template slot="description">
+        <div class="grafana-alert-desc">
+          <span>{{ $t('cmdb.ci.grafanaConnectionErrorDesc') }}</span>
+          <span v-if="connectionStatus.error" class="grafana-alert-error-detail">{{ connectionStatus.error }}</span>
+          <a-button size="small" type="link" @click="reload" :loading="loading">
+            <a-icon type="reload" />{{ $t('cmdb.ci.grafanaConnectionRetry') }}
+          </a-button>
+        </div>
+      </template>
+    </a-alert>
+
     <a-spin :spinning="loading" class="ci-detail-grafana-spin">
       <iframe
         v-if="iframeUrl"
@@ -37,6 +59,7 @@ export default {
       loading: false,
       notConfigured: false,
       iframeUrl: '',
+      connectionStatus: null,
     }
   },
   mounted() {
@@ -48,6 +71,8 @@ export default {
       try {
         const res = await getCIGrafana(this.ciId)
         this.notConfigured = !res.configured
+        this.connectionStatus = res.connection_status || null
+        this.$emit('connectionStatusChange', this.connectionStatus)
         const r = res.result
         if (r && r.connection_id && r.uid) {
           // iframe 指向后端代理，由后端注入 Service Account Token，
@@ -68,6 +93,9 @@ export default {
         this.loading = false
       }
     },
+    reload() {
+      this.load()
+    },
   },
 }
 </script>
@@ -75,9 +103,38 @@ export default {
 <style lang="less" scoped>
 .ci-detail-grafana {
   height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .grafana-connection-alert {
+    flex-shrink: 0;
+    margin-bottom: 12px;
+  }
+
+  .grafana-alert-title {
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .grafana-alert-desc {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+  }
+
+  .grafana-alert-error-detail {
+    display: block;
+    font-size: 12px;
+    color: #8c8c8c;
+    font-family: monospace;
+    word-break: break-all;
+  }
+
   .ci-detail-grafana-spin {
+    flex: 1;
     width: 100%;
-    height: 100%;
     /deep/ .ant-spin-container {
       height: 100%;
     }

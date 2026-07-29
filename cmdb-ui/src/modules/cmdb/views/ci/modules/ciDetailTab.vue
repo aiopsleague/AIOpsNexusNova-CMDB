@@ -197,15 +197,39 @@
         </div>
       </a-tab-pane>
       <a-tab-pane key="tab_6" v-if="hasMonitoring">
-        <span slot="tab"><a-icon type="dashboard" />{{ $t('cmdb.ci.monitoring') }}</span>
+        <span slot="tab">
+          <a-icon type="dashboard" />{{ $t('cmdb.ci.monitoring') }}
+          <a-badge
+            v-if="grafanaConHealthy === false"
+            status="error"
+            class="tab-status-dot"
+          />
+        </span>
         <div :style="{ padding: '24px', height: '100%' }">
-          <CiDetailMonitoring v-if="ciId" :key="ciId" :ciId="ciId" :toolType="monitoringToolType" />
+          <CiDetailMonitoring
+            v-if="ciId"
+            :key="ciId"
+            :ciId="ciId"
+            :toolType="monitoringToolType"
+            @connectionStatusChange="onGrafanaStatusChange"
+          />
         </div>
       </a-tab-pane>
       <a-tab-pane key="tab_7" v-if="hasPrometheus">
-        <span slot="tab"><a-icon type="alert" />{{ $t('cmdb.ci.prometheusAlerts') }}</span>
+        <span slot="tab">
+          <a-icon type="alert" />{{ $t('cmdb.ci.prometheusAlerts') }}
+          <a-badge
+            v-if="promConHealthy === false"
+            status="error"
+            class="tab-status-dot"
+          />
+        </span>
         <div :style="{ padding: '24px', height: '100%' }">
-          <CiDetailPrometheus v-if="ciId" :ciId="ciId" />
+          <CiDetailPrometheus
+            v-if="ciId"
+            :ciId="ciId"
+            @connectionStatusChange="onPrometheusStatusChange"
+          />
         </div>
       </a-tab-pane>
     </a-tabs>
@@ -291,6 +315,8 @@ export default {
       tableHeight: this.attributeHistoryTableHeight || (this.$store.state.windowHeight - 130),
       hasMonitoring: false,
       hasPrometheus: false,
+      grafanaConHealthy: null,
+      promConHealthy: null,
       monitoringToolType: 'grafana',
       initQueryLoading: true,
       ciHistoryStatsList: [
@@ -665,7 +691,17 @@ export default {
 
     getOperateTypeCount(operateType) {
       return this.ciHistory.filter((item) => Number(item.operate_type) === Number(operateType)).length
-    }
+    },
+    onGrafanaStatusChange(status) {
+      this.grafanaConHealthy = status ? status.ok : null
+    },
+    onPrometheusStatusChange(statuses) {
+      if (!statuses || statuses.length === 0) {
+        this.promConHealthy = null
+        return
+      }
+      this.promConHealthy = statuses.every((s) => s.ok)
+    },
   },
 }
 </script>
@@ -673,6 +709,17 @@ export default {
 <style lang="less">
 .ci-detail-tab {
   height: 100%;
+
+  .tab-status-dot {
+    margin-left: 6px;
+    vertical-align: middle;
+
+    /deep/ .ant-badge-status-dot {
+      width: 8px;
+      height: 8px;
+    }
+  }
+
   .ant-tabs-content {
     height: calc(100% - 45px);
     .ant-tabs-tabpane {

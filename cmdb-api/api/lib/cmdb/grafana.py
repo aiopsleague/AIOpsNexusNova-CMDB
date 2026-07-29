@@ -35,13 +35,24 @@ def check_ci_type_monitoring(ci_type_id):
     return {"has_monitoring": len(type_mappings) > 0}
 
 
+def _check_grafana_connection_status(connection):
+    """Quick health check on a single Grafana connection. Never raises."""
+    try:
+        GrafanaClient(connection["url"], connection["api_key"], timeout=2).test_connection()
+        return {"id": connection["id"], "ok": True, "error": ""}
+    except Exception as e:
+        current_app.logger.warning("grafana connection {} health check failed: {}".format(connection["id"], e))
+        return {"id": connection["id"], "ok": False, "error": str(e)}
+
+
 def resolve_ci_grafana(ci_id):
     """Return monitoring dashboard info for the CI detail page.
 
-    Returns ``{"configured": bool, "has_monitoring": bool, "tool_type": str|None, "result": {...}|None}``.
+    Returns ``{"configured": bool, "has_monitoring": bool, "tool_type": str|None, "result": {...}|None, "connection_status": dict|None}``.
     ``has_monitoring`` indicates whether the CI's type has any monitoring mapping;
     ``tool_type`` is the monitoring tool type (currently always ``"grafana"`` when a
     dashboard is resolved).
+    ``connection_status`` is the health of the resolved Grafana connection (or None).
     """
     ci_obj = CI.get_by_id(ci_id) or abort(404, ErrFormat.ci_not_found.format("id={}".format(ci_id)))
     CIManager.valid_ci_only_read(ci_obj)
@@ -59,14 +70,14 @@ def resolve_ci_grafana(ci_id):
     has_monitoring = bool(connections and type_mappings)
 
     if not connections:
-        return dict(configured=False, has_monitoring=False, tool_type=None, result=None)
+        return dict(configured=False, has_monitoring=False, tool_type=None, result=None, connection_status=None)
 
     ci_type = CITypeCache.get(ci_type_id)
     unique_attr = AttributeCache.get(ci_type.unique_id) if ci_type else None
     unique_value = ci.get(unique_attr.name) if unique_attr else None
     if not unique_value:
         current_app.logger.warning("ci {} has no unique value, skip grafana resolve".format(ci_id))
-        return dict(configured=True, has_monitoring=has_monitoring, tool_type=None, result=None)
+        return dict(configured=True, has_monitoring=has_monitoring, tool_type=None, result=None, connection_status=None)
 
     def search_fn(connection):
         return GrafanaClient(connection["url"], connection["api_key"], timeout=2).search_dashboard(str(unique_value))
@@ -75,15 +86,19 @@ def resolve_ci_grafana(ci_id):
         picked = pick_dashboard(connections, mappings, ci_type_id, ci, str(unique_value), search_fn)
     except Exception as e:
         current_app.logger.warning("grafana resolve failed for ci {}: {}".format(ci_id, e))
-        return dict(configured=True, has_monitoring=has_monitoring, tool_type=None, result=None)
+        return dict(configured=True, has_monitoring=has_monitoring, tool_type=None, result=None, connection_status=None)
 
     if not picked:
-        return dict(configured=True, has_monitoring=has_monitoring, tool_type=None, result=None)
+        return dict(configured=True, has_monitoring=has_monitoring, tool_type=None, result=None, connection_status=None)
 
-    return dict(configured=True, has_monitoring=has_monitoring, tool_type="grafana", result=dict(
-        connection_id=picked["connection"]["id"],
-        grafana_url=picked["connection"]["url"],
-        uid=picked["uid"],
-        slug=picked["slug"],
-        vars=build_vars(picked["mapping"], ci, str(unique_value)),
-    ))
+    connection_status = _check_grafana_connection_status(picked["connection"])
+
+    return dict(configured=True, has_monitoring=has_monitoring, tool_type="grafana",
+                connection_status=connection_status,
+                result=dict(
+                    connection_id=picked["connection"]["id"],
+                    grafana_url=picked["connection"]["url"],
+                    uid=picked["uid"],
+                    slug=picked["slug"],
+                    vars=build_vars(picked["mapping"], ci, str(unique_value)),
+                ))
