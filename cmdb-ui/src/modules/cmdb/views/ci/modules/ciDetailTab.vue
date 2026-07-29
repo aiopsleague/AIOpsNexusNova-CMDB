@@ -202,6 +202,12 @@
           <CiDetailMonitoring v-if="ciId" :key="ciId" :ciId="ciId" :toolType="monitoringToolType" />
         </div>
       </a-tab-pane>
+      <a-tab-pane key="tab_7" v-if="hasPrometheus">
+        <span slot="tab"><a-icon type="alert" />{{ $t('cmdb.ci.prometheusAlerts') }}</span>
+        <div :style="{ padding: '24px', height: '100%' }">
+          <CiDetailPrometheus v-if="ciId" :ciId="ciId" />
+        </div>
+      </a-tab-pane>
     </a-tabs>
     <a-empty
       v-else
@@ -221,7 +227,7 @@ import _ from 'lodash'
 import { getCITypeGroupById, getCITypes } from '@/modules/cmdb/api/CIType'
 import { getCITypeAttributesById } from '@/modules/cmdb/api/CITypeAttr'
 import { getCIHistory } from '@/modules/cmdb/api/history'
-import { checkCITypeMonitoring, getCIById, searchCI } from '@/modules/cmdb/api/ci'
+import { checkCITypeMonitoring, checkCIPrometheus, getCIById, searchCI } from '@/modules/cmdb/api/ci'
 
 import RelationMixin from './ciDetailMixin/relationMixin.js'
 
@@ -236,6 +242,7 @@ import CIRollbackForm from './ciRollbackForm.vue'
 import OperateTypeTag from '../../operation_history/components/OperateTypeTag.vue'
 import QRCodeButton from '@/modules/cmdb/components/QRCodeButton/index.vue'
 import CiDetailMonitoring from './ciDetailMonitoring.vue'
+import CiDetailPrometheus from './ciDetailPrometheus.vue'
 
 export default {
   name: 'CiDetailTab',
@@ -251,7 +258,8 @@ export default {
     CIRelationTable,
     OperateTypeTag,
     QRCodeButton,
-    CiDetailMonitoring
+    CiDetailMonitoring,
+    CiDetailPrometheus,
   },
   props: {
     typeId: {
@@ -282,6 +290,7 @@ export default {
       localAttributes: {},
       tableHeight: this.attributeHistoryTableHeight || (this.$store.state.windowHeight - 130),
       hasMonitoring: false,
+      hasPrometheus: false,
       monitoringToolType: 'grafana',
       initQueryLoading: true,
       ciHistoryStatsList: [
@@ -364,6 +373,7 @@ export default {
         this.getAttributes(effectiveTypeId)
         this.loadAttrList(effectiveTypeId)
         this.checkMonitoring(effectiveTypeId)
+        this.checkPrometheus(effectiveTypeId)
         this.getCIHistory()
         const ciTypeRes = await getCITypes()
         this.ci_types = ciTypeRes.ci_types
@@ -479,6 +489,16 @@ export default {
         this.hasMonitoring = res.has_monitoring || false
       } catch (e) {
         this.hasMonitoring = false
+      }
+    },
+
+    async checkPrometheus(typeIdOverride) {
+      const typeId = typeIdOverride || this.typeId
+      try {
+        const res = await checkCIPrometheus(typeId)
+        this.hasPrometheus = res.has_prometheus || false
+      } catch (e) {
+        this.hasPrometheus = false
       }
     },
 
