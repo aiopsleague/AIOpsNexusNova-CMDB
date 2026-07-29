@@ -1,5 +1,7 @@
 # -*- coding:utf-8 -*-
 import base64
+import hashlib
+import json
 
 import requests
 
@@ -41,6 +43,30 @@ class PrometheusClient(object):
                 headers['Authorization'] = 'Basic {}'.format(creds)
         return headers
 
+    @staticmethod
+    def _compute_fingerprint(labels):
+        """Compute a stable fingerprint from alert labels.
+
+        The standard Prometheus ``/api/v1/alerts`` response does not include a
+        ``fingerprint`` field, so we compute one client-side by hashing the
+        sorted label key-value pairs.  This produces a consistent identifier
+        suitable for deduplication.
+        """
+        sorted_str = json.dumps(labels, sort_keys=True, separators=(',', ':'))
+        return hashlib.md5(sorted_str.encode('utf-8')).hexdigest()
+
+    @staticmethod
+    def _labels_match(alert_labels, matchers):
+        """Return True if *alert_labels* satisfy all *matchers*.
+
+        Each matcher value is compared for exact string equality against the
+        corresponding label in the alert.
+        """
+        for k, v in matchers.items():
+            if alert_labels.get(k) != v:
+                return False
+        return True
+
     def health_check(self):
         """Return True if Prometheus is reachable and healthy.
 
@@ -57,10 +83,16 @@ class PrometheusClient(object):
     def query_alerts(self, labels):
         """Query firing alerts matching the given label matchers.
 
+        The Prometheus ``/api/v1/alerts`` endpoint does not natively support
+        server-side label filtering, so this method fetches **all** active
+        alerts and filters them client-side.
+
         Parameters
         ----------
         labels : dict
             Label matchers, e.g. ``{"instance": "10.0.0.1", "job": "node"}``.
+            An alert is included only when its labels contain **all** of the
+            specified key-value pairs (exact match).
 
         Returns
         -------
@@ -71,16 +103,10 @@ class PrometheusClient(object):
         if not labels:
             return []
 
-        matchers = []
-        for k, v in labels.items():
-            matchers.append('{}="{}"'.format(k, v))
-        filter_expr = '{' + ','.join(matchers) + '}'
-
         try:
             resp = requests.get(
                 '{}/api/v1/alerts'.format(self.url),
                 headers=self._headers(),
-                params={'filter': filter_expr},
                 timeout=self.timeout,
             )
             resp.raise_for_status()
@@ -96,9 +122,12 @@ class PrometheusClient(object):
         for a in alerts:
             if a.get('state') != 'firing':
                 continue
+            alert_labels = a.get('labels', {})
+            if not self._labels_match(alert_labels, labels):
+                continue
             result.append({
-                'fingerprint': a.get('fingerprint', ''),
-                'labels': a.get('labels', {}),
+                'fingerprint': a.get('fingerprint') or self._compute_fingerprint(alert_labels),
+                'labels': alert_labels,
                 'annotations': a.get('annotations', {}),
                 'state': a.get('state', 'firing'),
                 'activeAt': a.get('activeAt', ''),

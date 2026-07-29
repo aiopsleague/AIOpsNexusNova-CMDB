@@ -59,6 +59,20 @@ def resolve_ci_prometheus_alerts(ci_id):
     all_alerts = []
     seen_fingerprints = set()
 
+    # Collect display_columns from all type mappings (dedup by key, first wins)
+    merged_display_columns = []
+    seen_display_keys = set()
+    for mapping in type_mappings:
+        for dc in mapping.get("display_columns") or []:
+            key = dc.get("key", "")
+            if key and key not in seen_display_keys:
+                seen_display_keys.add(key)
+                merged_display_columns.append({
+                    "key": key,
+                    "title_zh": dc.get("title_zh", key),
+                    "title_en": dc.get("title_en", key),
+                })
+
     for mapping in type_mappings:
         connection = next((c for c in connections if c.get("id") == mapping["connection_id"]), None)
         if not connection or connection.get("enable", 1) == 0:
@@ -95,6 +109,15 @@ def resolve_ci_prometheus_alerts(ci_id):
                 # Extract rule name from labels
                 a["rule_name"] = a.get("labels", {}).get("alertname", "")
                 all_alerts.append(a)
+    # Flatten display_columns values into top-level _d_<key> fields on each alert
+    # (ant-design-vue 1.x dataIndex does not support nested lookups or
+    # customRender reliably, so we flatten into simple top-level properties.)
+    for a in all_alerts:
+        alert_labels = a.get("labels", {})
+        alert_annotations = a.get("annotations", {})
+        for dc in merged_display_columns:
+            key = dc["key"]
+            a["_d_" + key] = alert_labels.get(key) or alert_annotations.get(key) or ""
 
     # Sort: critical > warning > info, then by activeAt descending
     severity_order = {"critical": 0, "warning": 1, "info": 2}
@@ -103,4 +126,9 @@ def resolve_ci_prometheus_alerts(ci_id):
         a.get("activeAt", ""),
     ))
 
-    return dict(configured=True, has_prometheus=has_prometheus, alerts=all_alerts)
+    return dict(
+        configured=True,
+        has_prometheus=has_prometheus,
+        display_columns=merged_display_columns,
+        alerts=all_alerts,
+    )

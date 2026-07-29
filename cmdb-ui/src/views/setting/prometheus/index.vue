@@ -188,6 +188,33 @@
             {{ $t('cs.prometheus.addLabelMapping') }}
           </a-button>
         </a-form-model-item>
+        <a-form-model-item :label="$t('cs.prometheus.displayColumns')">
+          <p style="color: #8c8c8c; font-size: 12px; margin-bottom: 8px;">{{ $t('cs.prometheus.displayColumnsHint') }}</p>
+          <a-table
+            :columns="displayColumnTableColumns"
+            :data-source="mappingForm.display_columns"
+            :pagination="false"
+            size="small"
+            rowKey="_key"
+            style="margin-bottom: 8px"
+          >
+            <template slot="key" slot-scope="text, record">
+              <a-input v-model="record.key" :placeholder="$t('cs.prometheus.columnKeyPlaceholder')" style="width: 100%" />
+            </template>
+            <template slot="title_zh" slot-scope="text, record">
+              <a-input v-model="record.title_zh" :placeholder="$t('cs.prometheus.columnTitleZh')" style="width: 100%" />
+            </template>
+            <template slot="title_en" slot-scope="text, record">
+              <a-input v-model="record.title_en" :placeholder="$t('cs.prometheus.columnTitleEn')" style="width: 100%" />
+            </template>
+            <template slot="action" slot-scope="text, record, index">
+              <a-icon type="minus-circle" style="cursor: pointer; color: #f5222d; font-size: 16px;" @click="removeDisplayColumn(index)" />
+            </template>
+          </a-table>
+          <a-button type="dashed" size="small" icon="plus" @click="addDisplayColumn">
+            {{ $t('cs.prometheus.addDisplayColumn') }}
+          </a-button>
+        </a-form-model-item>
         <a-form-model-item :label="$t('cs.prometheus.mappingEnable')">
           <a-switch :checked="mappingForm.enable !== 0" @change="(checked) => { mappingForm.enable = checked ? 1 : 0 }" />
         </a-form-model-item>
@@ -224,13 +251,15 @@ export default {
       connectionModalVisible: false,
       mappingModalVisible: false,
       connectionForm: { id: null, name: '', url: '', auth_type: 'none', auth_data: {}, remark: '', enable: 1 },
-      mappingForm: { id: null, ci_type_id: undefined, connection_id: undefined, label_mapping: [], enable: 1 },
+      mappingForm: { id: null, ci_type_id: undefined, connection_id: undefined, label_mapping: [], display_columns: [], enable: 1 },
       labelMappingKeyCounter: 0,
+      displayColumnsKeyCounter: 0,
       healthMap: {},
       ciAttrOptions: [],
       connectionColumns: [],
       mappingColumns: [],
       labelMappingColumns: [],
+      displayColumnTableColumns: [],
     }
   },
   computed: {
@@ -268,6 +297,12 @@ export default {
       { title: this.$t('cs.prometheus.promLabel'), scopedSlots: { customRender: 'prom_label' } },
       { title: this.$t('cs.prometheus.mapType'), scopedSlots: { customRender: 'map_type' }, width: 100 },
       { title: this.$t('cs.prometheus.target'), scopedSlots: { customRender: 'target' } },
+      { title: this.$t('cs.prometheus.operation'), scopedSlots: { customRender: 'action' }, width: 50 },
+    ]
+    this.displayColumnTableColumns = [
+      { title: this.$t('cs.prometheus.columnKey'), scopedSlots: { customRender: 'key' } },
+      { title: this.$t('cs.prometheus.columnTitleZh'), scopedSlots: { customRender: 'title_zh' } },
+      { title: this.$t('cs.prometheus.columnTitleEn'), scopedSlots: { customRender: 'title_en' } },
       { title: this.$t('cs.prometheus.operation'), scopedSlots: { customRender: 'action' }, width: 50 },
     ]
   },
@@ -337,16 +372,25 @@ export default {
           value: lm.value || '',
         }))
         this.labelMappingKeyCounter = mapped.length
+        const dcs = (record.display_columns || []).map((dc, idx) => ({
+          _key: idx + 1,
+          key: dc.key || '',
+          title_zh: dc.title_zh || '',
+          title_en: dc.title_en || '',
+        }))
+        this.displayColumnsKeyCounter = dcs.length
         this.mappingForm = {
           id: record.id,
           ci_type_id: record.ci_type_id,
           connection_id: record.connection_id,
           enable: record.enable === undefined ? 1 : record.enable,
           label_mapping: mapped,
+          display_columns: dcs,
         }
       } else {
         this.labelMappingKeyCounter = 0
-        this.mappingForm = { id: null, ci_type_id: undefined, connection_id: undefined, label_mapping: [], enable: 1 }
+        this.displayColumnsKeyCounter = 0
+        this.mappingForm = { id: null, ci_type_id: undefined, connection_id: undefined, label_mapping: [], display_columns: [], enable: 1 }
       }
       this.mappingModalVisible = true
       this.$nextTick(() => this.$refs.mappingForm && this.$refs.mappingForm.clearValidate())
@@ -370,6 +414,17 @@ export default {
     },
     removeLabelMapping(index) {
       this.mappingForm.label_mapping.splice(index, 1)
+    },
+    addDisplayColumn() {
+      this.mappingForm.display_columns.push({
+        _key: ++this.displayColumnsKeyCounter,
+        key: '',
+        title_zh: '',
+        title_en: '',
+      })
+    },
+    removeDisplayColumn(index) {
+      this.mappingForm.display_columns.splice(index, 1)
     },
     async handleToggleEnable(record, checked) {
       await putPrometheusConnection(record.id, { enable: checked ? 1 : 0 })
@@ -409,9 +464,19 @@ export default {
           this.$message.error(this.$t('cs.prometheus.labelMappingIncomplete'))
           return
         }
+        // Check display_columns: key is required
+        const dcIncomplete = (this.mappingForm.display_columns || []).some((dc) => !dc.key)
+        if (dcIncomplete) {
+          this.$message.error(this.$t('cs.prometheus.displayColumnsKeyRequired'))
+          return
+        }
         this.saving = true
         try {
           const { id, ...data } = this.mappingForm
+          // Strip _key from display_columns before sending
+          if (data.display_columns) {
+            data.display_columns = data.display_columns.map(({ _key, ...dc }) => dc)
+          }
           if (id) {
             await putPrometheusMapping(id, data)
           } else {

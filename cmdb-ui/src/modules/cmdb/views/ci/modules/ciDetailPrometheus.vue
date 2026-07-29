@@ -129,6 +129,7 @@ export default {
       configured: true,
       errorMsg: '',
       alerts: [],
+      displayColumns: [],
       lastRefreshTime: null,
       refreshTimer: null,
     }
@@ -147,12 +148,26 @@ export default {
       return d.toLocaleTimeString()
     },
     columns() {
-      return [
-        { title: this.$t('cmdb.ci.alertSeverity'), scopedSlots: { customRender: 'severity' }, width: 120 },
-        { title: this.$t('cmdb.ci.alertName'), dataIndex: 'rule_name' },
-        { title: this.$t('cmdb.ci.alertActiveAt'), scopedSlots: { customRender: 'activeAt' }, width: 180 },
-        { title: this.$t('cmdb.ci.alertDuration'), scopedSlots: { customRender: 'duration' }, width: 120 },
+      const isZh = this.$i18n.locale === 'zh'
+      const cols = [
+        { title: this.$t('cmdb.ci.alertSeverity'), dataIndex: 'labels.severity', key: 'severity', scopedSlots: { customRender: 'severity' }, width: 110 },
       ]
+      // Dynamic columns from display_columns config
+      // Values are flattened to _d_<key> top-level properties by the backend
+      ;(this.displayColumns || []).forEach((col) => {
+        const title = isZh ? (col.title_zh || col.key) : (col.title_en || col.key)
+        cols.push({
+          title,
+          dataIndex: '_d_' + col.key,
+          key: col.key,
+          ellipsis: true,
+        })
+      })
+      cols.push(
+        { title: this.$t('cmdb.ci.alertActiveAt'), dataIndex: 'activeAt', key: 'activeAt', scopedSlots: { customRender: 'activeAt' }, width: 180 },
+        { title: this.$t('cmdb.ci.alertDuration'), dataIndex: 'activeAt', key: 'duration', scopedSlots: { customRender: 'duration' }, width: 110 },
+      )
+      return cols
     },
   },
   mounted() {
@@ -173,6 +188,7 @@ export default {
         const res = await getCIPrometheusAlerts(this.ciId)
         this.configured = res.configured !== false
         this.alerts = res.alerts || []
+        this.displayColumns = res.display_columns || []
         this.lastRefreshTime = Date.now()
       } catch (e) {
         this.alerts = []

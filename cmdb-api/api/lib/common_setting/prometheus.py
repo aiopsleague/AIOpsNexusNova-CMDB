@@ -202,6 +202,31 @@ class PrometheusConfigCRUD(object):
             result.append({"prom_label": prom_label, "map_type": map_type, "value": value})
         return result
 
+    @staticmethod
+    def _valid_display_columns(display_columns):
+        """Validate and normalise display_columns list.
+
+        Each entry must be a dict with a non-empty ``key``.
+        ``title_zh`` and ``title_en`` default to ``key`` when omitted.
+        """
+        if display_columns is None:
+            return []
+        if not isinstance(display_columns, list):
+            abort(400, ErrFormat.value_is_required)
+        result = []
+        for dc in display_columns:
+            if not isinstance(dc, dict):
+                abort(400, ErrFormat.value_is_required)
+            key = str((dc or {}).get("key") or "").strip()
+            if not key:
+                abort(400, ErrFormat.value_is_required)
+            result.append({
+                "key": key,
+                "title_zh": str(dc.get("title_zh") or key).strip(),
+                "title_en": str(dc.get("title_en") or key).strip(),
+            })
+        return result
+
     def list_mappings(self):
         mappings = self.get_config()["mappings"]
         result = []
@@ -228,6 +253,7 @@ class PrometheusConfigCRUD(object):
             ci_type_id=ci_type_id,
             connection_id=connection_id,
             label_mapping=self._valid_label_mapping(data.get("label_mapping")),
+            display_columns=self._valid_display_columns(data.get("display_columns")),
             enable=self._to_enable(data.get("enable", 1)),
         )
         config["mappings"].append(mapping)
@@ -250,6 +276,8 @@ class PrometheusConfigCRUD(object):
             mapping["connection_id"] = connection_id
         if "label_mapping" in data:
             mapping["label_mapping"] = self._valid_label_mapping(data["label_mapping"])
+        if "display_columns" in data:
+            mapping["display_columns"] = self._valid_display_columns(data["display_columns"])
         if "enable" in data:
             mapping["enable"] = self._to_enable(data["enable"])
 
