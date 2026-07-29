@@ -84,3 +84,6 @@ cmdb-ui/package-lock.json
 
 
 cmdb-api/celerybeat-schedule*.claude/worktrees/
+cmdb-api/celerybeat-schedule
+cmdb-api/celerybeat-schedule-shm
+cmdb-api/celerybeat-schedule-wal

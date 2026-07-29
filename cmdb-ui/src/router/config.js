@@ -103,7 +103,7 @@ export const generatorDynamicRouter = async () => {
           }, {
             path: '/setting/observability/prometheus',
             name: 'setting_prometheus',
-            meta: { title: 'cs.menu.prometheus' },
+            meta: { title: 'cs.menu.prometheus', icon: 'monitor-prometheus', selectedIcon: 'monitor-prometheus' },
             component: () => import(/* webpackChunkName: "setting" */ '@/views/setting/prometheus/index')
           }]
         },

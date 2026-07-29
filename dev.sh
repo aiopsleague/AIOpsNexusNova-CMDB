@@ -220,7 +220,7 @@ setup_node() {
     source "$nvm_dir/nvm.sh"
     set -u
     # 切换到项目所需版本（不存在则自动安装）
-    local node_version="${NODE_VERSION:-16}"
+    local node_version="${NODE_VERSION:-18}"
     if ! nvm use "$node_version" >/dev/null 2>&1; then
         c_yellow "Node $node_version 未安装，nvm 自动安装中..."
         nvm install "$node_version" || { c_red "Node $node_version 安装失败"; return 1; }
