@@ -70,6 +70,14 @@ class ErrFormat(CommonErrFormat):
     email_format_error = _l("Email format error")  # 邮箱格式错误
     email_send_timeout = _l("Email send timeout")  # 邮件发送超时
 
+    prometheus_config_broken = _l("Prometheus config is broken, please check SECRET_KEY or contact admin")  # Prometheus配置解析失败，请检查SECRET_KEY或联系管理员
+    prometheus_connection_not_found = _l("Prometheus connection [{}] not found")  # Prometheus连接 [{}] 不存在
+    prometheus_mapping_not_found = _l("Prometheus mapping [{}] not found")  # Prometheus映射 [{}] 不存在
+    prometheus_name_required = _l("Prometheus name is required")  # Prometheus名称是必须的
+    prometheus_url_required = _l("Prometheus url is required")  # Prometheus地址是必须的
+    prometheus_label_mapping_required = _l("Prometheus label mapping is required")  # Prometheus标签映射是必须的
+    prometheus_test_failed = _l("Prometheus connection test failed: {}")  # Prometheus连接测试失败: {}
+
     common_data_not_found = _l("Common data not found {} ")  # ID {} 找不到记录
     common_data_already_existed = _l("Common data {} already existed")  # {} 已存在
     notice_platform_existed = _l("Notice platform {} existed")  # {} 已存在
