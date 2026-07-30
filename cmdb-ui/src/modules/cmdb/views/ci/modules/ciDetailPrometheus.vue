@@ -98,77 +98,79 @@
         </div>
       </div>
 
-      <!-- Alert Table -->
-      <a-spin :spinning="loading">
-        <a-table
-          v-if="alerts.length"
-          :columns="columns"
-          :data-source="alerts"
-          :pagination="false"
-          rowKey="fingerprint"
-          size="small"
-          :expandRowByClick="true"
-          class="prom-alert-table"
-        >
-          <template slot="severity" slot-scope="text, record">
-            <a-badge
-              :status="severityStatus(record.labels.severity)"
-              :text="severityStatusText(record.labels.severity)"
-            />
-          </template>
-          <template slot="activeAt" slot-scope="text">
-            {{ text | formatTime }}
-          </template>
-          <template slot="duration" slot-scope="text, record">
-            {{ formatDuration(record.activeAt) }}
-          </template>
-          <template slot="expandedRowRender" slot-scope="record">
-            <div class="prom-alert-detail">
-              <div class="prom-alert-detail-section">
-                <div class="prom-alert-detail-title">{{ $t('cmdb.ci.alertLabels') }}</div>
-                <div class="prom-alert-detail-tags">
-                  <a-tag v-for="(val, key) in record.labels" :key="key" color="blue">
-                    {{ key }}={{ val }}
-                  </a-tag>
+      <!-- Alert Table (scrollable) -->
+      <div class="prom-alert-table-wrapper">
+        <a-spin :spinning="loading" class="prom-alert-spin">
+          <a-table
+            v-if="alerts.length"
+            :columns="columns"
+            :data-source="alerts"
+            :pagination="false"
+            rowKey="fingerprint"
+            size="small"
+            :expandRowByClick="true"
+            class="prom-alert-table"
+          >
+            <template slot="severity" slot-scope="text, record">
+              <a-badge
+                :status="severityStatus(record.labels.severity)"
+                :text="severityStatusText(record.labels.severity)"
+              />
+            </template>
+            <template slot="activeAt" slot-scope="text">
+              {{ text | formatTime }}
+            </template>
+            <template slot="duration" slot-scope="text, record">
+              {{ formatDuration(record.activeAt) }}
+            </template>
+            <template slot="expandedRowRender" slot-scope="record">
+              <div class="prom-alert-detail">
+                <div class="prom-alert-detail-section">
+                  <div class="prom-alert-detail-title">{{ $t('cmdb.ci.alertLabels') }}</div>
+                  <div class="prom-alert-detail-tags">
+                    <a-tag v-for="(val, key) in record.labels" :key="key" color="blue">
+                      {{ key }}={{ val }}
+                    </a-tag>
+                  </div>
+                </div>
+                <div v-if="record.annotations && Object.keys(record.annotations).length" class="prom-alert-detail-section">
+                  <div class="prom-alert-detail-title">{{ $t('cmdb.ci.alertAnnotations') }}</div>
+                  <div v-if="record.annotations.summary" class="prom-alert-annotation">
+                    <strong>Summary:</strong> {{ record.annotations.summary }}
+                  </div>
+                  <div v-if="record.annotations.description" class="prom-alert-annotation">
+                    <strong>Description:</strong> {{ record.annotations.description }}
+                  </div>
+                </div>
+                <div class="prom-alert-detail-section">
+                  <a-row :gutter="16">
+                    <a-col :span="12">
+                      <span class="prom-alert-detail-title">{{ $t('cmdb.ci.alertRuleName') }}:</span>
+                      {{ record.rule_name || '-' }}
+                    </a-col>
+                    <a-col :span="12">
+                      <span class="prom-alert-detail-title">{{ $t('cmdb.ci.alertValue') }}:</span>
+                      {{ record.value || '-' }}
+                    </a-col>
+                  </a-row>
                 </div>
               </div>
-              <div v-if="record.annotations && Object.keys(record.annotations).length" class="prom-alert-detail-section">
-                <div class="prom-alert-detail-title">{{ $t('cmdb.ci.alertAnnotations') }}</div>
-                <div v-if="record.annotations.summary" class="prom-alert-annotation">
-                  <strong>Summary:</strong> {{ record.annotations.summary }}
-                </div>
-                <div v-if="record.annotations.description" class="prom-alert-annotation">
-                  <strong>Description:</strong> {{ record.annotations.description }}
-                </div>
-              </div>
-              <div class="prom-alert-detail-section">
-                <a-row :gutter="16">
-                  <a-col :span="12">
-                    <span class="prom-alert-detail-title">{{ $t('cmdb.ci.alertRuleName') }}:</span>
-                    {{ record.rule_name || '-' }}
-                  </a-col>
-                  <a-col :span="12">
-                    <span class="prom-alert-detail-title">{{ $t('cmdb.ci.alertValue') }}:</span>
-                    {{ record.value || '-' }}
-                  </a-col>
-                </a-row>
-              </div>
-            </div>
-          </template>
-        </a-table>
+            </template>
+          </a-table>
 
-        <!-- Empty states -->
-        <a-empty
-          v-else-if="!loading"
-          :image-style="{ height: '100px' }"
-          :style="{ paddingTop: '10%' }"
-        >
-          <img slot="image" :src="require('@/assets/data_empty.png')" />
-          <span slot="description">
-            {{ emptyDescription }}
-          </span>
-        </a-empty>
-      </a-spin>
+          <!-- Empty states -->
+          <a-empty
+            v-else-if="!loading"
+            :image-style="{ height: '100px' }"
+            :style="{ paddingTop: '10%' }"
+          >
+            <img slot="image" :src="require('@/assets/data_empty.png')" />
+            <span slot="description">
+              {{ emptyDescription }}
+            </span>
+          </a-empty>
+        </a-spin>
+      </div>
     </div>
   </div>
 </template>
@@ -247,7 +249,7 @@ export default {
       })
       cols.push(
         { title: this.$t('cmdb.ci.alertActiveAt'), dataIndex: 'activeAt', key: 'activeAt', scopedSlots: { customRender: 'activeAt' }, width: 180 },
-        { title: this.$t('cmdb.ci.alertDuration'), dataIndex: 'activeAt', key: 'duration', scopedSlots: { customRender: 'duration' }, width: 110 },
+        { title: this.$t('cmdb.ci.alertDuration'), dataIndex: 'activeAt', key: 'duration', scopedSlots: { customRender: 'duration' }, width: 130 },
       )
       return cols
     },
@@ -313,11 +315,28 @@ export default {
       if (!activeAt) return '-'
       const start = new Date(activeAt).getTime()
       const now = Date.now()
-      const diff = Math.floor((now - start) / 1000)
-      if (diff < 60) return diff + 's'
-      if (diff < 3600) return Math.floor(diff / 60) + 'm'
-      if (diff < 86400) return Math.floor(diff / 3600) + 'h'
-      return Math.floor(diff / 86400) + 'd'
+      let diff = Math.floor((now - start) / 1000)
+      if (diff < 0) diff = 0
+
+      const days = Math.floor(diff / 86400)
+      diff -= days * 86400
+      const hours = Math.floor(diff / 3600)
+      diff -= hours * 3600
+      const minutes = Math.floor(diff / 60)
+      const seconds = diff - minutes * 60
+
+      const isZh = this.$i18n.locale === 'zh'
+      const parts = []
+      if (days > 0) parts.push(days + (isZh ? this.$t('cmdb.ci.alertDurationDay') : ' ' + this.$t('cmdb.ci.alertDurationDay') + ' '))
+      if (hours > 0) parts.push(hours + (isZh ? this.$t('cmdb.ci.alertDurationHour') : ' ' + this.$t('cmdb.ci.alertDurationHour') + ' '))
+      if (minutes > 0) parts.push(minutes + (isZh ? this.$t('cmdb.ci.alertDurationMinute') : ' ' + this.$t('cmdb.ci.alertDurationMinute') + ' '))
+      if (seconds > 0 || parts.length === 0) parts.push(seconds + (isZh ? this.$t('cmdb.ci.alertDurationSecond') : ' ' + this.$t('cmdb.ci.alertDurationSecond')))
+
+      if (isZh) {
+        return parts.join('')
+      } else {
+        return parts.join('').trim()
+      }
     },
   },
 }
@@ -326,6 +345,9 @@ export default {
 <style lang="less" scoped>
 .ci-detail-prometheus {
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .prom-connection-alert {
@@ -352,7 +374,11 @@ export default {
 }
 
 .prom-normal-content {
-  height: calc(100% - 60px);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .prom-alert-stats {
@@ -361,6 +387,7 @@ export default {
   margin-bottom: 20px;
   flex-wrap: wrap;
   align-items: center;
+  flex-shrink: 0;
 }
 .prom-stat-card {
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fb 100%);
@@ -401,6 +428,17 @@ export default {
   gap: 12px;
   .last-refresh { font-size: 12px; color: #8c8c8c; }
 }
+
+.prom-alert-table-wrapper {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+}
+
+.prom-alert-spin {
+  height: 100%;
+}
+
 .prom-alert-table {
   background: #fff;
   border-radius: 8px;
