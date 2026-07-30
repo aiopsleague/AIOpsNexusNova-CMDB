@@ -1064,6 +1064,8 @@ if __name__ == "__main__":
         noInstancePerm: 'You do not have read permissions for this instance',
         noPreferenceAttributes: 'This instance has no subscription attributes or no default displayed attributes',
         topoViewSearchPlaceholder: 'Please enter the node name.',
+        layoutMindmap: 'Mindmap',
+        layoutCompactBox: 'Compact Tree',
         moreBtn: 'Show more({count})'
     },
     relationSearch: {

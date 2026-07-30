@@ -1060,6 +1060,8 @@ if __name__ == "__main__":
         noInstancePerm: '您没有该实例的查看权限',
         noPreferenceAttributes: '该实例没有订阅属性或者没有默认展示的属性',
         topoViewSearchPlaceholder: '请输入节点名字',
+        layoutMindmap: '思维导图',
+        layoutCompactBox: '紧凑树',
         moreBtn: '展示更多({count})'
     },
     relationSearch: {

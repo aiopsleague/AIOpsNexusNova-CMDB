@@ -1,9 +1,27 @@
 <template>
-  <div
-    id="ci-detail-relation-topo"
-    class="ci-detail-relation-topo"
-    :style="{ width: '100%', height: '100%' }"
-  ></div>
+  <div class="ci-detail-relation-topo" :style="{ width: '100%', height: '100%', position: 'relative' }">
+    <div
+      id="ci-detail-relation-topo"
+      :style="{ width: '100%', height: '100%' }"
+    ></div>
+    <div class="topo-layout-switch">
+      <a-radio-group
+        v-model="currentLayout"
+        size="small"
+        button-style="solid"
+        @change="switchLayout"
+      >
+        <a-radio-button value="mindmap">
+          <a-icon type="apartment" />
+          {{ $t('cmdb.topo.layoutMindmap') }}
+        </a-radio-button>
+        <a-radio-button value="compactBox">
+          <a-icon type="cluster" />
+          {{ $t('cmdb.topo.layoutCompactBox') }}
+        </a-radio-button>
+      </a-radio-group>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -22,15 +40,53 @@ export default {
     return {
       topoData: {},
       exsited_ci: [],
+      currentLayout: 'mindmap',
     }
   },
   inject: ['ci_types'],
-  methods: {
-    init() {
-      const root = document.getElementById('ci-detail-relation-topo')
+  computed: {
+    layoutOptions() {
       const canvas = document.createElement('canvas')
       const context = canvas.getContext('2d')
       context.font = '16px'
+
+      const measureWidth = (d) => {
+        const metrics = context.measureText(d?.title || '')
+        return metrics.width + 20 + 4 + 40
+      }
+
+      const layouts = {
+        mindmap: {
+          type: 'mindmap',
+          options: {
+            direction: 'H',
+            getSide(d) {
+              return d.data.side || 'right'
+            },
+            getHeight(d) { return 10 },
+            getWidth: measureWidth,
+            getHGap(d) { return 80 },
+            getVGap(d) { return 40 },
+          },
+        },
+        compactBox: {
+          type: 'compactBox',
+          options: {
+            direction: 'LR',
+            getHeight(d) { return 10 },
+            getWidth: measureWidth,
+            getHGap(d) { return 60 },
+            getVGap(d) { return 30 },
+          },
+        },
+      }
+      return layouts[this.currentLayout] || layouts.mindmap
+    },
+  },
+  methods: {
+    init() {
+      const root = document.getElementById('ci-detail-relation-topo')
+      const layoutConfig = this.layoutOptions
 
       this.canvas = new TreeCanvas({
         root: root,
@@ -46,35 +102,7 @@ export default {
             arrowPosition: 1,
           },
         },
-        layout: {
-          type: 'mindmap',
-          options: {
-            direction: 'H',
-            getSide(d) {
-              return d.data.side || 'right'
-            },
-            getHeight(d) {
-              return 10
-            },
-            getWidth(d) {
-              const metrics = context.measureText(d?.title || '')
-              const width = metrics.width
-              /**
-               * width 文字宽度
-               * 20    icon 宽度
-               * 4     盒子内边距
-               * 40    节点间距
-               */
-              return width + 20 + 4 + 40
-            },
-            getHGap(d) {
-              return 80
-            },
-            getVGap(d) {
-              return 40
-            },
-          },
-        },
+        layout: layoutConfig,
       })
       this.canvas.setZoomable(true, true)
 
@@ -100,6 +128,13 @@ export default {
         this.redrawData(res, sourceNode, reverse === 1 ? 'left' : 'right')
       })
     }, 300),
+
+    switchLayout() {
+      // Re-render existing data with new layout
+      if (this.topoData && Object.keys(this.topoData).length) {
+        this.setTopoData(this.topoData)
+      }
+    },
 
     setTopoData(data) {
       const root = document.getElementById('ci-detail-relation-topo')
