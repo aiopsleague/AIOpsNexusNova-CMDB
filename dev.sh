@@ -193,6 +193,7 @@ run_init() {
         [[ -d "$FASTAPI_DIR/.venv" ]] || { c_red "找不到 $FASTAPI_DIR/.venv，请先运行 uv sync"; return 1; }
         cd "$FASTAPI_DIR"
         for c in "${cmds[@]}"; do
+            c_green "正在进行${c}初始化..."
             uv run python cli.py "$c" || { c_red "[warn] $c 执行失败（已初始化的库上属预期），跳过"; failed=1; }
         done
     else
