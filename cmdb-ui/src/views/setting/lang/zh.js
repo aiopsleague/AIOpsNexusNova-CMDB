@@ -267,7 +267,7 @@ const cs_zh = {
     },
   },
   grafana: {
-    connection: '连接实例',
+    connection: '连接管理',
     mapping: '仪表板映射',
     name: '名称',
     url: 'Grafana地址',
@@ -276,7 +276,7 @@ const cs_zh = {
     ciType: 'CI类型',
     connectionInstance: '连接实例',
     status: '状态',
-    healthy: '正常',
+    healthy: '健康',
     unhealthy: '异常',
     checking: '检测中',
     enable: '启用',
