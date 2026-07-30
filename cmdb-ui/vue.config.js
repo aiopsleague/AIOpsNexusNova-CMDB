@@ -66,7 +66,7 @@ module.exports = {
         pathRewrite: {
           '^/api': '/api',
         },
-        target: process.env.DEV_API_TARGET || 'http://localhost:5000',
+        target: process.env.DEV_API_TARGET || 'http://127.0.0.1:5000',
         changeOrigin: true,
         onProxyReq: function (proxyReq) {
           // 模拟 nginx 的 proxy_set_header X-Real-IP $remote_addr
