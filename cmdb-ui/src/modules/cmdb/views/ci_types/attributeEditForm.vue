@@ -922,7 +922,7 @@ export default {
           }
 
           if (values.id) {
-            await this.updateAttribute(values.id, { ...values, option: { fontOptions } }, isCalcComputed)
+            await this.updateAttribute(values.id, { ...values, option: { ...values.option, fontOptions } }, isCalcComputed)
           } else {
             // this.createAttribute(values)
           }
