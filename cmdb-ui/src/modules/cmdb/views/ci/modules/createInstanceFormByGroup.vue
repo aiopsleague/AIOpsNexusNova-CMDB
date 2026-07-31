@@ -39,6 +39,18 @@
               }
             ]"
           />
+          <CiFileField
+            v-else-if="attr.is_file"
+            :isEdit="true"
+            :isList="attr.is_list"
+            :attrId="attr.id"
+            v-decorator="[
+              attr.name,
+              {
+                rules: [{ required: attr.is_required, message: $t('placeholder2') + `${attr.alias || attr.name}` }],
+              },
+            ]"
+          />
           <a-textarea
             v-else-if="isLongText(attr)"
             v-decorator="[
@@ -168,12 +180,14 @@ import { isLongText } from '@/modules/cmdb/utils/helper'
 
 import JsonEditor from '../../../components/JsonEditor/jsonEditor.vue'
 import CIReferenceAttr from '@/components/ciReferenceAttr/index.vue'
+import CiFileField from '@/modules/cmdb/components/CiFileField.vue'
 
 export default {
   name: 'CreateInstanceFormByGroup',
   components: {
     JsonEditor,
-    CIReferenceAttr
+    CIReferenceAttr,
+    CiFileField
   },
   props: {
     group: {
