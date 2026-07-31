@@ -11,6 +11,13 @@
           {{ attr.referenceShowAttrNameMap ? attr.referenceShowAttrNameMap[ciId] || ciId : ciId }}
         </a>
       </template>
+      <CiFileField
+        v-else-if="attr.is_file"
+        :value="ci[attr.name]"
+        :isList="attr.is_list"
+        :isEdit="false"
+        :attrId="attr.id"
+      />
       <PasswordField
         :style="{ display: 'inline-block' }"
         v-else-if="attr.is_password && ci[attr.name]"
@@ -91,6 +98,18 @@
             :isList="attr.is_list"
             :referenceShowAttrName="attr.showAttrName"
             :initSelectOption="getInitReferenceSelectOption(attr)"
+            v-decorator="[
+              attr.name,
+              {
+                rules: [{ required: attr.is_required, message: $t('placeholder2') + `${attr.alias || attr.name}` }],
+              }
+            ]"
+          />
+          <CiFileField
+            v-else-if="attr.is_file"
+            :isEdit="true"
+            :isList="attr.is_list"
+            :attrId="attr.id"
             v-decorator="[
               attr.name,
               {
@@ -215,10 +234,11 @@ import { isLongText } from '@/modules/cmdb/utils/helper'
 import JsonEditor from '../../../components/JsonEditor/jsonEditor.vue'
 import PasswordField from '../../../components/passwordField/index.vue'
 import CIReferenceAttr from '@/components/ciReferenceAttr/index.vue'
+import CiFileField from '@/modules/cmdb/components/CiFileField.vue'
 
 export default {
   name: 'CiDetailAttrContent',
-  components: { JsonEditor, PasswordField, CIReferenceAttr },
+  components: { JsonEditor, PasswordField, CIReferenceAttr, CiFileField },
   props: {
     ci: {
       type: Object,
