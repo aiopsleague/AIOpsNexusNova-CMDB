@@ -4,6 +4,7 @@
 import copy
 import datetime
 import json
+import logging
 import redis_lock
 import threading
 from api.core.errors import abort
@@ -17,6 +18,7 @@ from api.extensions import rd
 from api.lib.cmdb.cache import AttributeCache
 from api.lib.cmdb.cache import CITypeCache
 from api.lib.cmdb.cache import CMDBCounterCache
+from api.lib.cmdb.ci_file import CIFileManager
 from api.lib.cmdb.ci_type import CITypeAttributeManager
 from api.lib.cmdb.ci_type import CITypeManager
 from api.lib.cmdb.ci_type import CITypeRelationManager
@@ -56,6 +58,7 @@ from api.models.cmdb import CI
 from api.models.cmdb import CIRelation
 from api.models.cmdb import CITypeRelation
 from api.models.cmdb import CITypeTrigger
+from api.models.cmdb import CIValueText
 from api.tasks.cmdb import ci_cache
 from api.tasks.cmdb import ci_delete
 from api.tasks.cmdb import ci_delete_trigger
@@ -63,6 +66,8 @@ from api.tasks.cmdb import ci_relation_add
 from api.tasks.cmdb import ci_relation_cache
 from api.tasks.cmdb import ci_relation_delete
 from api.tasks.cmdb import delete_id_filter
+
+logger = logging.getLogger('cmdb')
 
 PASSWORD_DEFAULT_SHOW = "******"
 
@@ -665,6 +670,34 @@ class CIManager(object):
                 ci_delete_trigger.apply_async(args=(trigger, OperateType.DELETE, ci_dict), queue=CMDB_QUEUE)
 
         attrs = [i for _, i in CITypeAttributeManager.get_all_attributes(type_id=ci.type_id)]
+
+        # Clean up file storage for file-type attributes before value rows are removed
+        try:
+            file_attr_ids = [
+                attr.id for attr in attrs
+                if getattr(attr, 'is_file', False)
+            ]
+            if file_attr_ids:
+                paths_to_delete = []
+                for attr_id in file_attr_ids:
+                    value_row = (
+                        db.session.query(CIValueText)
+                        .filter_by(ci_id=ci_id, attr_id=attr_id)
+                        .first()
+                    )
+                    if value_row and value_row.value:
+                        try:
+                            file_list = json.loads(value_row.value)
+                            for f in file_list:
+                                if isinstance(f, dict) and f.get('stored_path'):
+                                    paths_to_delete.append(f['stored_path'])
+                        except (json.JSONDecodeError, TypeError):
+                            pass
+                if paths_to_delete:
+                    CIFileManager().delete_files(paths_to_delete)
+        except Exception as e:
+            logger.warning(f"File cleanup failed during CI deletion: {e}")
+
         for attr in attrs:
             value_table = TableMap(attr=attr).table
             for item in value_table.get_by(ci_id=ci_id, to_dict=False):
