@@ -18,6 +18,7 @@ class ValueTypeEnum(BaseEnum):
     LINK = TEXT
     BOOL = "7"
     REFERENCE = INT
+    FILE = TEXT
 
 
 class ConstraintEnum(BaseEnum):

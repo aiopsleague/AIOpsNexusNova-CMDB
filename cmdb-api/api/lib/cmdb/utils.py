@@ -144,7 +144,7 @@ class TableMap(object):
     @property
     def table(self):
         attr = AttributeCache.get(self.attr_name) if not self.attr else self.attr
-        if attr.is_password or attr.is_link:
+        if attr.is_password or attr.is_link or attr.is_file:
             self.is_index = False
         elif attr.value_type not in {ValueTypeEnum.TEXT, ValueTypeEnum.JSON}:
             self.is_index = True
@@ -158,7 +158,7 @@ class TableMap(object):
     @property
     def table_name(self):
         attr = AttributeCache.get(self.attr_name) if not self.attr else self.attr
-        if attr.is_password or attr.is_link:
+        if attr.is_password or attr.is_link or attr.is_file:
             self.is_index = False
         elif attr.value_type not in {ValueTypeEnum.TEXT, ValueTypeEnum.JSON}:
             self.is_index = True
