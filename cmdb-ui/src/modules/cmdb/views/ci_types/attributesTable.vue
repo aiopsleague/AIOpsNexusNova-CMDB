@@ -245,7 +245,7 @@ export default {
     },
     valueTypeMap() {
       const map = valueTypeMap()
-      const keys = ['0', '1', '2', '9', '3', '4', '5', '6', '7', '8', '10', '11']
+      const keys = ['0', '1', '2', '9', '3', '4', '5', '6', '7', '8', '10', '11', '12']
       return keys.map((key) => ({
         key,
         value: map[key]

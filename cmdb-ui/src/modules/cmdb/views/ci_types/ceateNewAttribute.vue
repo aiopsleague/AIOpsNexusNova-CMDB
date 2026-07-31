@@ -612,6 +612,10 @@ export default {
               values.value_type = '0'
               values.is_reference = true
               break
+            case '12':
+              values.value_type = '2'
+              values.is_file = true
+              break
             default:
               break
           }

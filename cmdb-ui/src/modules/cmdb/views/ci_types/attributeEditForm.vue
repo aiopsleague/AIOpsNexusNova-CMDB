@@ -364,6 +364,41 @@
           />
         </a-form-item>
       </a-col>
+      <template v-if="currentValueType === '12'">
+        <a-divider style="font-size:14px;margin-top:6px;">{{ $t('cmdb.ciType.fileStorage') }}</a-divider>
+        <a-col :span="12">
+          <a-form-item
+            :label-col="formItemLayout.labelCol"
+            :wrapper-col="formItemLayout.wrapperCol"
+            :label="$t('cmdb.ciType.fileStorageBackend')"
+          >
+            <a-select v-model="fileStorageBackend" style="width: 100%">
+              <a-select-option value="">{{ $t('cmdb.ciType.followGlobal') }}</a-select-option>
+              <a-select-option value="local">{{ $t('cmdb.ciType.local') }}</a-select-option>
+              <a-select-option value="s3">S3</a-select-option>
+            </a-select>
+          </a-form-item>
+        </a-col>
+        <a-col :span="12">
+          <a-form-item
+            :label-col="formItemLayout.labelCol"
+            :wrapper-col="formItemLayout.wrapperCol"
+            :label="$t('cmdb.ciType.allowedExtensions')"
+          >
+            <a-select mode="tags" v-model="fileAllowedExtensions" style="width: 100%" :placeholder="$t('cmdb.ciType.allowedExtensions')">
+            </a-select>
+          </a-form-item>
+        </a-col>
+        <a-col :span="12">
+          <a-form-item
+            :label-col="formItemLayout.labelCol"
+            :wrapper-col="formItemLayout.wrapperCol"
+            :label="$t('cmdb.ciType.maxFileSize')"
+          >
+            <a-input-number v-model="fileMaxSizeMb" style="width: 100%" :min="1" :max="500" />
+          </a-form-item>
+        </a-col>
+      </template>
       <a-divider style="font-size:14px;margin-top:6px;">{{ $t('cmdb.ciType.advancedSettings') }}</a-divider>
       <a-row>
         <a-col :span="24">
@@ -524,7 +559,11 @@ export default {
 
       defaultForDatetime: '',
       re_check: {},
-      enumValueType: ENUM_VALUE_TYPE.INPUT
+      enumValueType: ENUM_VALUE_TYPE.INPUT,
+
+      fileStorageBackend: '',
+      fileAllowedExtensions: [],
+      fileMaxSizeMb: 50,
     }
   },
 
@@ -665,6 +704,12 @@ export default {
           this.form.setFieldsValue({
             reference_type_id: _record.reference_type_id
           })
+        }
+        if (_record.value_type === '12') {
+          const fs = (_record.option && _record.option.file_storage) || {}
+          this.fileStorageBackend = fs.backend || ''
+          this.fileAllowedExtensions = fs.allowed_extensions || []
+          this.fileMaxSizeMb = fs.max_file_size_mb || 50
         }
         console.log(_record)
         if (!['6', '10', '11'].includes(_record.value_type) && _record.re_check) {
@@ -838,6 +883,15 @@ export default {
             values.re_check = this.re_check?.value ?? null
           }
 
+          if (this.currentValueType === '12') {
+            values.option = values.option || {}
+            values.option.file_storage = {
+              backend: this.fileStorageBackend || undefined,
+              allowed_extensions: this.fileAllowedExtensions.length ? this.fileAllowedExtensions : undefined,
+              max_file_size_mb: this.fileMaxSizeMb,
+            }
+          }
+
           // 重置数据类型
           switch (values.value_type) {
             case '7':
@@ -858,6 +912,10 @@ export default {
             case '11':
               values.value_type = '0'
               values.is_reference = true
+              break
+            case '12':
+              values.value_type = '2'
+              values.is_file = true
               break
             default:
               break
