@@ -129,7 +129,9 @@ export default {
       return size.toFixed(i === 0 ? 0 : 1) + ' ' + units[i]
     },
     emitChange() {
-      this.$emit('input', JSON.stringify(this.fileList))
+      const value = JSON.stringify(this.fileList)
+      this.$emit('input', value)
+      this.$emit('change', value)
     },
     handleBeforeUpload(file) {
       // validation is done server-side, just allow through
