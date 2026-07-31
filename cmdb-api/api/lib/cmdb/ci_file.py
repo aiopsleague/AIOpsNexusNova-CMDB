@@ -9,7 +9,7 @@ logger = logging.getLogger('cmdb')
 
 # Default allowed extensions when no config is set
 DEFAULT_ALLOWED_EXTENSIONS = {
-    'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'bmp',
+    'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp',
     'xls', 'xlsx', 'doc', 'docx', 'ppt', 'pptx', 'csv', 'json',
     'zip', 'rar', '7z', 'log',
 }
