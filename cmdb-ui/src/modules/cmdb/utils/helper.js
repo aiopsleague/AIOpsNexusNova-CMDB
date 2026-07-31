@@ -64,7 +64,12 @@ export function getCITableColumns(data, attrList, width = 1600, height) {
                 editRender['props'] = { 'type': 'float' }
                 break
             case '2':
-                editRender['attrs'] = { 'type': 'text' }
+                if (attr.is_file) {
+                    editRender['props'] = { 'type': 'text' }
+                    // display handled via column formatter
+                } else {
+                    editRender['attrs'] = { 'type': 'text' }
+                }
                 break
             case '3':
                 editRender['props'] = { 'type': 'datetime' }
@@ -124,6 +129,7 @@ export function getCITableColumns(data, attrList, width = 1600, height) {
             is_link: attr.is_link,
             is_password: attr.is_password,
             is_list: attr.is_list,
+            is_file: attr.is_file,
             is_choice: attr.is_choice,
             is_fixed: attr.is_fixed,
             is_bool: attr.is_bool,
