@@ -19,6 +19,26 @@
 -- Table structure for table `acl_apps`
 --
 
+DROP TABLE IF EXISTS `abelit_demo_app`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `abelit_demo_app` (
+  `deleted_at` datetime DEFAULT NULL,
+  `deleted` tinyint(1) DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `description` text COLLATE utf8_unicode_ci,
+  `app_id` text COLLATE utf8_unicode_ci,
+  `secret_key` text COLLATE utf8_unicode_ci,
+  PRIMARY KEY (`id`),
+  KEY `ix_abelit_demo_app_name` (`name`),
+  KEY `ix_abelit_demo_app_deleted` (`deleted`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+
 DROP TABLE IF EXISTS `acl_apps`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;

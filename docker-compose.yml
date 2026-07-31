@@ -60,6 +60,7 @@ services:
     volumes:
       - db-data:/var/lib/mysql
       - ./docs/mysqld.cnf:/etc/mysql/conf.d/mysqld.cnf:ro
+      # 第一次跑容器、匿名卷 / 命名卷首次挂载、挂载空宿主机目录 → DATABASE_ALREADY_EXISTS 为空，走初始化重启已有数据库的容器 → 直接跳过整个初始化，initdb.d 所有文件完全不跑
       - ./docs/cmdb.sql:/docker-entrypoint-initdb.d/cmdb.sql:ro
     healthcheck:
       test:
