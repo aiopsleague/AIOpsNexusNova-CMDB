@@ -17,8 +17,8 @@ class S3Storage(StorageBackend):
         self._client = boto3.client(
             's3',
             endpoint_url=cfg.get('S3_ENDPOINT_URL') or None,
-            aws_access_key_id=cfg.get('S3_ACCESS_KEY'),
-            aws_secret_access_key=cfg.get('S3_SECRET_KEY'),
+            aws_access_key_id=cfg.get('S3_ACCESS_KEY') or None,
+            aws_secret_access_key=cfg.get('S3_SECRET_KEY') or None,
             region_name=cfg.get('S3_REGION', 'us-east-1'),
             use_ssl=cfg.get('S3_USE_SSL', True),
             config=BotoConfig(signature_version='s3v4'),
