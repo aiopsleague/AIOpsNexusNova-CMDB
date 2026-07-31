@@ -158,3 +158,14 @@ SECRETS_ENGINE = 'inner'  # 'inner' or 'vault'
 VAULT_URL = ''
 VAULT_TOKEN = ''
 INNER_TRIGGER_TOKEN = ''
+
+# # file storage
+FILE_STORAGE_BACKEND = env.str('FILE_STORAGE_BACKEND', default='local')
+FILE_STORAGE_LOCAL_PATH = env.str('FILE_STORAGE_LOCAL_PATH', default='./uploaded_files/ci_files')
+# S3 compatible storage
+S3_ENDPOINT_URL = env.str('S3_ENDPOINT_URL', default='')
+S3_ACCESS_KEY = env.str('S3_ACCESS_KEY', default='')
+S3_SECRET_KEY = env.str('S3_SECRET_KEY', default='')
+S3_BUCKET_NAME = env.str('S3_BUCKET_NAME', default='cmdb-files')
+S3_REGION = env.str('S3_REGION', default='us-east-1')
+S3_USE_SSL = env.bool('S3_USE_SSL', default=True)
