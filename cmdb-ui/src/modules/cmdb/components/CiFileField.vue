@@ -12,13 +12,13 @@
           <!-- Image preview -->
           <a-image
             v-if="isImage(file.mime_type)"
-            :src="getFileUrl(file.stored_path)"
+            :src="getFileUrl(file.stored_path, file.storage_backend)"
             :preview="true"
             :style="{ maxWidth: '100px', maxHeight: '60px' }"
           />
           <ops-icon v-else type="duose-file" style="font-size: 24px; color: #722ed1;" />
           <div class="ci-file-field-info">
-            <a :href="getFileUrl(file.stored_path)" :download="file.original_name">
+            <a :href="getFileUrl(file.stored_path, file.storage_backend)" :download="file.original_name">
               {{ file.original_name }}
             </a>
             <span class="ci-file-field-size">{{ formatSize(file.size) }}</span>
@@ -107,8 +107,12 @@ export default {
     }
   },
   methods: {
-    getFileUrl(storedPath) {
-      return `/api/v0.1/ci/files?path=${encodeURIComponent(storedPath)}`
+    getFileUrl(storedPath, storageBackend) {
+      let url = `/api/v0.1/ci/files?path=${encodeURIComponent(storedPath)}`
+      if (storageBackend) {
+        url += `&storage_backend=${encodeURIComponent(storageBackend)}`
+      }
+      return url
     },
     isImage(mimeType) {
       return mimeType && mimeType.startsWith('image/')

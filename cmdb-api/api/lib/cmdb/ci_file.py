@@ -19,15 +19,17 @@ DEFAULT_MAX_FILE_SIZE_MB = 50
 
 class CIFileManager(object):
 
-    def get_storage_backend_for_attr(self, attr_id=None):
-        """Resolve storage backend: attribute-level -> global -> default."""
+    def _get_storage_backend_name(self, attr_id=None):
+        """Resolve storage backend name: attribute-level -> global -> default."""
         backend_name = None
         if attr_id:
             attr = AttributeCache.get(attr_id)
             if attr and attr.option:
                 file_storage = attr.option.get('file_storage', {})
                 backend_name = file_storage.get('backend')
-        return get_storage_backend(backend_name)
+        if not backend_name:
+            backend_name = current_app.config.get('FILE_STORAGE_BACKEND', 'local')
+        return backend_name
 
     def _get_allowed_extensions(self, attr_id=None):
         attr_extensions = None
@@ -59,9 +61,10 @@ class CIFileManager(object):
             attr_id: optional attribute id for config resolution
 
         Returns:
-            list[dict]: [{"original_name": str, "stored_path": str, "size": int, "mime_type": str}, ...]
+            list[dict]: [{"original_name": str, "stored_path": str, "size": int, "mime_type": str, "storage_backend": str}, ...]
         """
-        backend = self.get_storage_backend_for_attr(attr_id)
+        backend_name = self._get_storage_backend_name(attr_id)
+        backend = get_storage_backend(backend_name)
         allowed_extensions = self._get_allowed_extensions(attr_id)
         max_size = self._get_max_file_size(attr_id)
 
@@ -80,32 +83,47 @@ class CIFileManager(object):
             result = backend.upload(file_data, filename, mime_type)
             result['original_name'] = filename
             result['mime_type'] = mime_type
+            result['storage_backend'] = backend_name
             results.append(result)
 
         return results
 
-    def get_file(self, stored_path):
+    def get_file(self, stored_path, storage_backend=None):
         """Download a file by its stored path.
+
+        Args:
+            stored_path: path of the stored file
+            storage_backend: optional backend name ('local'|'s3'); when
+                omitted, the global FILE_STORAGE_BACKEND is used.
 
         Returns:
             tuple: (BytesIO_stream, filename, mime_type)
         """
-        backend = get_storage_backend()
+        backend = get_storage_backend(storage_backend)
         return backend.download(stored_path)
 
     def delete_files(self, paths):
         """Delete files by their stored paths.
 
         Args:
-            paths: list of stored_path strings
+            paths: list of dicts {"path": str, "storage_backend": str|None}
+                or list of stored_path strings (global backend).
 
         Returns:
             int: number of successfully deleted files
         """
-        backend = get_storage_backend()
         deleted = 0
-        for path in paths:
+        for item in paths:
+            path = None
             try:
+                if isinstance(item, dict):
+                    path = item.get('path')
+                    backend = get_storage_backend(item.get('storage_backend'))
+                else:
+                    path = item
+                    backend = get_storage_backend(None)
+                if not path:
+                    continue
                 if backend.delete(path):
                     deleted += 1
             except Exception as e:

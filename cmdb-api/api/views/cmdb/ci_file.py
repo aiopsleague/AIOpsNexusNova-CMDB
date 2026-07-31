@@ -64,12 +64,12 @@ def upload_ci_files_view_post():
 
 
 @router.get("/ci/files")
-def get_ci_file_view_get(path: str = None, download: int = 0):
+def get_ci_file_view_get(path: str = None, download: int = 0, storage_backend: str = None):
     if not path:
         abort(400, 'path is required')
 
     try:
-        file_stream, filename, mime_type = _file_manager.get_file(path)
+        file_stream, filename, mime_type = _file_manager.get_file(path, storage_backend=storage_backend)
     except FileNotFoundError:
         abort(404, 'File not found')
 

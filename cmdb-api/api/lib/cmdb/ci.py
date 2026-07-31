@@ -690,7 +690,10 @@ class CIManager(object):
                             file_list = json.loads(value_row.value)
                             for f in file_list:
                                 if isinstance(f, dict) and f.get('stored_path'):
-                                    paths_to_delete.append(f['stored_path'])
+                                    paths_to_delete.append({
+                                        'path': f['stored_path'],
+                                        'storage_backend': f.get('storage_backend'),
+                                    })
                         except (json.JSONDecodeError, TypeError):
                             pass
                 if paths_to_delete:

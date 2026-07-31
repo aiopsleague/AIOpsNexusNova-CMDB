@@ -14,6 +14,10 @@ export function uploadCiFile(formData, attrId) {
   })
 }
 
+/**
+ * Delete files by path.
+ * @param {Array} paths - list of { path, storage_backend } dicts, or plain path strings
+ */
 export function deleteCiFiles(paths) {
   return axios({
     url: '/v0.1/ci/files',
