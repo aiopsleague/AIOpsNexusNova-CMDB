@@ -105,6 +105,11 @@ export const generatorDynamicRouter = async () => {
             name: 'setting_prometheus',
             meta: { title: 'cs.menu.prometheus', icon: 'monitor-prometheus', selectedIcon: 'monitor-prometheus' },
             component: () => import(/* webpackChunkName: "setting" */ '@/views/setting/prometheus/index')
+          }, {
+            path: '/setting/observability/fileStorage',
+            name: 'setting_fileStorage',
+            meta: { title: 'cs.menu.fileStorage', icon: 'ops-setting-basic', selectedIcon: 'ops-setting-basic-selected' },
+            component: () => import(/* webpackChunkName: "setting" */ '@/views/setting/fileStorage/index')
           }]
         },
       ]

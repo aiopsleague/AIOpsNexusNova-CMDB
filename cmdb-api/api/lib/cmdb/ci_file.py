@@ -20,7 +20,7 @@ DEFAULT_MAX_FILE_SIZE_MB = 50
 class CIFileManager(object):
 
     def _get_storage_backend_name(self, attr_id=None):
-        """Resolve storage backend name: attribute-level -> global -> default."""
+        """Resolve storage backend name: attribute-level -> settings.py -> common settings -> default."""
         backend_name = None
         if attr_id:
             attr = AttributeCache.get(attr_id)
@@ -28,7 +28,17 @@ class CIFileManager(object):
                 file_storage = attr.option.get('file_storage', {})
                 backend_name = file_storage.get('backend')
         if not backend_name:
-            backend_name = current_app.config.get('FILE_STORAGE_BACKEND', 'local')
+            backend_name = current_app.config.get('FILE_STORAGE_BACKEND')
+        if not backend_name:
+            try:
+                from api.lib.common_setting.file_storage import FileStorageConfigCRUD
+                common_backend = FileStorageConfigCRUD().get_storage_backend_name()
+                if common_backend:
+                    backend_name = common_backend
+            except Exception:
+                pass
+        if not backend_name:
+            backend_name = 'local'
         return backend_name
 
     def _get_allowed_extensions(self, attr_id=None):
@@ -40,6 +50,14 @@ class CIFileManager(object):
                 attr_extensions = file_storage.get('allowed_extensions')
         if attr_extensions is not None:
             return set(attr_extensions)
+        # Check common settings as global fallback
+        try:
+            from api.lib.common_setting.file_storage import FileStorageConfigCRUD
+            common_exts = FileStorageConfigCRUD().get_allowed_extensions()
+            if common_exts is not None:
+                return common_exts
+        except Exception:
+            pass
         return current_app.config.get('FILE_ALLOWED_EXTENSIONS', DEFAULT_ALLOWED_EXTENSIONS)
 
     def _get_max_file_size(self, attr_id=None):
@@ -51,6 +69,14 @@ class CIFileManager(object):
                 attr_limit = file_storage.get('max_file_size_mb')
         if attr_limit is not None:
             return int(attr_limit) * 1024 * 1024
+        # Check common settings as global fallback
+        try:
+            from api.lib.common_setting.file_storage import FileStorageConfigCRUD
+            common_limit = FileStorageConfigCRUD().get_max_file_size_mb()
+            if common_limit is not None:
+                return common_limit * 1024 * 1024
+        except Exception:
+            pass
         return DEFAULT_MAX_FILE_SIZE_MB * 1024 * 1024
 
     def upload_files(self, files, attr_id=None):
