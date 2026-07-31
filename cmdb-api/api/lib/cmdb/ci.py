@@ -851,7 +851,7 @@ class CIManager(object):
         ci_dict = dict()
         unique_id2obj = dict()
         excludes = excludes and set(excludes)
-        for ci_id, type_id, attr_id, attr_name, attr_alias, value, value_type, is_list, is_password in cis:
+        for ci_id, type_id, attr_id, attr_name, attr_alias, value, value_type, is_list, is_password, is_file in cis:
             if not fields and excludes and (attr_name in excludes or attr_alias in excludes):
                 continue
 
@@ -886,7 +886,7 @@ class CIManager(object):
                 ci_dict[attr_key] = PASSWORD_DEFAULT_SHOW
             else:
                 value = ValueTypeMap.serialize2[value_type](value)
-                if is_list:
+                if is_list and not is_file:
                     ci_dict.setdefault(attr_key, []).append(value)
                 else:
                     ci_dict[attr_key] = value

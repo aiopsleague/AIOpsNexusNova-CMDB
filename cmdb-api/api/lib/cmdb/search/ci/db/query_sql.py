@@ -8,6 +8,7 @@ QUERY_CIS_BY_VALUE_TABLE = """
           attr.value_type,
           attr.is_list,
           attr.is_password,
+          attr.is_file,
           c_cis.type_id,
           {0}.ci_id,
           {0}.attr_id,
@@ -28,7 +29,8 @@ QUERY_CIS_BY_IDS = """
            A.value,
            A.value_type,
            A.is_list,
-           A.is_password
+           A.is_password,
+           A.is_file
     FROM
       ({1}) AS A {0}
        ORDER BY A.ci_id;

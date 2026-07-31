@@ -70,7 +70,7 @@ class AttributeValueManager(object):
                                     use_master=use_master,
                                     to_dict=False)
             field_name = getattr(attr, ret_key)
-            if attr.is_list:
+            if attr.is_list and not attr.is_file:
                 res[field_name] = [ValueTypeMap.serialize[attr.value_type](i.value) for i in rs]
             elif attr.is_password and rs:
                 res[field_name] = '******' if rs[0].value else ''
@@ -253,7 +253,7 @@ class AttributeValueManager(object):
             value_table = TableMap(attr=attr).table
 
             try:
-                if attr.is_list:
+                if attr.is_list and not attr.is_file:
                     if isinstance(value, dict):
                         if value.get('op') == "delete":
                             value['v'] = [ValueTypeMap.serialize[attr.value_type](
@@ -302,7 +302,7 @@ class AttributeValueManager(object):
                 continue  # not be here
             value_table = TableMap(attr=attr).table
 
-            if attr.is_list:
+            if attr.is_list and not attr.is_file:
                 existed_attrs = value_table.get_by(attr_id=attr.id, ci_id=ci.id, to_dict=False)
                 existed_values = [(ValueTypeMap.serialize[attr.value_type](i.value) if
                                    i.value or i.value == 0 else i.value) for i in existed_attrs]
