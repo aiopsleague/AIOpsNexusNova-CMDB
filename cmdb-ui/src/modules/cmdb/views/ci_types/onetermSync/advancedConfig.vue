@@ -192,7 +192,7 @@ export default {
         if (attr.value_type === '6' || attr.value_type === 6) return false
 
         // Exclude attachment type
-        if (attr.is_attachment) return false
+        if (attr.is_file) return false
 
         // Exclude multi-value attributes
         if (attr.is_list) return false

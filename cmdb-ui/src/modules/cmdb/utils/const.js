@@ -14,6 +14,7 @@ export const valueTypeMap = () => {
     '9': i18n.t('cmdb.ciType.longText'),
     '10': i18n.t('cmdb.ciType.bool'),
     '11': i18n.t('cmdb.ciType.reference'),
+    '12': i18n.t('cmdb.ciType.file'),
   }
 }
 

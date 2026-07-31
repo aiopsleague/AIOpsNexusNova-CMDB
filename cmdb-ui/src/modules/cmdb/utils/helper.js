@@ -164,6 +164,8 @@ export const getPropertyStyle = (attr) => {
             return { color: '#0390CC', backgroundColor: '#e6fffb' }
         case '8':
             return { color: '#144BD9', backgroundColor: '#fff0f6' }
+        case '12':
+            return { color: '#722ed1', backgroundColor: '#f9f0ff' }
     }
 }
 
@@ -209,6 +211,8 @@ export const getPropertyIcon = (attr) => {
             return 'duose-boole'
         case '11':
             return 'duose-quote'
+        case '12':
+            return 'duose-file'
         default:
             return ''
     }
@@ -220,6 +224,9 @@ export const getPropertyType = (attr) => {
   }
   if (attr.is_link) {
     return '8'
+  }
+  if (attr.is_file) {
+    return '12'
   }
 
   switch (attr.value_type) {
@@ -299,5 +306,5 @@ export const getTreeSelectLabel = (node) => {
 }
 
 export const isLongText = (attr) => {
-  return attr.value_type === '2' && attr.is_index === false && !attr.is_link && !attr.is_attachment && !attr.is_password
+  return attr.value_type === '2' && attr.is_index === false && !attr.is_link && !attr.is_file && !attr.is_password
 }
