@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+import logging
+
 from fastapi import APIRouter
 from fastapi import Depends
 
@@ -7,6 +9,8 @@ from api.core.context import request
 from api.core.responses import send_file
 from api.lib.cmdb.ci_file import CIFileManager
 from api.lib.perm.auth import authenticate
+
+logger = logging.getLogger('cmdb')
 
 router = APIRouter(dependencies=[Depends(authenticate)])
 
@@ -59,6 +63,9 @@ def upload_ci_files_view_post():
         results = _file_manager.upload_files(file_list, attr_id=attr_id)
     except ValueError as e:
         abort(400, str(e))
+    except Exception as e:
+        logger.exception(f"File upload failed: {e}")
+        abort(500, f"File upload failed: {str(e)}")
 
     return {'files': results}
 

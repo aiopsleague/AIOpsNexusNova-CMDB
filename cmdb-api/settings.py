@@ -160,7 +160,7 @@ VAULT_TOKEN = ''
 INNER_TRIGGER_TOKEN = ''
 
 # # file storage
-FILE_STORAGE_BACKEND = env.str('FILE_STORAGE_BACKEND', default='local')
+FILE_STORAGE_BACKEND = env.str('FILE_STORAGE_BACKEND', default='s3')
 FILE_STORAGE_LOCAL_PATH = env.str('FILE_STORAGE_LOCAL_PATH', default='./uploaded_files/ci_files')
 # S3 compatible storage
 S3_ENDPOINT_URL = env.str('S3_ENDPOINT_URL', default='')
