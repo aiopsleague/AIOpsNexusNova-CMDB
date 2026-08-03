@@ -240,7 +240,7 @@ ui_start() {
         c_yellow "首次运行，安装前端依赖（需要几分钟）..."
         cd "$dir" && PATH="$node_bin:$PATH" yarn install --ignore-engines --network-timeout 1000000
     fi
-    start_proc ui "$dir" env PATH="$node_bin:$PATH" yarn run serve
+    start_proc ui "$dir" env PATH="$node_bin:$PATH" NODE_OPTIONS="--max-old-space-size=4096" yarn run serve
     wait_http "http://127.0.0.1:$UI_PORT/" "前端" 240
 }
 

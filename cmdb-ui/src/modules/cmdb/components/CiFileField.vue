@@ -10,11 +10,12 @@
           class="ci-file-field-item"
         >
           <!-- Image preview -->
-          <a-image
+          <img
             v-if="isImage(file.mime_type)"
             :src="getFileUrl(file.stored_path, file.storage_backend)"
-            :preview="true"
-            :style="{ maxWidth: '100px', maxHeight: '60px' }"
+            :style="{ maxWidth: '100px', maxHeight: '60px', objectFit: 'cover', cursor: 'pointer' }"
+            :title="file.original_name"
+            @click="handlePreviewImage(file)"
           />
           <ops-icon v-else type="file" style="font-size: 24px; color: #722ed1;" />
           <div class="ci-file-field-info">
@@ -157,6 +158,9 @@ export default {
         this.$message.error(e.message || this.$t('cmdb.ciType.fileUploadFailed'))
         if (onError) onError(e)
       }
+    },
+    handlePreviewImage(file) {
+      window.open(this.getFileUrl(file.stored_path, file.storage_backend), '_blank')
     },
     handleDeleteFile(idx) {
       this.fileList.splice(idx, 1)
