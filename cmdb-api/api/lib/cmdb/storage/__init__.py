@@ -4,8 +4,18 @@ from api.core.context import current_app
 
 def get_storage_backend(backend_name=None):
     """Factory: resolve backend name -> StorageBackend instance.
-    Falls back to global FILE_STORAGE_BACKEND when backend_name is None/empty.
+
+    Resolution order: explicit arg -> common settings (DB) -> settings.py -> local.
     """
+    if not backend_name:
+        # Try DB common settings first (user-configurable via UI)
+        try:
+            from api.lib.common_setting.file_storage import FileStorageConfigCRUD
+            common_backend = FileStorageConfigCRUD().get_storage_backend_name()
+            if common_backend:
+                backend_name = common_backend
+        except Exception:
+            pass
     if not backend_name:
         backend_name = current_app.config.get('FILE_STORAGE_BACKEND', 'local')
 

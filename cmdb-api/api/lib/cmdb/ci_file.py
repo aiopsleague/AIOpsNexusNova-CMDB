@@ -20,15 +20,13 @@ DEFAULT_MAX_FILE_SIZE_MB = 50
 class CIFileManager(object):
 
     def _get_storage_backend_name(self, attr_id=None):
-        """Resolve storage backend name: attribute-level -> settings.py -> common settings -> default."""
+        """Resolve storage backend name: attribute-level -> common settings -> settings.py -> default."""
         backend_name = None
         if attr_id:
             attr = AttributeCache.get(attr_id)
             if attr and attr.option:
                 file_storage = attr.option.get('file_storage', {})
                 backend_name = file_storage.get('backend')
-        if not backend_name:
-            backend_name = current_app.config.get('FILE_STORAGE_BACKEND')
         if not backend_name:
             try:
                 from api.lib.common_setting.file_storage import FileStorageConfigCRUD
@@ -37,6 +35,8 @@ class CIFileManager(object):
                     backend_name = common_backend
             except Exception:
                 pass
+        if not backend_name:
+            backend_name = current_app.config.get('FILE_STORAGE_BACKEND')
         if not backend_name:
             backend_name = 'local'
         return backend_name
