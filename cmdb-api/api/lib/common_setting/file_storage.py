@@ -90,20 +90,18 @@ class FileStorageConfigCRUD(object):
 
         current = self.get_config()
 
-        # Merge top-level fields
+        # Merge top-level fields, but skip s3_secret_key when the masked
+        # sentinel is sent back — otherwise the real key gets overwritten.
         for key in DEFAULT_CONFIG:
             if key in data:
+                if key == "s3_secret_key" and data[key] == MASKED_SECRET:
+                    continue  # keep the existing secret key from stored config
                 current[key] = data[key]
 
         # Validate S3 fields when backend is 's3'
         if current.get("storage_backend") == "s3":
             if not (current.get("s3_endpoint_url") or "").strip():
                 abort(400, ErrFormat.file_storage_s3_endpoint_required)
-
-        # Preserve existing secret key if masked value was sent back
-        if data.get("s3_secret_key") == MASKED_SECRET:
-            # Keep the existing secret key from stored config
-            pass
 
         self._save(current)
         return self._mask_secrets(current)
