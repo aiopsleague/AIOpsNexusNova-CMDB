@@ -1,5 +1,5 @@
 [project]
-name = "cmdb-api-fastapi"
+name = "cmdb-api"
 version = "0.1.0"
 description = "CMDB API - FastAPI rewrite of the legacy Flask application"
 readme = "PORTING.md"

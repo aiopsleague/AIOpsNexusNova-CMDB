@@ -8,7 +8,7 @@ from api.core.errors import abort
 from api.core.context import request
 from api.core.responses import send_file
 from api.lib.cmdb.ci_file import CIFileManager
-from api.lib.perm.auth import authenticate
+from api.lib.perm.auth import authenticate, auth_require_user
 
 logger = logging.getLogger('cmdb')
 
@@ -71,6 +71,7 @@ def upload_ci_files_view_post():
 
 
 @router.get("/ci/files")
+@auth_require_user
 def get_ci_file_view_get(path: str = None, download: int = 0, storage_backend: str = None):
     if not path:
         abort(400, 'path is required')
@@ -86,6 +87,7 @@ def get_ci_file_view_get(path: str = None, download: int = 0, storage_backend: s
 
 
 @router.delete("/ci/files")
+@auth_require_user
 def delete_ci_files_view_delete():
     paths = request.values.get('paths', [])
     if isinstance(paths, str):

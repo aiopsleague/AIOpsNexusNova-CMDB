@@ -16,6 +16,7 @@ from api.lib.decorator import args_required
 from api.lib.perm.acl.cache import User
 from api.lib.perm.auth import auth_abandoned
 from api.lib.perm.auth import authenticate
+from api.lib.perm.auth import reset_session
 
 router = APIRouter(dependencies=[Depends(authenticate)])
 
@@ -32,6 +33,7 @@ def login():
         return abort(401, "invalid username or password")
 
     login_user(user)
+    reset_session(user)
 
     token = jwt.encode({
         'sub': user.email,

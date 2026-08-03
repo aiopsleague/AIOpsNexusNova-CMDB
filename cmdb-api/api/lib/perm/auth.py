@@ -69,16 +69,25 @@ def _auth_with_session():
         login_user(UserCache.get(session["acl"]["userName"]))
         return True
 
+    # Debug: log why session auth failed
+    session_keys = list(session.keys()) if session else []
+    current_app.logger.info(
+        f"_auth_with_session: session_keys={session_keys}, "
+        f"has_acl={'acl' in session}, "
+        f"acl_keys={list(session.get('acl', {}).keys()) if 'acl' in session else 'N/A'}"
+    )
     return False
 
 
 def _auth_with_token():
     auth_headers = request.headers.get('Access-Token', '').strip()
-    if not auth_headers:
+    # Also accept token as a query parameter for direct URL access (e.g. file
+    # downloads in <a>/<img> tags where custom headers cannot be sent).
+    token = auth_headers or request.values.get('_token', '').strip()
+    if not token:
         return False
 
     try:
-        token = auth_headers
         data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
         user = User.query.filter_by(email=data['sub']).first()
         if not user:
@@ -218,8 +227,14 @@ def authenticate(starlette_request: StarletteRequest):
     if getattr(func, 'auth_with_app_token', False) and _auth_with_app_token():
         return
 
-    elif _auth_with_session() or _auth_with_key() or _auth_with_token() or _auth_with_ip_white_list():
-        return
+    # Routes with require_real_user flag must use real credentials
+    # (session, key, token, or app token) — IP whitelist is NOT sufficient.
+    if getattr(func, 'require_real_user', False):
+        if _auth_with_session() or _auth_with_key() or _auth_with_token():
+            return
+    else:
+        if _auth_with_session() or _auth_with_key() or _auth_with_token() or _auth_with_ip_white_list():
+            return
 
     if _auth_with_acl_token():
         return
@@ -249,6 +264,23 @@ def auth_with_app_token(func):
 
 def auth_only_for_acl(func):
     setattr(func, 'auth_only_with_app_token', True)
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+def auth_require_user(func):
+    """Mark a route as requiring real user authentication.
+
+    When this flag is set, IP whitelist authentication is disabled for the
+    route — only session, API key, JWT token, app token, or ACL token
+    authentication is accepted. Use this for endpoints that serve sensitive
+    resources (e.g. file downloads) where IP-based bypass is inappropriate.
+    """
+    setattr(func, 'require_real_user', True)
 
     @wraps(func)
     def wrapper(*args, **kwargs):

@@ -60,6 +60,8 @@
 </template>
 
 <script>
+import Vue from 'vue'
+import { ACCESS_TOKEN } from '@/store/global/mutation-types'
 import { uploadCiFile } from '@/modules/cmdb/api/ciFile'
 
 export default {
@@ -117,6 +119,12 @@ export default {
       }
       if (download) {
         url += '&download=1'
+      }
+      // Include the auth token so that direct browser requests (e.g. <a>/<img>
+      // tags) are authenticated even when the session cookie is unavailable.
+      const token = Vue.ls.get(ACCESS_TOKEN)
+      if (token) {
+        url += `&_token=${encodeURIComponent(token)}`
       }
       return url
     },
