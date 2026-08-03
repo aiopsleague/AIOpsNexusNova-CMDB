@@ -12,6 +12,7 @@ import { Icon } from 'ant-design-vue'
 import i18n from './lang'
 
 import iconFont from '../public/iconfont/iconfont'
+import '../public/iconfont-extend/iconfont'
 
 const customIcon = Icon.createFromIconfontCN(iconFont)
 Vue.component('ops-icon', customIcon)
