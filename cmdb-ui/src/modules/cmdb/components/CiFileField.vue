@@ -94,9 +94,17 @@
           </div>
           <!-- File info -->
           <div class="file-dialog-item-info">
-            <span class="file-dialog-item-name" :title="file.original_name">
-              {{ file.original_name }}
-            </span>
+            <div class="file-dialog-item-name-row">
+              <span class="file-dialog-item-name" :title="file.original_name">
+                {{ file.original_name }}
+              </span>
+              <span
+                class="file-dialog-item-storage"
+                :class="'storage-' + (file.storage_backend || 'unknown')"
+              >
+                {{ getStorageLabel(file.storage_backend) }}
+              </span>
+            </div>
             <span class="file-dialog-item-meta">
               {{ formatSize(file.size) }} · {{ file.mime_type || '--' }}
             </span>
@@ -255,6 +263,12 @@ export default {
     },
     isImage(mimeType) {
       return mimeType && mimeType.startsWith('image/')
+    },
+    getStorageLabel(storageBackend) {
+      if (storageBackend === 's3') return this.$t('cmdb.ciType.fileStorageS3')
+      if (storageBackend === 'local') return this.$t('cmdb.ciType.fileStorageLocal')
+      // Files uploaded before the storage_backend field existed carry no value.
+      return '--'
     },
     formatSize(bytes) {
       if (!bytes) return '0 B'
@@ -484,12 +498,48 @@ bmp: 'file-image'
   flex-direction: column;
 }
 
+.file-dialog-item-name-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
 .file-dialog-item-name {
   font-weight: 500;
   font-size: 13px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.file-dialog-item-storage {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  margin-left: 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  line-height: 18px;
+
+  &.storage-local {
+    color: #2f54eb;
+    background: rgba(47, 84, 235, 0.08);
+    border: 1px solid rgba(47, 84, 235, 0.2);
+  }
+
+  &.storage-s3 {
+    color: #d46b08;
+    background: rgba(250, 140, 22, 0.1);
+    border: 1px solid rgba(250, 140, 22, 0.25);
+  }
+
+  &.storage-unknown {
+    color: rgba(0, 0, 0, 0.45);
+    background: #fafafa;
+    border: 1px solid #f0f0f0;
+  }
 }
 
 .file-dialog-item-meta {

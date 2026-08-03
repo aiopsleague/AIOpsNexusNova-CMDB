@@ -254,6 +254,8 @@ const cmdb_zh = {
         fileUploading: '上传中...',
         fileTotalCount: '共 {count} 个文件',
         fileNoFiles: '暂无文件',
+        fileStorageLocal: '本地存储',
+        fileStorageS3: 'S3 存储',
         reg: '正则校验',
         isInherit: '是否继承',
         isInheritHint: '选择"是"可继承其他模型的属性和关系',

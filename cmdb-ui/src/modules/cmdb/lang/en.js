@@ -254,6 +254,8 @@ const cmdb_en = {
         fileUploading: 'Uploading...',
         fileTotalCount: '{count} file(s) total',
         fileNoFiles: 'No files',
+        fileStorageLocal: 'Local',
+        fileStorageS3: 'S3',
         reg: 'Regex',
         isInherit: 'Inherit',
         isInheritHint: 'Select "Yes" to inherit attributes and relations from other models',
