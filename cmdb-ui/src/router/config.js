@@ -90,6 +90,12 @@ export const generatorDynamicRouter = async () => {
           component: () => import(/* webpackChunkName: "setting" */ '@/views/setting/auth/index')
         },
         {
+          path: '/setting/fileStorage',
+          name: 'setting_fileStorage',
+          meta: { title: 'cs.menu.fileStorage', appName: 'backend', icon: 'monitor-database', selectedIcon: 'monitor-database', permission: ['acl_admin'] },
+          component: () => import(/* webpackChunkName: "setting" */ '@/views/setting/fileStorage/index')
+        },
+        {
           path: '/setting/observability',
           name: 'observability',
           component: RouteView,
@@ -105,11 +111,6 @@ export const generatorDynamicRouter = async () => {
             name: 'setting_prometheus',
             meta: { title: 'cs.menu.prometheus', icon: 'monitor-prometheus', selectedIcon: 'monitor-prometheus' },
             component: () => import(/* webpackChunkName: "setting" */ '@/views/setting/prometheus/index')
-          }, {
-            path: '/setting/observability/fileStorage',
-            name: 'setting_fileStorage',
-            meta: { title: 'cs.menu.fileStorage', icon: 'ops-setting-basic', selectedIcon: 'ops-setting-basic-selected' },
-            component: () => import(/* webpackChunkName: "setting" */ '@/views/setting/fileStorage/index')
           }]
         },
       ]

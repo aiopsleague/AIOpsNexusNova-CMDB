@@ -186,6 +186,9 @@ export const getPropertyIcon = (attr) => {
         case '1':
             return 'duose-fudianshu'
         case '2':
+            if (attr.is_file) {
+                return 'file'
+            }
             if (attr.is_password) {
                 return 'duose-password'
             }
@@ -218,7 +221,7 @@ export const getPropertyIcon = (attr) => {
         case '11':
             return 'duose-quote'
         case '12':
-            return 'duose-file'
+            return 'file'
         default:
             return ''
     }

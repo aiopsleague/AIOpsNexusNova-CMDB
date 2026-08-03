@@ -12,7 +12,7 @@ const cs_en = {
     observability: 'Observability',
     grafana: 'Grafana',
     prometheus: 'Prometheus Settings',
-    fileStorage: 'File Storage',
+    fileStorage: 'Storage Settings',
     authority: 'Authority Management',
     sys: 'System Role',
     technician: 'Technician Role',
@@ -385,7 +385,7 @@ const cs_en = {
     displayColumnsKeyRequired: 'Display column key is required',
   },
   fileStorage: {
-    basicConfig: 'File Storage Configuration',
+    basicConfig: 'Storage Configuration',
     storageBackend: 'Storage Backend',
     local: 'Local Storage',
     localPath: 'Storage Path',

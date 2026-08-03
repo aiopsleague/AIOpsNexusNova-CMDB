@@ -12,7 +12,7 @@ const cs_zh = {
     observability: '可观测设置',
     grafana: 'Grafana设置',
     prometheus: 'Prometheus设置',
-    fileStorage: '文件存储设置',
+    fileStorage: '存储设置',
     authority: '权限管理',
     sys: '系统角色',
     technician: '技术员角色',
@@ -384,7 +384,7 @@ const cs_zh = {
     displayColumnsKeyRequired: '显示列的键不能为空',
   },
   fileStorage: {
-    basicConfig: '文件存储配置',
+    basicConfig: '存储配置',
     storageBackend: '存储方式',
     local: '本地存储',
     localPath: '存储路径',

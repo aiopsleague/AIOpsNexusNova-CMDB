@@ -2,12 +2,30 @@
 """Response helpers replacing ``flask.jsonify`` / ``send_file`` /
 ``make_response`` / ``redirect``."""
 import os
+from urllib.parse import quote
 
 from starlette.responses import FileResponse
 from starlette.responses import RedirectResponse
 from starlette.responses import StreamingResponse
 
 from api.core.json_enc import CmdbJSONResponse
+
+
+def _build_content_disposition(disposition, filename):
+    """Build a ``Content-Disposition`` header value.
+
+    HTTP headers must be Latin-1, so non-ASCII filenames are RFC 5987
+    encoded via ``filename*=UTF-8''...`` with an ASCII percent-encoded
+    fallback in ``filename=`` (avoids ``UnicodeEncodeError`` on send).
+    """
+    if not filename:
+        return disposition
+    try:
+        filename.encode('ascii')
+        return f'{disposition}; filename="{filename}"'
+    except UnicodeEncodeError:
+        encoded = quote(filename, safe='')
+        return f"{disposition}; filename=\"{encoded}\"; filename*=UTF-8''{encoded}"
 
 
 def jsonify(*args, **kwargs):
@@ -57,7 +75,7 @@ def send_file(path_or_file, download_name=None, as_attachment=False, mimetype=No
     headers = {}
     if filename:
         disposition = "attachment" if as_attachment else "inline"
-        headers["Content-Disposition"] = f'{disposition}; filename="{filename}"'
+        headers["Content-Disposition"] = _build_content_disposition(disposition, filename)
     return StreamingResponse(
         path_or_file,
         media_type=mimetype or "application/octet-stream",

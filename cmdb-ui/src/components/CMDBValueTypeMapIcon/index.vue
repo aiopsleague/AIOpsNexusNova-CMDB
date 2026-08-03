@@ -18,7 +18,9 @@ export default {
       let valueType = attr.value_type
 
       if (valueType === '2') {
-        if (attr.is_password) {
+        if (attr.is_file) {
+          valueType = '12'
+        } else if (attr.is_password) {
           valueType = '7'
         } else if (attr.is_link) {
           valueType = '8'
@@ -66,6 +68,8 @@ export default {
           return 'duose-boole'
         case '11':
           return 'duose-quote'
+        case '12':
+          return 'file'
         default:
           return ''
       }

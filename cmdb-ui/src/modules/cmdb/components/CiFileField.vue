@@ -16,9 +16,9 @@
             :preview="true"
             :style="{ maxWidth: '100px', maxHeight: '60px' }"
           />
-          <ops-icon v-else type="duose-file" style="font-size: 24px; color: #722ed1;" />
+          <ops-icon v-else type="file" style="font-size: 24px; color: #722ed1;" />
           <div class="ci-file-field-info">
-            <a :href="getFileUrl(file.stored_path, file.storage_backend)" :download="file.original_name">
+            <a :href="getFileUrl(file.stored_path, file.storage_backend, true)" :download="file.original_name">
               {{ file.original_name }}
             </a>
             <span class="ci-file-field-size">{{ formatSize(file.size) }}</span>
@@ -35,7 +35,7 @@
           :key="idx"
           class="ci-file-field-item ci-file-field-item-editable"
         >
-          <ops-icon type="duose-file" style="font-size: 18px; color: #722ed1; margin-right: 8px;" />
+          <ops-icon type="file" style="font-size: 18px; color: #722ed1; margin-right: 8px;" />
           <span class="ci-file-field-name">{{ file.original_name }}</span>
           <span class="ci-file-field-size">{{ formatSize(file.size) }}</span>
           <a @click="handleDeleteFile(idx)" style="margin-left: auto; color: #ff4d4f;">
@@ -65,7 +65,9 @@ export default {
   name: 'CiFileField',
   props: {
     value: {
-      type: Array,
+      // Form bindings (v-decorator/v-model) may pass either a parsed array
+      // or a JSON string; the watcher normalizes both.
+      type: [Array, String],
       default: () => []
     },
     isList: {
@@ -107,10 +109,13 @@ export default {
     }
   },
   methods: {
-    getFileUrl(storedPath, storageBackend) {
+    getFileUrl(storedPath, storageBackend, download = false) {
       let url = `/api/v0.1/ci/files?path=${encodeURIComponent(storedPath)}`
       if (storageBackend) {
         url += `&storage_backend=${encodeURIComponent(storageBackend)}`
+      }
+      if (download) {
+        url += '&download=1'
       }
       return url
     },
