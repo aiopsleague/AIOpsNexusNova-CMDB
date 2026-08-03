@@ -74,6 +74,9 @@ class ErrFormat(CommonErrFormat):
     file_storage_s3_endpoint_required = _l("S3 endpoint URL is required when backend is s3")  # S3存储方式下Endpoint地址是必须的
     file_storage_s3_test_failed = _l("S3 connection test failed: {}")  # S3连接测试失败: {}
 
+    file_preview_config_broken = _l("File preview config is broken, please check SECRET_KEY or contact admin")  # 文件预览配置解析失败，请检查SECRET_KEY或联系管理员
+    file_preview_server_url_required = _l("Preview server URL is required")  # 预览服务器地址是必须的
+
     prometheus_config_broken = _l("Prometheus config is broken, please check SECRET_KEY or contact admin")  # Prometheus配置解析失败，请检查SECRET_KEY或联系管理员
     prometheus_connection_not_found = _l("Prometheus connection [{}] not found")  # Prometheus连接 [{}] 不存在
     prometheus_mapping_not_found = _l("Prometheus mapping [{}] not found")  # Prometheus映射 [{}] 不存在

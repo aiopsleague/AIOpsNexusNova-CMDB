@@ -92,8 +92,20 @@ export const generatorDynamicRouter = async () => {
         {
           path: '/setting/fileStorage',
           name: 'setting_fileStorage',
+          component: RouteView,
           meta: { title: 'cs.menu.fileStorage', appName: 'backend', icon: 'monitor-database', selectedIcon: 'monitor-database', permission: ['acl_admin'] },
-          component: () => import(/* webpackChunkName: "setting" */ '@/views/setting/fileStorage/index')
+          redirect: '/setting/fileStorage/storage',
+          children: [{
+            path: '/setting/fileStorage/storage',
+            name: 'setting_fileStorage_storage',
+            meta: { title: 'cs.menu.fileStorageStorage', icon: 'monitor-database', selectedIcon: 'monitor-database' },
+            component: () => import(/* webpackChunkName: "setting" */ '@/views/setting/fileStorage/storage/index')
+          }, {
+            path: '/setting/fileStorage/preview',
+            name: 'setting_fileStorage_preview',
+            meta: { title: 'cs.menu.fileStoragePreview', icon: 'monitor-database', selectedIcon: 'monitor-database' },
+            component: () => import(/* webpackChunkName: "setting" */ '@/views/setting/fileStorage/preview/index')
+          }]
         },
         {
           path: '/setting/observability',
