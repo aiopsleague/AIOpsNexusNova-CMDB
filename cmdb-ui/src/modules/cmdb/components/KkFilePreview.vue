@@ -32,9 +32,11 @@ export default {
     },
     previewUrl() {
       if (!this.fileUrl) return ''
-      // kkFileView URL format: kkFileServer + ?url= + Base64(encodeURIComponent(fileUrl))
-      const encodedFileUrl = encodeURIComponent(this.fileUrl)
-      const base64Url = window.btoa(encodedFileUrl)
+      // kkFileView URL format: kkFileServer + ?url= + Base64(UTF-8 bytes of fileUrl)
+      // The encodeURIComponent/unescape round-trip is the standard way to make a
+      // unicode URL safe for btoa() (which only accepts Latin-1 chars) while
+      // keeping the decoded URL byte-for-byte identical to the original.
+      const base64Url = window.btoa(unescape(encodeURIComponent(this.fileUrl)))
       return `${this.kkServer}?url=${encodeURIComponent(base64Url)}`
     }
   },

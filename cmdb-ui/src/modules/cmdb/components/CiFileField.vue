@@ -140,13 +140,19 @@ export default {
   computed: {
     previewFileUrl() {
       if (!this.previewFile) return ''
-      const relativeUrl = this.getFileUrl(this.previewFile.stored_path, this.previewFile.storage_backend)
+      // kkFileView fetches the file itself, so hand it the absolute *download*
+      // URL (download=1) — the backend serves the raw bytes with an attachment
+      // disposition. Also append &fullfilename= so kkFileView can detect the
+      // file type: the stored path is percent-encoded and carries no usable
+      // extension.
+      const relativeUrl = this.getFileUrl(this.previewFile.stored_path, this.previewFile.storage_backend, true)
       // kkFileView requires an absolute URL to fetch the file. Use
       // VUE_APP_FILE_API_BASE_URL so the address is reachable from the
       // kkFileView server (e.g. inside a Docker container, localhost does
       // not resolve to the host machine).
       const baseUrl = process.env.VUE_APP_FILE_API_BASE_URL || window.location.origin
-      return baseUrl + relativeUrl
+      const fullFilename = encodeURIComponent(this.previewFile.original_name || '')
+      return `${baseUrl}${relativeUrl}&fullfilename=${fullFilename}`
     }
   },
   methods: {
