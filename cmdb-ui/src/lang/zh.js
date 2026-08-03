@@ -169,10 +169,18 @@ export default {
         outlined: '线框',
         filled: '实底',
         multicolor: '多色',
+        extend: '扩展',
         custom: '自定义',
         preview: '预览',
         sizeLimit: '图片大小不可超过2MB！',
-        nodata: '暂无自定义图标，点击此处上传'
+        nodata: '暂无自定义图标，点击此处上传',
+        devops: 'DevOps',
+        itsm: 'ITSM',
+        aiData: 'AI/数据',
+        network: '网络/安全',
+        tools: '工具',
+        social: '社交',
+        other: '其他'
     },
     regexSelect: {
         limitedFormat: '限定格式',

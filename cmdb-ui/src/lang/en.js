@@ -169,10 +169,18 @@ export default {
         outlined: 'Outlined',
         filled: 'Filled',
         multicolor: 'Multicolor',
+        extend: 'Extend',
         custom: 'Custom',
         preview: 'Preview',
         sizeLimit: 'The image size cannot exceed 2MB!',
-        nodata: 'There are currently no custom icons available. Click here to upload'
+        nodata: 'There are currently no custom icons available. Click here to upload',
+        devops: 'DevOps',
+        itsm: 'ITSM',
+        aiData: 'AI/Data',
+        network: 'Network/Sec',
+        tools: 'Tools',
+        social: 'Social',
+        other: 'Other'
     },
     regexSelect: {
         limitedFormat: 'Limited Format',

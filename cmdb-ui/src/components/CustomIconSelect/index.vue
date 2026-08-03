@@ -142,6 +142,7 @@ import {
   linearIconList,
   fillIconList,
   multicolorIconList,
+  extendIconList,
 } from './constants'
 import { postImageFile, getFileData, addFileData, deleteFileData } from '@/api/file'
 
@@ -171,6 +172,7 @@ export default {
       linearIconList,
       fillIconList,
       multicolorIconList,
+      extendIconList,
       visible: false,
       currentIconType: '3',
       customIconList: [],
@@ -193,6 +195,8 @@ export default {
           return this.multicolorIconList
         case '4': // 自定义
           return this.customIconList
+        case '5': // 扩展
+          return this.extendIconList
         default:
           return this.linearIconList
       }
@@ -271,6 +275,8 @@ export default {
         this.currentIconType = '2'
       } else if (this.value.name.startsWith('caise')) {
         this.currentIconType = '3'
+      } else if (this.value.name.startsWith('icon-')) {
+        this.currentIconType = '5'
       } else {
         this.currentIconType = '4'
       }
