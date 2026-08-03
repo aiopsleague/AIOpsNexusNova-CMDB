@@ -148,11 +148,9 @@ export default {
         formData.append('files', file)
         const res = await uploadCiFile(formData, this.attrId)
         const newFiles = res.files || []
-        if (this.isList) {
-          this.fileList.push(...newFiles)
-        } else {
-          this.fileList = newFiles
-        }
+        // Always append: "继续上传" accumulates files so already-uploaded
+        // files are kept (the value is a JSON array regardless of is_list).
+        this.fileList.push(...newFiles)
         this.emitChange()
         if (onSuccess) onSuccess(res, file)
       } catch (e) {
