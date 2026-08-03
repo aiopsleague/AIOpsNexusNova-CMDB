@@ -71,6 +71,7 @@ def upload_ci_files_view_post():
 
 
 @router.get("/ci/files")
+@router.head("/ci/files")
 @auth_require_user
 def get_ci_file_view_get(path: str = None, download: int = 0, storage_backend: str = None):
     if not path:
