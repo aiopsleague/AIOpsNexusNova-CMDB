@@ -19,13 +19,33 @@
           />
           <ops-icon v-else type="file" style="font-size: 24px; color: #722ed1;" />
           <div class="ci-file-field-info">
-            <a :href="getFileUrl(file.stored_path, file.storage_backend, true)" :download="file.original_name">
-              {{ file.original_name }}
-            </a>
+            <span class="ci-file-field-filename">{{ file.original_name }}</span>
             <span class="ci-file-field-size">{{ formatSize(file.size) }}</span>
+          </div>
+          <div class="ci-file-field-actions">
+            <a @click="handlePreviewFile(file)">{{ $t('cmdb.ciType.filePreview') }}</a>
+            <a-divider type="vertical" />
+            <a
+              :href="getFileUrl(file.stored_path, file.storage_backend, true)"
+              :download="file.original_name"
+            >
+              {{ $t('cmdb.ciType.fileDownload') }}
+            </a>
           </div>
         </div>
       </div>
+      <!-- kkFileView preview modal -->
+      <a-modal
+        :visible="previewVisible"
+        :title="previewFile ? previewFile.original_name : ''"
+        :footer="null"
+        width="90%"
+        :bodyStyle="{ padding: 0, height: '80vh' }"
+        :destroyOnClose="true"
+        @cancel="previewVisible = false"
+      >
+        <KkFilePreview v-if="previewVisible" :fileUrl="previewFileUrl" />
+      </a-modal>
     </template>
 
     <!-- Edit mode -->
@@ -63,9 +83,13 @@
 import Vue from 'vue'
 import { ACCESS_TOKEN } from '@/store/global/mutation-types'
 import { uploadCiFile } from '@/modules/cmdb/api/ciFile'
+import KkFilePreview from '@/modules/cmdb/components/KkFilePreview'
 
 export default {
   name: 'CiFileField',
+  components: {
+    KkFilePreview
+  },
   props: {
     value: {
       // Form bindings (v-decorator/v-model) may pass either a parsed array
@@ -89,7 +113,9 @@ export default {
   data() {
     return {
       fileList: [],
-      uploading: false
+      uploading: false,
+      previewVisible: false,
+      previewFile: null
     }
   },
   watch: {
@@ -109,6 +135,18 @@ export default {
           this.fileList = []
         }
       }
+    }
+  },
+  computed: {
+    previewFileUrl() {
+      if (!this.previewFile) return ''
+      const relativeUrl = this.getFileUrl(this.previewFile.stored_path, this.previewFile.storage_backend)
+      // kkFileView requires an absolute URL to fetch the file. Use
+      // VUE_APP_FILE_API_BASE_URL so the address is reachable from the
+      // kkFileView server (e.g. inside a Docker container, localhost does
+      // not resolve to the host machine).
+      const baseUrl = process.env.VUE_APP_FILE_API_BASE_URL || window.location.origin
+      return baseUrl + relativeUrl
     }
   },
   methods: {
@@ -170,6 +208,10 @@ export default {
     handlePreviewImage(file) {
       window.open(this.getFileUrl(file.stored_path, file.storage_backend), '_blank')
     },
+    handlePreviewFile(file) {
+      this.previewFile = file
+      this.previewVisible = true
+    },
     handleDeleteFile(idx) {
       this.fileList.splice(idx, 1)
       this.emitChange()
@@ -206,6 +248,13 @@ export default {
     display: flex;
     flex-direction: column;
     margin-left: 8px;
+    min-width: 0;
+    flex: 1;
+  }
+  &-filename {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   &-name {
     flex: 1;
@@ -218,6 +267,13 @@ export default {
     color: #a5a9bc;
     font-size: 12px;
     white-space: nowrap;
+  }
+  &-actions {
+    display: flex;
+    align-items: center;
+    margin-left: 12px;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 }
 </style>

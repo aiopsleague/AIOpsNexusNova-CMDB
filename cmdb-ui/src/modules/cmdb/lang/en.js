@@ -235,6 +235,7 @@ const cmdb_en = {
         fileUploadMore: 'Upload More',
         fileUploadFailed: 'File upload failed',
         filePreview: 'Preview',
+        filePreviewLoading: 'Loading and parsing document, please wait...',
         fileDownload: 'Download',
         fileDelete: 'Delete',
         fileCount: '{count} file(s)',

@@ -136,3 +136,21 @@
 + 邮箱: <a href="mailto:bd@veops.cn">bd@veops.cn</a>
 + 公众号：**维易科技OneOps**。关注后可以加入微信群，参与产品和技术交流  
   <img src="docs/images/wechat.png" alt="公众号: 维易科技OneOps" />
+
+
+## 部署文件阅览服务
+```
+docker run -d   --name kkfileview   -p 8012:8012   -e KK_WATERMARK_TXT="Abelit File Browser" -e TRUST_HOST_ENABLE=false -e KK_TRUST_HOST="*" -e LOGGING_LEVEL_ROOT=DEBUG  wangbowen/kkfileview:5.1.0
+```
+
+
+```bash
+docker run -d  \
+--name kkfileview  \
+-p 8012:8012  \
+-e KK_WATERMARK_TXT="Abelit File Browser" \
+-e TRUST_HOST_ENABLE=false -e KK_TRUST_HOST="*" \
+-e LOGGING_LEVEL_ROOT=DEBUG  \
+-v ./application.properties:/opt/kkFileView/config/application.properties \
+wangbowen/kkfileview:5.1.0
+```
