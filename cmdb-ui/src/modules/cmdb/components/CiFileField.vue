@@ -36,7 +36,11 @@
       :destroyOnClose="true"
       @cancel="previewVisible = false"
     >
-      <KkFilePreview v-if="previewVisible" :fileUrl="previewFileUrl" />
+      <KkFilePreview
+        v-if="previewVisible"
+        :fileUrl="previewFileUrl"
+        :fileName="previewFile ? previewFile.original_name : ''"
+      />
     </a-modal>
 
     <!-- File management dialog (shared by both modes) -->
