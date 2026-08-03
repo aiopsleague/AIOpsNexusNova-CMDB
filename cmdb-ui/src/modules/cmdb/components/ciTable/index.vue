@@ -126,7 +126,7 @@
           </a-select>
         </template>
         <template
-          v-if="col.value_type === '6' || col.is_link || col.is_password || col.is_choice || col.is_reference"
+          v-if="col.value_type === '6' || col.is_link || col.is_password || col.is_choice || col.is_reference || col.is_file"
           #default="{ row }"
         >
           <template v-if="col.is_reference" >
@@ -159,6 +159,14 @@
             :ci_id="row._id"
             :attr_id="col.attr_id"
           ></PasswordField>
+          <CiFileField
+            v-else-if="col.is_file"
+            :value="row[col.field]"
+            :isList="col.is_list"
+            :isEdit="false"
+            :attrId="col.attr_id"
+            @input="(val) => { row[col.field] = val }"
+          />
           <template v-else-if="col.is_choice">
             <span
               v-for="value in (col.is_list ? row[col.field] : [row[col.field]])"
@@ -232,6 +240,7 @@ import JsonEditor from '../JsonEditor/jsonEditor.vue'
 import PasswordField from '../passwordField/index.vue'
 import { ops_move_icon as OpsMoveIcon } from '@/core/icons'
 import CIReferenceAttr from '@/components/ciReferenceAttr/index.vue'
+import CiFileField from '@/modules/cmdb/components/CiFileField.vue'
 
 export default {
   name: 'CITable',
@@ -239,7 +248,8 @@ export default {
     JsonEditor,
     PasswordField,
     OpsMoveIcon,
-    CIReferenceAttr
+    CIReferenceAttr,
+    CiFileField
   },
   props: {
     // table ID
@@ -387,6 +397,10 @@ export default {
     getColumnsEditRender(col) {
       const _editRender = {
         ...col.editRender,
+      }
+
+      if (col.is_file) {
+        _editRender.enabled = false
       }
 
       if (col.value_type === '6') {

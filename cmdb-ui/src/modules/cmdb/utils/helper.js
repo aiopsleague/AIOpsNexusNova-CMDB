@@ -65,8 +65,8 @@ export function getCITableColumns(data, attrList, width = 1600, height) {
                 break
             case '2':
                 if (attr.is_file) {
-                    editRender['props'] = { 'type': 'text' }
-                    // display handled via column formatter
+                    editRender.enabled = false
+                    // File fields are managed via the CiFileField dialog — inline editing not applicable
                 } else {
                     editRender['attrs'] = { 'type': 'text' }
                 }

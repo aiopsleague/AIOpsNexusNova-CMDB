@@ -30,6 +30,13 @@
       :ci_id="ci._id"
       :attr_id="attr.id"
     ></PasswordField>
+    <CiFileField
+      v-else-if="attr.is_file"
+      :value="ci[attr.name]"
+      :isList="attr.is_list"
+      :isEdit="false"
+      :attrId="attr.id"
+    />
     <template v-else-if="attr.is_choice">
       <span
         v-for="value in (attr.is_list ? ci[attr.name] : [ci[attr.name]])"
@@ -60,11 +67,13 @@
 
 <script>
 import PasswordField from '@/modules/cmdb/components/passwordField/index.vue'
+import CiFileField from '@/modules/cmdb/components/CiFileField.vue'
 
 export default {
   name: 'AttrDisplay',
   components: {
-    PasswordField
+    PasswordField,
+    CiFileField
   },
   props: {
     attr: {

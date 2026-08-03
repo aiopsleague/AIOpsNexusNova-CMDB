@@ -101,7 +101,7 @@
           :minWidth="100"
           :cell-type="col.value_type === '2' ? 'string' : 'auto'"
         >
-          <template v-if="col.value_type === '6' || col.is_link || col.is_password || col.is_choice || col.is_reference" #default="{row}">
+          <template v-if="col.value_type === '6' || col.is_link || col.is_password || col.is_choice || col.is_reference || col.is_file" #default="{row}">
             <template v-if="col.is_reference && row[col.field]" >
               <a
                 v-for="(ciId) in (col.is_list ? row[col.field] : [row[col.field]])"
@@ -132,6 +132,14 @@
               :ci_id="row._id"
               :attr_id="col.attr_id"
             ></PasswordField>
+            <CiFileField
+              v-else-if="col.is_file"
+              :value="row[col.field]"
+              :isList="col.is_list"
+              :isEdit="false"
+              :attrId="col.attr_id"
+              @input="(val) => { row[col.field] = val }"
+            />
             <template v-else-if="col.is_choice">
               <template v-if="col.is_list">
                 <span
@@ -232,12 +240,13 @@ import { getSubscribeAttributes } from '../../api/preference'
 import { getCITableColumns } from '../../utils/helper'
 import EditAttrsPopover from '../ci/modules/editAttrsPopover.vue'
 import PasswordField from '../../components/passwordField/index.vue'
+import CiFileField from '@/modules/cmdb/components/CiFileField.vue'
 import BatchDownload from '../../components/batchDownload/batchDownload.vue'
 import PreferenceSearch from '../../components/preferenceSearch/preferenceSearch.vue'
 
 export default {
   name: 'ResourceSearch',
-  components: { SearchForm, EditAttrsPopover, PasswordField, BatchDownload, PreferenceSearch },
+  components: { SearchForm, EditAttrsPopover, PasswordField, CiFileField, BatchDownload, PreferenceSearch },
   props: {
     fromCronJob: {
       type: Boolean,
