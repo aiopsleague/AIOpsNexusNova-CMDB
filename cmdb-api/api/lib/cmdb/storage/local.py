@@ -44,6 +44,15 @@ class LocalStorage(StorageBackend):
     def download(self, stored_path: str) -> tuple:
         abs_path = self._validate_path(stored_path)
         if not os.path.exists(abs_path):
+            # The path may be double-percent-encoded (e.g. kkFileView re-encodes
+            # percent signs when embedding the URL into its preview HTML, turning
+            # %2F into %252F). FastAPI decodes once, leaving %2F as a literal
+            # string instead of a directory separator. Try one more decode.
+            from urllib.parse import unquote
+            decoded_path = unquote(stored_path)
+            if decoded_path != stored_path:
+                abs_path = self._validate_path(decoded_path)
+        if not os.path.exists(abs_path):
             raise FileNotFoundError(f"File not found: {stored_path}")
         filename = os.path.basename(stored_path)
         mime_type = 'application/octet-stream'
