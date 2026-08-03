@@ -1,88 +1,144 @@
 <template>
   <div class="ci-file-field">
-    <!-- Preview mode -->
+    <!-- Preview mode: trigger button -->
     <template v-if="!isEdit">
-      <div v-if="!fileList.length" class="ci-file-field-empty">--</div>
-      <div v-else class="ci-file-field-preview">
+      <div class="ci-file-field-trigger" @click="openFileDialog">
+        <a-icon type="paper-clip" style="margin-right: 4px;" />
+        <template v-if="fileList.length">
+          {{ $t('cmdb.ciType.fileCount', { count: fileList.length }) }}
+        </template>
+        <template v-else>
+          {{ $t('cmdb.ciType.fileManageUpload') }}
+        </template>
+      </div>
+    </template>
+
+    <!-- Edit mode: trigger button -->
+    <template v-else>
+      <div class="ci-file-field-trigger ci-file-field-trigger-editable" @click="openFileDialog">
+        <a-icon type="paper-clip" style="margin-right: 4px;" />
+        <template v-if="fileList.length">
+          {{ $t('cmdb.ciType.fileCount', { count: fileList.length }) }}
+        </template>
+        <template v-else>
+          {{ $t('cmdb.ciType.fileManageUpload') }}
+        </template>
+      </div>
+    </template>
+
+    <!-- kkFileView preview modal (shared) -->
+    <a-modal
+      :visible="previewVisible"
+      :title="previewFile ? previewFile.original_name : ''"
+      :footer="null"
+      width="90%"
+      :bodyStyle="{ padding: 0, height: '80vh' }"
+      :destroyOnClose="true"
+      @cancel="previewVisible = false"
+    >
+      <KkFilePreview v-if="previewVisible" :fileUrl="previewFileUrl" />
+    </a-modal>
+
+    <!-- File management dialog (shared by both modes) -->
+    <a-modal
+      :visible="dialogVisible"
+      :title="$t('cmdb.ciType.fileManage')"
+      :footer="null"
+      width="720px"
+      :bodyStyle="{ padding: '16px 24px', maxHeight: '70vh', overflowY: 'auto' }"
+      :destroyOnClose="false"
+      @cancel="dialogVisible = false"
+    >
+      <!-- Upload area -->
+      <a-upload-dragger
+        :multiple="true"
+        :showUploadList="false"
+        :beforeUpload="handleBeforeUpload"
+        :customRequest="handleCustomRequest"
+        class="file-dialog-uploader"
+      >
+        <p class="upload-drag-icon">
+          <a-icon type="inbox" style="font-size: 36px; color: #2f54eb;" />
+        </p>
+        <p class="upload-drag-text">{{ $t('cmdb.ciType.fileDragTip') }}</p>
+        <p class="upload-drag-hint">
+          {{ $t('cmdb.ciType.fileDragHint') }} {{ maxFileSizeDisplay }}
+        </p>
+      </a-upload-dragger>
+
+      <!-- Uploading indicator -->
+      <div v-if="uploading" class="file-dialog-uploading">
+        <a-spin size="small" />
+        <span style="margin-left: 8px;">{{ $t('cmdb.ciType.fileUploading') }} {{ uploadingFileName }}</span>
+      </div>
+
+      <!-- File list -->
+      <div v-if="fileList.length" class="file-dialog-list">
         <div
           v-for="(file, idx) in fileList"
           :key="idx"
-          class="ci-file-field-item"
+          class="file-dialog-item"
         >
-          <!-- Image preview -->
-          <img
-            v-if="isImage(file.mime_type)"
-            :src="getFileUrl(file.stored_path, file.storage_backend)"
-            :style="{ maxWidth: '100px', maxHeight: '60px', objectFit: 'cover', cursor: 'pointer' }"
-            :title="file.original_name"
-            @click="handlePreviewImage(file)"
-          />
-          <ops-icon v-else type="file" style="font-size: 24px; color: #722ed1;" />
-          <div class="ci-file-field-info">
-            <span class="ci-file-field-filename">{{ file.original_name }}</span>
-            <span class="ci-file-field-size">{{ formatSize(file.size) }}</span>
+          <!-- File icon -->
+          <div class="file-dialog-item-icon">
+            <img
+              v-if="isImage(file.mime_type)"
+              :src="getFileUrl(file.stored_path, file.storage_backend)"
+              class="file-dialog-thumb"
+            />
+            <a-icon v-else :type="getFileIcon(file.original_name)" class="file-dialog-icon" />
           </div>
-          <div class="ci-file-field-actions">
-            <a @click="handlePreviewFile(file)">{{ $t('cmdb.ciType.filePreview') }}</a>
-            <a-divider type="vertical" />
+          <!-- File info -->
+          <div class="file-dialog-item-info">
+            <span class="file-dialog-item-name" :title="file.original_name">
+              {{ file.original_name }}
+            </span>
+            <span class="file-dialog-item-meta">
+              {{ formatSize(file.size) }} · {{ file.mime_type || '--' }}
+            </span>
+          </div>
+          <!-- Actions -->
+          <div class="file-dialog-item-actions">
+            <a @click="handlePreviewFile(file)" class="file-action-btn">
+              <a-icon type="eye" />
+              {{ $t('cmdb.ciType.filePreview') }}
+            </a>
             <a
               :href="getFileUrl(file.stored_path, file.storage_backend, true)"
               :download="file.original_name"
+              class="file-action-btn"
             >
+              <a-icon type="download" />
               {{ $t('cmdb.ciType.fileDownload') }}
+            </a>
+            <a @click="handleDeleteFile(idx)" class="file-action-btn file-action-delete">
+              <a-icon type="delete" />
+              {{ $t('cmdb.ciType.fileDelete') }}
             </a>
           </div>
         </div>
       </div>
-      <!-- kkFileView preview modal -->
-      <a-modal
-        :visible="previewVisible"
-        :title="previewFile ? previewFile.original_name : ''"
-        :footer="null"
-        width="90%"
-        :bodyStyle="{ padding: 0, height: '80vh' }"
-        :destroyOnClose="true"
-        @cancel="previewVisible = false"
-      >
-        <KkFilePreview v-if="previewVisible" :fileUrl="previewFileUrl" />
-      </a-modal>
-    </template>
 
-    <!-- Edit mode -->
-    <template v-else>
-      <div v-if="fileList.length" class="ci-file-field-list">
-        <div
-          v-for="(file, idx) in fileList"
-          :key="idx"
-          class="ci-file-field-item ci-file-field-item-editable"
-        >
-          <ops-icon type="file" style="font-size: 18px; color: #722ed1; margin-right: 8px;" />
-          <span class="ci-file-field-name">{{ file.original_name }}</span>
-          <span class="ci-file-field-size">{{ formatSize(file.size) }}</span>
-          <a @click="handleDeleteFile(idx)" style="margin-left: auto; color: #ff4d4f;">
-            <a-icon type="delete" />
-          </a>
-        </div>
+      <!-- Empty state -->
+      <div v-if="!fileList.length && !uploading" class="file-dialog-empty">
+        <a-empty :description="$t('cmdb.ciType.fileNoFiles')" />
       </div>
-      <a-upload
-        :multiple="isList"
-        :showUploadList="false"
-        :beforeUpload="handleBeforeUpload"
-        :customRequest="handleCustomRequest"
-      >
-        <a-button>
-          <a-icon type="upload" />
-          {{ fileList.length ? $t('cmdb.ciType.fileUploadMore') : $t('cmdb.ciType.fileUpload') }}
-        </a-button>
-      </a-upload>
-    </template>
+
+      <!-- Footer stats -->
+      <div class="file-dialog-footer">
+        <span v-if="fileList.length" class="file-dialog-count">
+          {{ $t('cmdb.ciType.fileTotalCount', { count: fileList.length }) }}
+        </span>
+        <a-button @click="dialogVisible = false">{{ $t('cancel') }}</a-button>
+      </div>
+    </a-modal>
   </div>
 </template>
 
 <script>
 import Vue from 'vue'
 import { ACCESS_TOKEN } from '@/store/global/mutation-types'
-import { uploadCiFile } from '@/modules/cmdb/api/ciFile'
+import { uploadCiFile, deleteCiFiles } from '@/modules/cmdb/api/ciFile'
 import KkFilePreview from '@/modules/cmdb/components/KkFilePreview'
 
 export default {
@@ -114,8 +170,11 @@ export default {
     return {
       fileList: [],
       uploading: false,
+      uploadingFileName: '',
       previewVisible: false,
-      previewFile: null
+      previewFile: null,
+      dialogVisible: false,
+      deletePending: false
     }
   },
   watch: {
@@ -153,6 +212,11 @@ export default {
       const baseUrl = process.env.VUE_APP_FILE_API_BASE_URL || window.location.origin
       const fullFilename = encodeURIComponent(this.previewFile.original_name || '')
       return `${baseUrl}${relativeUrl}&fullfilename=${fullFilename}`
+    },
+    maxFileSizeDisplay() {
+      // Default max 100 MB; the backend enforces the real limit.
+      // In the future this could be fetched from the file storage config API.
+      return '100 MB'
     }
   },
   methods: {
@@ -196,19 +260,23 @@ export default {
       return true
     },
     async handleCustomRequest({ file, onSuccess, onError }) {
+      this.uploading = true
+      this.uploadingFileName = file.name
       try {
         const formData = new FormData()
         formData.append('files', file)
         const res = await uploadCiFile(formData, this.attrId)
         const newFiles = res.files || []
-        // Always append: "继续上传" accumulates files so already-uploaded
-        // files are kept (the value is a JSON array regardless of is_list).
+        // Always append: accumulating files across multiple uploads
         this.fileList.push(...newFiles)
         this.emitChange()
         if (onSuccess) onSuccess(res, file)
       } catch (e) {
         this.$message.error(e.message || this.$t('cmdb.ciType.fileUploadFailed'))
         if (onError) onError(e)
+      } finally {
+        this.uploading = false
+        this.uploadingFileName = ''
       }
     },
     handlePreviewImage(file) {
@@ -219,8 +287,58 @@ export default {
       this.previewVisible = true
     },
     handleDeleteFile(idx) {
-      this.fileList.splice(idx, 1)
-      this.emitChange()
+      const file = this.fileList[idx]
+      if (!file) return
+
+      this.$confirm({
+        title: this.$t('cmdb.ciType.fileDeleteConfirm'),
+        content: `"${file.original_name}" — ${this.$t('cmdb.ciType.fileDeleteConfirmMsg')}`,
+        okText: this.$t('cmdb.ciType.fileDeleteOk'),
+        okType: 'danger',
+        cancelText: this.$t('cancel'),
+        onOk: async () => {
+          this.deletePending = true
+          try {
+            await deleteCiFiles([{ path: file.stored_path, storage_backend: file.storage_backend }])
+            this.fileList.splice(idx, 1)
+            this.emitChange()
+            this.$message.success(this.$t('cmdb.ciType.fileDelete') + ' ' + file.original_name)
+          } catch (e) {
+            this.$message.error(e.message || this.$t('cmdb.ciType.fileDeleteFailed'))
+          } finally {
+            this.deletePending = false
+          }
+        }
+      })
+    },
+    getFileIcon(filename) {
+      if (!filename) return 'file'
+      const ext = filename.split('.').pop().toLowerCase()
+      const iconMap = {
+        pdf: 'file-pdf',
+        doc: 'file-word',
+docx: 'file-word',
+        xls: 'file-excel',
+xlsx: 'file-excel',
+        ppt: 'file-ppt',
+pptx: 'file-ppt',
+        txt: 'file-text',
+        zip: 'file-zip',
+rar: 'file-zip',
+'7z': 'file-zip',
+        csv: 'file-excel',
+        json: 'file-text',
+        jpg: 'file-image',
+jpeg: 'file-image',
+png: 'file-image',
+        gif: 'file-image',
+webp: 'file-image',
+bmp: 'file-image'
+      }
+      return iconMap[ext] || 'file'
+    },
+    openFileDialog() {
+      this.dialogVisible = true
     }
   }
 }
@@ -228,58 +346,174 @@ export default {
 
 <style lang="less" scoped>
 .ci-file-field {
-  &-empty {
-    color: #c3cdd7;
-  }
-  &-preview {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  &-list {
-    margin-bottom: 8px;
-  }
-  &-item {
-    display: flex;
+  // Trigger button
+  &-trigger {
+    display: inline-flex;
     align-items: center;
-    padding: 4px 8px;
-    border: 1px solid #d9d9d9;
+    padding: 4px 12px;
+    border: 1px dashed #d9d9d9;
     border-radius: 4px;
-    margin-bottom: 4px;
+    cursor: pointer;
+    color: #2f54eb;
+    font-size: 13px;
+    transition: all 0.2s;
+
+    &:hover {
+      border-color: #2f54eb;
+      background: rgba(47, 84, 235, 0.04);
+    }
+
     &-editable {
+      border-style: solid;
       background: #fafafa;
     }
   }
-  &-info {
-    display: flex;
-    flex-direction: column;
-    margin-left: 8px;
-    min-width: 0;
-    flex: 1;
+}
+
+// File dialog
+.file-dialog-uploader {
+  margin-bottom: 16px;
+
+  .upload-drag-icon {
+    margin-bottom: 4px;
   }
-  &-filename {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  .upload-drag-text {
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.65);
   }
-  &-name {
-    flex: 1;
-    margin: 0 8px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  &-size {
-    color: #a5a9bc;
+  .upload-drag-hint {
     font-size: 12px;
-    white-space: nowrap;
+    color: rgba(0, 0, 0, 0.45);
+    margin-top: 4px;
   }
-  &-actions {
-    display: flex;
-    align-items: center;
-    margin-left: 12px;
-    white-space: nowrap;
-    flex-shrink: 0;
+}
+
+.file-dialog-uploading {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background: #e6f7ff;
+  border: 1px solid #91d5ff;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.file-dialog-list {
+  margin: 12px 0;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.file-dialog-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  transition: background 0.15s;
+  border-bottom: 1px solid #f0f0f0;
+
+  &:last-child {
+    border-bottom: none;
   }
+
+  &:hover {
+    background: #fafafa;
+
+    .file-dialog-item-actions {
+      opacity: 1;
+    }
+  }
+}
+
+.file-dialog-item-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+
+  .file-dialog-thumb {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .file-dialog-icon {
+    font-size: 28px;
+    color: #8c8c8c;
+  }
+}
+
+.file-dialog-item-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.file-dialog-item-name {
+  font-weight: 500;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-dialog-item-meta {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.45);
+  margin-top: 2px;
+}
+
+.file-dialog-item-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 16px;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+
+  .file-action-btn {
+    padding: 2px 8px;
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.65);
+    white-space: nowrap;
+    border-radius: 4px;
+    transition: all 0.15s;
+
+    &:hover {
+      color: #2f54eb;
+      background: rgba(47, 84, 235, 0.06);
+    }
+
+    &.file-action-delete:hover {
+      color: #ff4d4f;
+      background: rgba(255, 77, 79, 0.06);
+    }
+  }
+}
+
+.file-dialog-empty {
+  padding: 40px 0;
+}
+
+.file-dialog-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.file-dialog-count {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.45);
 }
 </style>
