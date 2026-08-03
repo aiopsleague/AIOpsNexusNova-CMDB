@@ -139,6 +139,7 @@
 import Vue from 'vue'
 import { ACCESS_TOKEN } from '@/store/global/mutation-types'
 import { uploadCiFile, deleteCiFiles } from '@/modules/cmdb/api/ciFile'
+import { updateCI } from '@/modules/cmdb/api/ci'
 import KkFilePreview from '@/modules/cmdb/components/KkFilePreview'
 
 export default {
@@ -164,6 +165,18 @@ export default {
     attrId: {
       type: [Number, String],
       default: null
+    },
+    ciId: {
+      // CI the field belongs to. When provided (and in preview mode),
+      // uploads/deletes are persisted to the CI immediately so they survive
+      // a page refresh. Edit-mode contexts save via the form on submit.
+      type: [Number, String],
+      default: null
+    },
+    attrName: {
+      // CI attribute name to save the file list into (used with ciId).
+      type: String,
+      default: ''
     }
   },
   data() {
@@ -255,6 +268,15 @@ export default {
       this.$emit('input', value)
       this.$emit('change', value)
     },
+    persistFileList() {
+      // Preview mode has no form to save the value — persist immediately so
+      // uploads survive a refresh. Edit mode saves via the form on submit.
+      if (this.isEdit || !this.ciId || !this.attrName) return
+      updateCI(this.ciId, { [this.attrName]: JSON.stringify(this.fileList) }, false)
+        .catch(() => {
+          this.$message.error(this.$t('cmdb.ciType.fileSaveFailed'))
+        })
+    },
     handleBeforeUpload(file) {
       // validation is done server-side, just allow through
       return true
@@ -270,6 +292,7 @@ export default {
         // Always append: accumulating files across multiple uploads
         this.fileList.push(...newFiles)
         this.emitChange()
+        this.persistFileList()
         if (onSuccess) onSuccess(res, file)
       } catch (e) {
         this.$message.error(e.message || this.$t('cmdb.ciType.fileUploadFailed'))
@@ -302,6 +325,7 @@ export default {
             await deleteCiFiles([{ path: file.stored_path, storage_backend: file.storage_backend }])
             this.fileList.splice(idx, 1)
             this.emitChange()
+            this.persistFileList()
             this.$message.success(this.$t('cmdb.ciType.fileDelete') + ' ' + file.original_name)
           } catch (e) {
             this.$message.error(e.message || this.$t('cmdb.ciType.fileDeleteFailed'))

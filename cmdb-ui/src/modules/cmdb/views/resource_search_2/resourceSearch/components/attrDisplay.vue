@@ -36,6 +36,9 @@
       :isList="attr.is_list"
       :isEdit="false"
       :attrId="attr.id"
+      :ciId="ci._id"
+      :attrName="attr.name"
+      @input="(val) => { ci[attr.name] = val }"
     />
     <template v-else-if="attr.is_choice">
       <span

@@ -138,6 +138,8 @@
               :isList="col.is_list"
               :isEdit="false"
               :attrId="col.attr_id"
+              :ciId="row._id"
+              :attrName="col.field"
               @input="(val) => { row[col.field] = val }"
             />
             <template v-else-if="col.is_choice">

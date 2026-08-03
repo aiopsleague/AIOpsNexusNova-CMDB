@@ -234,6 +234,7 @@ const cmdb_zh = {
         fileUpload: '上传文件',
         fileUploadMore: '继续上传',
         fileUploadFailed: '文件上传失败',
+        fileSaveFailed: '文件保存失败',
         fileDeleteFailed: '文件删除失败',
         filePreview: '预览',
         filePreviewLoading: '文档加载与解析中，请稍候...',

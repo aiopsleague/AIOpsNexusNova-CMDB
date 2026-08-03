@@ -152,5 +152,6 @@ docker run -d  \
 -e TRUST_HOST_ENABLE=false -e KK_TRUST_HOST="*" \
 -e LOGGING_LEVEL_ROOT=DEBUG  \
 -v ./application.properties:/opt/kkFileView/config/application.properties \
+-v ./application.properties:/opt/kkFileView-5.0.0/config/application.properties \
 wangbowen/kkfileview:5.1.0
 ```
