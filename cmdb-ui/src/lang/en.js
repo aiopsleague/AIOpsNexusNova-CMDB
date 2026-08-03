@@ -10,7 +10,7 @@ export default {
         resourceType: 'Resource Types',
         trigger: 'Triggers',
     },
-    settings: 'System Settings',
+    settings: 'General Settings',
     screen: 'Big Screen',
     dashboard: 'Dashboard',
     admin: 'Admin',

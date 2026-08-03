@@ -941,7 +941,7 @@ if __name__ == "__main__":
         alertActiveAt: '触发时间',
         alertDuration: '持续时间',
         alertNoData: '无活跃告警 — 所有系统正常运行',
-        alertNoConfig: '未配置Prometheus，请在系统设置中配置',
+        alertNoConfig: '未配置Prometheus，请在通用设置中配置',
         alertConnectionFailed: '无法获取告警数据，请检查 Prometheus 连接实例是否正常',
         alertLastRefresh: '最后刷新',
         alertRefresh: '刷新',
