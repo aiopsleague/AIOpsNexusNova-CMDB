@@ -104,7 +104,7 @@ export const generatorDynamicRouter = async () => {
           children: [{
             path: '/setting/observability/grafana',
             name: 'setting_grafana',
-            meta: { title: 'cs.menu.grafana', icon: 'ops-setting-basic', selectedIcon: 'ops-setting-basic-selected' },
+            meta: { title: 'cs.menu.grafana', icon: 'icon-grafana', selectedIcon: 'icon-grafana' },
             component: () => import(/* webpackChunkName: "setting" */ '@/views/setting/grafana/index')
           }, {
             path: '/setting/observability/prometheus',

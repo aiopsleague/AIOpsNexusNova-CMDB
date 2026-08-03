@@ -202,7 +202,7 @@ export default {
       const props = {}
       if (this.$route.name === routeName && selectedIcon) {
         return <ops-icon type={selectedIcon}></ops-icon>
-      } else if (icon.startsWith('ops-') || icon.startsWith('icon-xianxing') || icon.startsWith('icon-shidi') || icon.startsWith('veops-') || icon.startsWith('monitor-')) {
+      } else if (icon.startsWith('ops-') || icon.startsWith('icon-xianxing') || icon.startsWith('icon-shidi') || icon.startsWith('veops-') || icon.startsWith('monitor-') || icon.startsWith('icon-')) {
         return <ops-icon type={icon}></ops-icon>
       } else {
         typeof (icon) === 'object' ? props.component = icon : props.type = icon
