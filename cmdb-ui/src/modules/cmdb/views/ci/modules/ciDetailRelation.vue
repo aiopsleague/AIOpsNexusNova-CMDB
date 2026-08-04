@@ -1,6 +1,6 @@
 <template>
   <div class="ci-detail-relation">
-    <CiDetailRelationTopo ref="ciDetailRelationTopo" @nodeDblclick="handleNodeDblclick"/>
+    <CiDetailRelationTopo ref="ciDetailRelationTopo" :parentCITypeList="relationData.parentCITypeList" :childCITypeList="relationData.childCITypeList" @nodeDblclick="handleNodeDblclick"/>
   </div>
 </template>
 
