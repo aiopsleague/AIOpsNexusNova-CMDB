@@ -24,6 +24,7 @@
         :title="$t('cmdb.relation_type.color')"
         width="100"
         align="center"
+        :edit-render="{}"
       >
         <template #default="{ row }">
           <div

@@ -302,13 +302,9 @@ export default {
       const { edges } = this.canvas.getDataMap()
       edges.forEach((edge) => {
         const relationStyleEnabled = this.showRelationStyle && edge.options && edge.options.strokeColor
-        // Toggle edge stroke color
+        // Toggle edge stroke color (use inline style to override butterfly-dag CSS rules)
         if (edge.dom) {
-          if (relationStyleEnabled) {
-            edge.dom.setAttribute('stroke', edge.options.strokeColor)
-          } else {
-            edge.dom.removeAttribute('stroke')
-          }
+          edge.dom.style.stroke = relationStyleEnabled ? edge.options.strokeColor : ''
         }
         // Toggle edge label visibility
         if (edge.labelDom) {
