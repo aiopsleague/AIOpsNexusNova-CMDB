@@ -53,7 +53,7 @@ export default {
       exsited_ci: [],
       currentLayout: 'mindmap',
       showRelationStyle: true,
-      _typeRelationCache: {},
+      typeRelationCache: {},
     }
   },
   created() {
@@ -186,6 +186,21 @@ export default {
         return
       }
       const ci_types_list = this.ci_types()
+
+      // Look up relation type for the source node once (same for all results)
+      const { nodes: currentNodes } = this.canvas.getDataMap()
+      const sourceNodeObj = currentNodes.find((n) => n.id === sourceNode)
+      const sourceTypeId = sourceNodeObj?.options?.ci_type_id
+      let targetList = []
+      if (sourceTypeId) {
+        try {
+          const typeRelations = await this.getTypeRelations(sourceTypeId)
+          targetList = side === 'right' ? typeRelations.children : typeRelations.parents
+        } catch (e) {
+          // Silently fallback — edge labels/colors are cosmetic, expansion should not fail
+        }
+      }
+
       for (let i = 0; i < res.result.length; i++) {
         const r = res.result[i]
         if (!this.exsited_ci.includes(r._id)) {
@@ -226,21 +241,14 @@ export default {
             })
           }
         }
-        // Look up relation type for the edge
-        const { nodes } = this.canvas.getDataMap()
-        const sourceNodeObj = nodes.find((n) => n.id === sourceNode)
-        const sourceTypeId = sourceNodeObj?.options?.ci_type_id
+
+        // Match relation type info from pre-fetched target list
         let edgeLabel = ''
         let edgeStrokeColor = '#1890ff'
-
-        if (sourceTypeId) {
-          const typeRelations = await this.getTypeRelations(sourceTypeId)
-          const targetList = side === 'right' ? typeRelations.children : typeRelations.parents
-          const matchedType = targetList.find((t) => t.id === r._type)
-          if (matchedType) {
-            edgeLabel = matchedType.relation_type || ''
-            edgeStrokeColor = matchedType.relation_type_color || '#1890ff'
-          }
+        const matchedType = targetList.find((t) => t.id === r._type)
+        if (matchedType) {
+          edgeLabel = matchedType.relation_type || ''
+          edgeStrokeColor = matchedType.relation_type_color || '#1890ff'
         }
 
         newEdges.push({
@@ -293,30 +301,33 @@ export default {
       if (!this.canvas) return
       const { edges } = this.canvas.getDataMap()
       edges.forEach((edge) => {
+        const relationStyleEnabled = this.showRelationStyle && edge.options && edge.options.strokeColor
+        // Toggle edge stroke color
         if (edge.dom) {
-          const color = this.showRelationStyle && edge.options && edge.options.strokeColor
-            ? edge.options.strokeColor
-            : null
-          if (color) {
-            edge.dom.setAttribute('stroke', color)
+          if (relationStyleEnabled) {
+            edge.dom.setAttribute('stroke', edge.options.strokeColor)
           } else {
             edge.dom.removeAttribute('stroke')
           }
         }
+        // Toggle edge label visibility
+        if (edge.labelDom) {
+          edge.labelDom.style.display = relationStyleEnabled ? '' : 'none'
+        }
       })
     },
     async getTypeRelations(typeId) {
-      if (!this._typeRelationCache[typeId]) {
+      if (!this.typeRelationCache[typeId]) {
         const [parentsRes, childrenRes] = await Promise.all([
           getCITypeParent(typeId),
           getCITypeChildren(typeId),
         ])
-        this._typeRelationCache[typeId] = {
+        this.typeRelationCache[typeId] = {
           parents: parentsRes?.parents || [],
           children: childrenRes?.children || [],
         }
       }
-      return this._typeRelationCache[typeId]
+      return this.typeRelationCache[typeId]
     },
     handleRelationStyleToggle() {
       this.$ls.set('SHOW_RELATION_STYLE', this.showRelationStyle)
