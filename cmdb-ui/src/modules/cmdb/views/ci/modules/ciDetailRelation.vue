@@ -225,6 +225,9 @@ export default {
               sourceNode: `${parentCi._id}`,
               targetNode: `Root_${this.currentTypeId}`,
               type: 'endpoint',
+              label: parent.relation_type || '',
+              labelPosition: 0.5,
+              strokeColor: parent.relation_type_color || '#1890ff',
             })
           })
         }
@@ -272,6 +275,9 @@ export default {
               sourceNode: `Root_${this.currentTypeId}`,
               targetNode: `${childCi._id}`,
               type: 'endpoint',
+              label: child.relation_type || '',
+              labelPosition: 0.5,
+              strokeColor: child.relation_type_color || '#1890ff',
             })
           })
         }
