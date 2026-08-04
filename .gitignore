@@ -88,3 +88,6 @@ cmdb-api/celerybeat-schedule
 cmdb-api/celerybeat-schedule-shm
 cmdb-api/celerybeat-schedule-wal
 cmdb-api/uploaded_files/
+
+# claude
+worktrees/
