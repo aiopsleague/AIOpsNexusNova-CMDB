@@ -10,6 +10,7 @@
         :pagination="false"
         rowKey="id"
         size="small"
+        :scroll="{ x: 'max-content' }"
       >
         <template slot="statusTitle">
           {{ $t('cs.prometheus.status') }}
@@ -49,6 +50,7 @@
         :pagination="false"
         rowKey="id"
         size="small"
+        :scroll="{ x: 'max-content' }"
       >
         <template slot="ci_type" slot-scope="text, record">
           {{ ciTypeName(record.ci_type_id) }}
