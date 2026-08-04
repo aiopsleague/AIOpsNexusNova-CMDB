@@ -5,7 +5,7 @@
 # 后端默认是新版 FastAPI（cmdb-api），也支持旧版 Flask（cmdb-api）。
 #
 # 用法：
-#   ./dev.sh start                      # 启动全部服务：db + fastapi + worker + ui
+#   ./dev.sh start                      # 启动全部服务：db + fastapi + worker + ui + kkfileview + minio
 #   ./dev.sh start <服务...>            # 只启动指定服务，可多个，如：
 #                                       #   ./dev.sh start fastapi
 #                                       #   ./dev.sh start db fastapi worker
@@ -17,7 +17,7 @@
 #   ./dev.sh logs [api|worker|ui]       # 跟踪某个服务的日志（默认 api）
 #   ./dev.sh init [fastapi|flask]       # 数据库初始化（建表/缓存/ACL/部门等）
 #
-# 服务名：db、fastapi、flask、ui、worker、init、all（all 与留空等价，= db+fastapi+worker+ui）
+# 服务名：db、fastapi、flask、ui、worker、init、kkfileview、minio、all（all 与留空等价，= db+fastapi+worker+ui+kkfileview+minio）
 # 选项：
 #   --flask / --fastapi  指定后端实现（同直接写 flask/fastapi 服务名；
 #                        flask 需要先在 cmdb-api 里 pipenv install）
@@ -128,6 +128,28 @@ db_start() {
 db_stop() {
     c_yellow "停止 MySQL / Redis 容器（数据保留在卷 cmdb_db-data / cmdb_cache-data）..."
     ( cd "$ROOT" && docker compose -f docker-compose-dev.yml down cmdb-db cmdb-cache )
+}
+
+kkfileview_start() {
+    c_yellow "启动 kkFileView 文件预览服务..."
+    ( cd "$ROOT" && docker compose -f docker-compose-dev.yml up -d kkfileview )
+    wait_http "http://127.0.0.1:8012/" "kkFileView" 120
+}
+
+kkfileview_stop() {
+    c_yellow "停止 kkFileView 容器..."
+    ( cd "$ROOT" && docker compose -f docker-compose-dev.yml down kkfileview )
+}
+
+minio_start() {
+    c_yellow "启动 MinIO 对象存储服务..."
+    ( cd "$ROOT" && docker compose -f docker-compose-dev.yml up -d minio )
+    wait_http "http://127.0.0.1:9000/minio/health/live" "MinIO" 60
+}
+
+minio_stop() {
+    c_yellow "停止 MinIO 容器（数据保留在卷 minio_data）..."
+    ( cd "$ROOT" && docker compose -f docker-compose-dev.yml down minio )
 }
 
 # ---------- 后端 ----------
@@ -256,6 +278,8 @@ start_one() {  # $1=服务名
         worker)        worker_start ;;
         ui)            ui_start ;;
         init)          run_init ;;
+        kkfileview)    kkfileview_start ;;
+        minio)         minio_start ;;
         all)           do_start_all ;;
         *) c_red "未知服务：$1"; return 2 ;;
     esac
@@ -268,6 +292,8 @@ stop_one() {  # $1=服务名
         worker)        worker_stop ;;
         ui)            ui_stop ;;
         init)          c_yellow "init 不是常驻进程，无需停止" ;;
+        kkfileview)    kkfileview_stop ;;
+        minio)         minio_stop ;;
         all)           do_stop_all ;;
         *) c_red "未知服务：$1"; return 2 ;;
     esac
@@ -279,10 +305,14 @@ do_start_all() {
     api_start
     worker_start
     ui_start
+    kkfileview_start
+    minio_start
     echo
     c_green "全部启动完成："
-    echo "  前端  http://127.0.0.1:$UI_PORT  (demo / 123456)"
-    echo "  后端  http://127.0.0.1:$API_PORT  ($BACKEND)"
+    echo "  前端       http://127.0.0.1:$UI_PORT  (demo / 123456)"
+    echo "  后端       http://127.0.0.1:$API_PORT  ($BACKEND)"
+    echo "  kkFileView http://127.0.0.1:8012"
+    echo "  MinIO      http://127.0.0.1:9000 (console: http://127.0.0.1:9001)"
     do_status
 }
 
@@ -290,6 +320,8 @@ do_stop_all() {
     ui_stop
     worker_stop
     api_stop
+    kkfileview_stop
+    minio_stop
     [[ "$KEEP_DB" == 1 ]] || db_stop
     c_green "停止完成"
 }
@@ -332,7 +364,7 @@ do_status() {
             echo "  $name      stopped"
         fi
     done
-    for name in cmdb-db cmdb-cache; do
+    for name in cmdb-db cmdb-cache kkfileview minio; do
         s="$(docker inspect -f '{{.State.Status}}/{{.State.Health.Status}}' "$name" 2>/dev/null || echo stopped)"
         echo "  $name  $s"
     done
@@ -349,7 +381,7 @@ while [[ $# -gt 0 ]]; do
         --worker)  WITH_WORKER=1 ;;
         --init)    DO_INIT=1 ;;
         --keep-db) KEEP_DB=1 ;;
-        db|fastapi|flask|api|ui|worker|init|all)
+        db|fastapi|flask|api|ui|worker|init|kkfileview|minio|all)
             if [[ "$CMD" == start || "$CMD" == stop || "$CMD" == restart ]]; then
                 SERVICES+=("$1")
                 # 服务名里明确写了后端实现的，以此为准
