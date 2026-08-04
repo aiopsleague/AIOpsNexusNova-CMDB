@@ -909,6 +909,7 @@ class CITypeRelationManager(object):
                                           if attr['name'] in attr_filter]
 
         ci_type_dict["relation_type"] = relation_inst.relation_type.name
+        ci_type_dict["relation_type_color"] = relation_inst.relation_type.color
         ci_type_dict["constraint"] = relation_inst.constraint
         ci_type_dict["parent_attr_ids"] = relation_inst.parent_attr_ids
         ci_type_dict["child_attr_ids"] = relation_inst.child_attr_ids
