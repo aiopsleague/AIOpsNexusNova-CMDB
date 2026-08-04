@@ -23,6 +23,7 @@ class RelationType(Model):
     __tablename__ = "c_relation_types"
 
     name = db.Column(db.String(16), index=True, nullable=False)
+    color = db.Column(db.String(7), default='#1890ff', nullable=False, server_default='#1890ff')
 
 
 class CITypeGroup(Model):
