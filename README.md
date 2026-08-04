@@ -138,12 +138,20 @@
   <img src="docs/images/wechat.png" alt="公众号: 维易科技OneOps" />
 
 
-## 部署文件阅览服务
-```
-docker run -d   --name kkfileview   -p 8012:8012   -e KK_WATERMARK_TXT="Abelit File Browser" -e TRUST_HOST_ENABLE=false -e KK_TRUST_HOST="*" -e LOGGING_LEVEL_ROOT=DEBUG  wangbowen/kkfileview:5.1.0
+## 部署kkfileview文件阅览服务
+- 部署方式1-不指定配置文件
+```bash
+docker run -d \
+--name kkfileview \
+-p 8012:8012 \
+-e KK_WATERMARK_TXT="Abelit File Browser" \
+-e TRUST_HOST_ENABLE=false \
+-e KK_TRUST_HOST="*" \
+-e LOGGING_LEVEL_ROOT=DEBUG  \
+wangbowen/kkfileview:5.1.0
 ```
 
-
+- 部署方式2-指定配置文件
 ```bash
 docker run -d  \
 --name kkfileview  \
@@ -154,4 +162,17 @@ docker run -d  \
 -v ./application.properties:/opt/kkFileView/config/application.properties \
 -v ./application.properties:/opt/kkFileView-5.0.0/config/application.properties \
 wangbowen/kkfileview:5.1.0
+```
+
+## 部署MinIO文件服务
+- 基于Docker部署MinIO文件服务，提供对象存储功能，支持S3协议。
+```bash
+docker run  -d  \
+--name minio \
+-p 9000:9000   \
+-p 9001:9001     \
+-v minio_data:/data   \
+-e "MINIO_ROOT_USER=minioadmin"   \
+-e "MINIO_ROOT_PASSWORD=e^U4fxJlr8Zfmxl^"   \
+minio/minio:RELEASE.2025-02-18T16-25-55Z-cpuv1  server /data --console-address ":9001"
 ```
