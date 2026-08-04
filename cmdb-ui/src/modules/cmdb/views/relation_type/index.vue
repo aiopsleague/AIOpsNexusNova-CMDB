@@ -19,6 +19,26 @@
         :title="$t('name')"
         :edit-render="{ name: 'input', attrs: { type: 'text' }, events: { keyup: customCloseEdit } }"
       ></vxe-table-column>
+      <vxe-table-column
+        field="color"
+        :title="$t('cmdb.relation_type.color')"
+        width="100"
+        align="center"
+      >
+        <template #default="{ row }">
+          <div
+            class="color-swatch"
+            :style="{ backgroundColor: row.color || '#1890ff' }"
+          ></div>
+        </template>
+        <template #edit="{ row }">
+          <input
+            type="color"
+            v-model="row.color"
+            style="width: 50px; height: 28px; border: 1px solid #d9d9d9; border-radius: 2px; cursor: pointer;"
+          />
+        </template>
+      </vxe-table-column>
       <vxe-table-column field="updateTime" :title="$t('updated_at')">
         <template #default="{row}">
           {{ row.updated_at || row.created_at }}
@@ -76,6 +96,7 @@ export default {
       const $table = this.$refs.relationTypeTable
       const newRow = {
         name: '',
+        color: '#1890ff',
         created_at: moment().format('YYYY-MM-DD hh:mm:ss'),
       }
       $table.insert(newRow).then(({ row }) => $table.setActiveRow(row))
@@ -83,14 +104,14 @@ export default {
     handleEditClose({ row, rowIndex, column }) {
       const $table = this.$refs.relationTypeTable
       if (row.id) {
-        if (row.name && $table.isUpdateByRow(row, 'name')) {
-          this.updateRelationType(row.id, { name: row.name })
+        if (row.name && ($table.isUpdateByRow(row, 'name') || $table.isUpdateByRow(row, 'color'))) {
+          this.updateRelationType(row.id, { name: row.name, color: row.color })
         } else {
           $table.revertData(row)
         }
       } else {
         if (row.name) {
-          this.createRelationType({ name: row.name })
+          this.createRelationType({ name: row.name, color: row.color || '#1890ff' })
         } else {
           this.loadData()
         }
@@ -130,4 +151,13 @@ export default {
 }
 </script>
 
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+.color-swatch {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid #d9d9d9;
+  vertical-align: middle;
+}
+</style>
