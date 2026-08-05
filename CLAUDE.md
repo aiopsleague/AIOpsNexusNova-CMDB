@@ -380,3 +380,31 @@ The backend is actively being migrated from Flask to FastAPI. Key compatibility 
 6. Legacy code in `api/lib/` is preserved with minimal changes via the compatibility layer
 
 See `cmdb-api/PORTING.md` for detailed porting rules and directory mapping.
+
+## ❖ Commit Messages
+
++ Please follow the [Angular](https://github.com/conventional-changelog/conventional-changelog/tree/master/packages/conventional-changelog-angular)
+
++ Commit with different scopes
+  - API: `feat(api): xxx`
+  - UI: `feat(ui): xxx`
+
++ Please keep the commit message in English for better understanding by all developers.
+
+  - `feat` Add new features
+  - `fix` Fix the problem/BUG
+  - `style` The code style is related and does not affect the running result
+  - `perf` Optimization/performance improvement
+  - `refactor` Refactor
+  - `revert` Undo edit
+  - `test` Test related
+  - `docs` Documentation/notes
+  - `chore` Dependency update/scaffolding configuration modification etc.
+  - `workflow` Workflow improvements
+  - `ci` Continuous integration
+  - `types` Type definition file changes
+  - `wip` In development
+
+## ❖ Code Content
+
+Please keep the code comments and code content in English for better understanding by all developers.
