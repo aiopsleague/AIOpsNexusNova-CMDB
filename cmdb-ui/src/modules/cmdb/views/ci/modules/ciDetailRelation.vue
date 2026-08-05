@@ -190,6 +190,10 @@ export default {
           const unique_name = _findUnique?.name
           const unique_alias = _findUnique?.alias || _findUnique?.name || ''
           this.firstCIs[parent.name].forEach((parentCi) => {
+            // 跳过当前 CI 与自身建立的关系，避免初始树中出现自我连线/重复节点
+            if (Number(parentCi._id) === Number(this.ciId)) {
+              return
+            }
             nodes.children.push({
               id: `${parentCi._id}`,
               Class: Node,
@@ -240,6 +244,10 @@ export default {
           const unique_name = _findUnique?.name
           const unique_alias = _findUnique?.alias || _findUnique?.name || ''
           this.secondCIs[child.name].forEach((childCi) => {
+            // 跳过当前 CI 与自身建立的关系，避免初始树中出现自我连线/重复节点
+            if (Number(childCi._id) === Number(this.ciId)) {
+              return
+            }
             nodes.children.push({
               id: `${childCi._id}`,
               Class: Node,
