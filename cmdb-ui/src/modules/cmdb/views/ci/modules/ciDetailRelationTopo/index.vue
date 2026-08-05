@@ -20,6 +20,16 @@
           {{ $t('cmdb.topo.layoutCompactBox') }}
         </a-radio-button>
       </a-radio-group>
+      <a-divider type="vertical" style="margin: 0 8px;" />
+      <a-switch
+        v-model="showRelationStyle"
+        size="small"
+        @change="handleRelationStyleToggle"
+      >
+        <a-icon slot="checkedChildren" type="check" />
+        <a-icon slot="uncheckedChildren" type="close" />
+      </a-switch>
+      <span style="margin-left: 4px; font-size: 12px; color: #666;">{{ $t('cmdb.topo.relationStyle') }}</span>
     </div>
   </div>
 </template>
@@ -29,6 +39,7 @@ import _ from 'lodash'
 import { TreeCanvas } from 'butterfly-dag'
 import { searchCIRelation } from '@/modules/cmdb/api/CIRelation'
 import { getCITypeAttributesById } from '@/modules/cmdb/api/CITypeAttr'
+import { getCITypeParent, getCITypeChildren } from '@/modules/cmdb/api/CITypeRelation'
 import Node from './node.js'
 
 import 'butterfly-dag/dist/index.css'
@@ -41,9 +52,24 @@ export default {
       topoData: {},
       exsited_ci: [],
       currentLayout: 'mindmap',
+      showRelationStyle: true,
+      typeRelationCache: {},
     }
   },
+  created() {
+    this.showRelationStyle = this.$ls.get('SHOW_RELATION_STYLE', true)
+  },
   inject: ['ci_types'],
+  props: {
+    parentCITypeList: {
+      type: Array,
+      default: () => [],
+    },
+    childCITypeList: {
+      type: Array,
+      default: () => [],
+    },
+  },
   computed: {
     layoutOptions() {
       const canvas = document.createElement('canvas')
@@ -147,6 +173,9 @@ export default {
 
       this.canvas.redraw(data, {}, () => {
         this.canvas.focusCenterWithAnimate()
+        this.$nextTick(() => {
+          this.applyEdgeColors()
+        })
       })
     },
     async redrawData(res, sourceNode, side) {
@@ -157,6 +186,21 @@ export default {
         return
       }
       const ci_types_list = this.ci_types()
+
+      // Look up relation type for the source node once (same for all results)
+      const { nodes: currentNodes } = this.canvas.getDataMap()
+      const sourceNodeObj = currentNodes.find((n) => n.id === sourceNode)
+      const sourceTypeId = sourceNodeObj?.options?.ci_type_id
+      let targetList = []
+      if (sourceTypeId) {
+        try {
+          const typeRelations = await this.getTypeRelations(sourceTypeId)
+          targetList = side === 'right' ? typeRelations.children : typeRelations.parents
+        } catch (e) {
+          // Silently fallback — edge labels/colors are cosmetic, expansion should not fail
+        }
+      }
+
       for (let i = 0; i < res.result.length; i++) {
         const r = res.result[i]
         if (!this.exsited_ci.includes(r._id)) {
@@ -197,6 +241,16 @@ export default {
             })
           }
         }
+
+        // Match relation type info from pre-fetched target list
+        let edgeLabel = ''
+        let edgeStrokeColor = '#1890ff'
+        const matchedType = targetList.find((t) => t.id === r._type)
+        if (matchedType) {
+          edgeLabel = matchedType.relation_type || ''
+          edgeStrokeColor = matchedType.relation_type_color || '#1890ff'
+        }
+
         newEdges.push({
           id: `${r._id}`,
           source: 'right',
@@ -204,6 +258,9 @@ export default {
           sourceNode: side === 'right' ? sourceNode : `${r._id}`,
           targetNode: side === 'right' ? `${r._id}` : sourceNode,
           type: 'endpoint',
+          label: edgeLabel,
+          labelPosition: 0.5,
+          strokeColor: edgeStrokeColor,
         })
       }
 
@@ -233,8 +290,46 @@ export default {
       result.children.push(...newNodes)
 
       this.topoData = _topoData
-      this.canvas.draw(_topoData, {}, () => {})
+      this.canvas.draw(_topoData, {}, () => {
+        this.$nextTick(() => {
+          this.applyEdgeColors()
+        })
+      })
       this.exsited_ci = [...new Set([...this.exsited_ci, ...res.result.map((r) => r._id)])]
+    },
+    applyEdgeColors() {
+      if (!this.canvas) return
+      const { edges } = this.canvas.getDataMap()
+      edges.forEach((edge) => {
+        const relationStyleEnabled = this.showRelationStyle && edge.options && edge.options.strokeColor
+        // Toggle edge stroke color (use inline style to override butterfly-dag CSS rules)
+        if (edge.dom) {
+          edge.dom.style.stroke = relationStyleEnabled ? edge.options.strokeColor : ''
+        }
+        // Toggle edge label visibility
+        if (edge.labelDom) {
+          edge.labelDom.style.display = relationStyleEnabled ? '' : 'none'
+        }
+      })
+    },
+    async getTypeRelations(typeId) {
+      if (!this.typeRelationCache[typeId]) {
+        const [parentsRes, childrenRes] = await Promise.all([
+          getCITypeParent(typeId),
+          getCITypeChildren(typeId),
+        ])
+        this.typeRelationCache[typeId] = {
+          parents: parentsRes?.parents || [],
+          children: childrenRes?.children || [],
+        }
+      }
+      return this.typeRelationCache[typeId]
+    },
+    handleRelationStyleToggle() {
+      this.$ls.set('SHOW_RELATION_STYLE', this.showRelationStyle)
+      if (this.topoData && Object.keys(this.topoData).length) {
+        this.setTopoData(this.topoData)
+      }
     },
   },
 }

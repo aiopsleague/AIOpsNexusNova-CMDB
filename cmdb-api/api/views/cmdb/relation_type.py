@@ -34,7 +34,8 @@ def relation_type_view_get(rel_id: int = None):
 @args_validate(RelationTypeManager.cls)
 def relation_type_view_post(rel_id: int = None):
     name = request.values.get("name") or abort(400, ErrFormat.argument_value_required.format("name"))
-    rel = RelationTypeManager.add(name)
+    color = request.values.get("color", None)
+    rel = RelationTypeManager.add(name, color=color)
 
     return rel.to_dict()
 
@@ -47,7 +48,8 @@ def relation_type_view_post(rel_id: int = None):
 @args_validate(RelationTypeManager.cls)
 def relation_type_view_put(rel_id: int = None):
     name = request.values.get("name") or abort(400, ErrFormat.argument_value_required.format("name"))
-    rel = RelationTypeManager.update(rel_id, name)
+    color = request.values.get("color", None)
+    rel = RelationTypeManager.update(rel_id, name, color=color)
 
     return rel.to_dict()
 

@@ -821,6 +821,7 @@ const cmdb_zh = {
     relation_type: {
         addRelationType: '新增关系类型',
         nameTips: '请输入类型名',
+        color: '颜色',
     },
     ad: {
         upload: '规则导入',
@@ -1088,6 +1089,7 @@ if __name__ == "__main__":
         topoViewSearchPlaceholder: '请输入节点名字',
         layoutMindmap: '思维导图',
         layoutCompactBox: '紧凑树',
+        relationStyle: '关系标注',
         moreBtn: '展示更多({count})'
     },
     relationSearch: {

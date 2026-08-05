@@ -824,6 +824,7 @@ const cmdb_en = {
     relation_type: {
         addRelationType: 'New',
         nameTips: 'Please enter a type name',
+        color: 'Color',
     },
     ad: {
         upload: 'Import',
@@ -1092,6 +1093,7 @@ if __name__ == "__main__":
         topoViewSearchPlaceholder: 'Please enter the node name.',
         layoutMindmap: 'Mindmap',
         layoutCompactBox: 'Compact Tree',
+        relationStyle: 'Relation Labels',
         moreBtn: 'Show more({count})'
     },
     relationSearch: {
