@@ -193,6 +193,12 @@ class TopologyViewManager(object):
         prefix = REDIS_PREFIX_CI_RELATION
         key = list(map(str, root_ids))
         id2node = {}
+        # 自关联的模型（源模型=目标模型）在实例层面会形成自环/环路，导致拓扑图中
+        # 节点自我连线、同一条边重复出现、展开后不断重复增长。这里统一做两层去重：
+        #   visited    - 每个节点只被添加/遍历一次，打断环路并避免跨层级重复
+        #   seen_links - 同一条边（含双向边 A->B / B->A）只保留一条
+        visited = set()
+        seen_links = set()
         for level in sorted([i for i in path.keys() if int(i) > 0]):
             type_ids = {int(i) for i in path[level]}
 
@@ -200,12 +206,20 @@ class TopologyViewManager(object):
             new_key = []
             for idx, from_id in enumerate(key):
                 for to_id, type_id in res[idx]:
-                    if type_id in type_ids:
-                        links.append({'from': from_id, 'to': to_id})
-                        id2node[to_id] = {'id': to_id, 'type_id': type_id}
-                        new_key.append(to_id)
-                        if type_id not in type2meta:
-                            type2meta[type_id] = CITypeCache.get(type_id).icon
+                    if type_id not in type_ids or to_id == from_id:
+                        continue
+                    if to_id in visited:
+                        continue
+                    link_key = tuple(sorted((from_id, to_id)))
+                    if link_key in seen_links:
+                        continue
+                    seen_links.add(link_key)
+                    links.append({'from': from_id, 'to': to_id})
+                    id2node[to_id] = {'id': to_id, 'type_id': type_id}
+                    visited.add(to_id)
+                    new_key.append(to_id)
+                    if type_id not in type2meta:
+                        type2meta[type_id] = CITypeCache.get(type_id).icon
 
             key = new_key
 
@@ -216,13 +230,21 @@ class TopologyViewManager(object):
             _ci_ids = []
             for to_id in res:
                 for from_id, type_id in res[to_id]:
-                    if type_id in type_ids:
-                        from_id, to_id = str(from_id), str(to_id)
-                        links.append({'from': from_id, 'to': to_id})
-                        id2node[from_id] = {'id': str(from_id), 'type_id': type_id}
-                        _ci_ids.append(from_id)
-                        if type_id not in type2meta:
-                            type2meta[type_id] = CITypeCache.get(type_id).icon
+                    if type_id not in type_ids:
+                        continue
+                    from_id, to_id = str(from_id), str(to_id)
+                    if from_id == to_id or from_id in visited:
+                        continue
+                    link_key = tuple(sorted((from_id, to_id)))
+                    if link_key in seen_links:
+                        continue
+                    seen_links.add(link_key)
+                    links.append({'from': from_id, 'to': to_id})
+                    id2node[from_id] = {'id': str(from_id), 'type_id': type_id}
+                    visited.add(from_id)
+                    _ci_ids.append(from_id)
+                    if type_id not in type2meta:
+                        type2meta[type_id] = CITypeCache.get(type_id).icon
 
             ci_ids = _ci_ids
 
@@ -247,5 +269,14 @@ class TopologyViewManager(object):
             for i in response:
                 id2node[str(i['_id'])]['name'] = i[type2show[str(i['_type'])]]
             nodes.extend(id2node.values())
+
+        # 根节点可能与子节点重叠（自关联场景），按 id 去重，避免同一实例重复出现
+        node_ids = set()
+        _nodes = []
+        for node in nodes:
+            if node['id'] not in node_ids:
+                node_ids.add(node['id'])
+                _nodes.append(node)
+        nodes = _nodes
 
         return dict(nodes=nodes, links=links, type2meta=type2meta)

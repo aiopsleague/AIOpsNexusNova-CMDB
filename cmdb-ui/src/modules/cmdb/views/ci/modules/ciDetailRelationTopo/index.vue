@@ -203,6 +203,10 @@ export default {
 
       for (let i = 0; i < res.result.length; i++) {
         const r = res.result[i]
+        // 自关联（节点与自身建立关系）：跳过，避免在节点上画出自我连线的自环弧线
+        if (String(r._id) === String(sourceNode)) {
+          continue
+        }
         if (!this.exsited_ci.includes(r._id)) {
           const _findCiType = ci_types_list.find((item) => item.id === r._type)
           if (_findCiType) {

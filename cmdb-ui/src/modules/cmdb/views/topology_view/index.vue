@@ -862,19 +862,37 @@ export default {
         const nodes = []
         const links = []
         this.currentNodes = res.nodes
+        // 过滤自环连线并做去重，避免自关联模型（源=目标）导致节点自我连线、同一条边重复出现
+        const seenLinks = new Set()
         res.links.forEach(item => {
+          const from = `${item.from}`
+          const to = `${item.to}`
+          if (!from || !to || from === to) {
+            return
+          }
+          const linkKey = from < to ? `${from}->${to}` : `${to}->${from}`
+          if (seenLinks.has(linkKey)) {
+            return
+          }
+          seenLinks.add(linkKey)
           links.push({
-            from: `${item.from}`,
-            to: `${item.to}`,
+            from,
+            to,
             // text: `${item.text}`,
             disableDefaultClickEffect: false,
           })
         })
         const type2meta = res?.type2meta
+        const nodeIds = new Set()
         res.nodes.forEach(item => {
+          const id = `${item.id}`
+          if (nodeIds.has(id)) {
+            return
+          }
+          nodeIds.add(id)
           const icon = type2meta?.[item?.type_id] || ''
           nodes.push({
-            id: `${item.id}`,
+            id,
             text: item.name,
             color: 'transparent',
             styleClass: {
@@ -927,12 +945,20 @@ export default {
     /**
      * 初始化子节点分页数据
      */
-     initMoreNodesData(node, jsonData) {
+     initMoreNodesData(node, jsonData, visited) {
       const childs = node.lot.childs
       // 没有子节点 终止遍历
       if (!childs?.length) {
         return
       }
+      // 防止自关联形成的环路导致递归无限/重复增长
+      if (!visited) {
+        visited = new Set()
+      }
+      if (visited.has(node.id)) {
+        return
+      }
+      visited.add(node.id)
 
       // 子节点分页数量
       const aggregation_count = this?.topoViewOption?.aggregation_count || 1
@@ -949,7 +975,7 @@ export default {
           } else if (!childNode.isHide) {
             showNodeCount++
           }
-          this.initMoreNodesData(childNode, jsonData)
+          this.initMoreNodesData(childNode, jsonData, visited)
         }
       })
 
