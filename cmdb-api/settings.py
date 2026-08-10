@@ -159,6 +159,11 @@ VAULT_URL = ''
 VAULT_TOKEN = ''
 INNER_TRIGGER_TOKEN = ''
 
+# # FastAPI docs — set to None to disable, or "/docs" / "/redoc" / "/openapi.json" to enable
+DOCS_URL = env.str('DOCS_URL', default=None)
+REDOC_URL = env.str('REDOC_URL', default=None)
+OPENAPI_URL = env.str('OPENAPI_URL', default=None)
+
 # # file storage
 FILE_STORAGE_BACKEND = env.str('FILE_STORAGE_BACKEND', default='s3')
 FILE_STORAGE_LOCAL_PATH = env.str('FILE_STORAGE_LOCAL_PATH', default='./uploaded_files/ci_files')

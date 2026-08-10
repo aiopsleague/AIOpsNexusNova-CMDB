@@ -46,6 +46,9 @@ export MYSQL_HOST=127.0.0.1
 export MYSQL_PORT=23306
 export CACHE_REDIS_HOST=127.0.0.1
 export CACHE_REDIS_PORT=6379
+export DOCS_URL=/docs
+export REDOC_URL=/redoc
+export OPENAPI_URL=/openapi.json
 
 API_PORT=5000
 UI_PORT=8000

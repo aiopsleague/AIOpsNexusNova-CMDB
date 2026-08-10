@@ -105,9 +105,9 @@ def create_app():
     app = FastAPI(
         title="CMDB API",
         default_response_class=CmdbJSONResponse,
-        docs_url=None,
-        redoc_url=None,
-        openapi_url=None,
+        docs_url=settings.DOCS_URL,
+        redoc_url=settings.REDOC_URL,
+        openapi_url=settings.OPENAPI_URL,
     )
 
     configure_logger()
