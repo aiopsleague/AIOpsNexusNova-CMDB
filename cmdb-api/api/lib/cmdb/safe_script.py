@@ -10,8 +10,6 @@ class UnsafeScriptError(Exception):
 
 class _RestrictedScriptChecker(ast.NodeVisitor):
     FORBIDDEN_NODES = (
-        ast.Import,
-        ast.ImportFrom,
         ast.Global,
         ast.Nonlocal,
         ast.AsyncFunctionDef,
@@ -19,15 +17,11 @@ class _RestrictedScriptChecker(ast.NodeVisitor):
         ast.Yield,
         ast.YieldFrom,
         ast.Lambda,
-        ast.With,
-        ast.AsyncWith,
         ast.Delete,
     )
     FORBIDDEN_NAMES = {
-        "__import__",
         "eval",
         "exec",
-        "open",
         "compile",
         "input",
         "globals",
@@ -40,13 +34,40 @@ class _RestrictedScriptChecker(ast.NodeVisitor):
         "help",
         "breakpoint",
     }
+    FORBIDDEN_MODULE_CALLS = {
+        # Command execution
+        "os.system",
+        "os.popen",
+        "subprocess.call",
+        "subprocess.run",
+        "subprocess.Popen",
+        "subprocess.check_call",
+        "subprocess.check_output",
+        "subprocess.getoutput",
+        "subprocess.getstatusoutput",
+        # Dynamic imports (bypass restriction)
+        "importlib.import_module",
+        # File system destruction
+        "os.remove",
+        "os.unlink",
+        "os.rmdir",
+        "os.removedirs",
+        "shutil.rmtree",
+        # Process control
+        "os.kill",
+        "os.killpg",
+    }
 
     def visit(self, node):
         if isinstance(node, self.FORBIDDEN_NODES):
             raise UnsafeScriptError("forbidden syntax: {0}".format(node.__class__.__name__))
         return super(_RestrictedScriptChecker, self).visit(node)
 
+    ALLOWED_DUNDER_NAMES = {"__name__"}
+
     def visit_Name(self, node):
+        if node.id in self.ALLOWED_DUNDER_NAMES:
+            return self.generic_visit(node)
         if node.id.startswith("__") or node.id in self.FORBIDDEN_NAMES:
             raise UnsafeScriptError("forbidden name: {0}".format(node.id))
         return self.generic_visit(node)
@@ -63,13 +84,24 @@ class _RestrictedScriptChecker(ast.NodeVisitor):
         elif isinstance(node.func, ast.Attribute):
             if node.func.attr.startswith("__"):
                 raise UnsafeScriptError("forbidden function call: {0}".format(node.func.attr))
+            if isinstance(node.func.value, ast.Name):
+                full_name = f"{node.func.value.id}.{node.func.attr}"
+                if full_name in self.FORBIDDEN_MODULE_CALLS:
+                    raise UnsafeScriptError(f"forbidden function call: {full_name}")
         return self.generic_visit(node)
 
 
 _ALLOWED_BUILTINS = {
     "__build_class__": builtins.__build_class__,
+    "__import__": builtins.__import__,
     "object": object,
     "Exception": Exception,
+    "open": builtins.open,
+    "print": builtins.print,
+    "property": property,
+    "staticmethod": staticmethod,
+    "classmethod": classmethod,
+    "type": type,
     "str": str,
     "int": int,
     "float": float,
