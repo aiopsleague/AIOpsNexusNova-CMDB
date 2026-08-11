@@ -79,6 +79,62 @@ Agent 同步规则时（`AutoDiscoveryCITypeCRUD.get()`），CMDB 按以下优�
 | **执行任务** | HTTP 云平台、SNMP 扫描、组件发现、Plugin | Agent 采集、Plugin |
 | **接收"所有机器"规则** | ❌ 被排除 | ✅ |
 
+### 执行配置：执行机器选项
+
+在模型配置 → 自动发现 → 执行配置中，"执行机器"提供四个选项，决定一条规则由哪些 OneAgent 执行。本质上它们是 `agent_id` 与 `query_expr` 两个字段的组合（前端映射见 `cmdb-ui/src/modules/cmdb/views/ci_types/attrADTabpane.vue`）：
+
+| UI 选项 | agent_id | query_expr | 存储含义 |
+|---------|----------|------------|---------|
+| **Master机器** | `0x0000` | 空 | 固定指定主控节点（OneMaster） |
+| **所有机器** | 空 | 空 | 无条件全集（排除 Master，排除 SNMP/HTTP 类型） |
+| **指定机器** | 具体 `oneagent_id` | 空 | 固定指定某个 OneAgent |
+| **从CMDB中选择** | 空 | CI 查询表达式 | 按 CI 属性动态筛选 |
+
+#### 分类依据
+
+按"目标机器集合如何确定"划分：
+
+- **静态 · 按节点身份**（`agent_id` 精确匹配）：`Master机器`、`指定机器` —— 直接点名一个固定节点，不随机器增减变化
+- **静态 · 全集**（`agent_id` 与 `query_expr` 均为空）：`所有机器` —— 无条件下发到所有非 Master 的 OneAgent
+- **动态 · 按 CI 条件**（`query_expr` CI 搜索）：`从CMDB中选择` —— 目标集合是查询结果，随 CMDB 数据变化
+
+三者与同步匹配优先级一一对应（见上文"规则分配逻辑"）：① `agent_id` 精确匹配 → ② `query_expr` → ③ 全空（所有机器）。
+
+#### 各选项说明与应用场景
+
+**Master机器**
+- 用途：控制面/管理面**集中式任务**——不需要分散到每台机器的采集。
+- 典型场景：HTTP 云平台 API 调用、SNMP 网络设备扫描、Component 端口扫描（这三类被"所有机器"规则排除，是 Master 专属）；子网扫描规则（`subnet_scan_rules`）同样绑定 Master（`agent_id=0x0000`）。
+- ⚠️ 注意：若 OneMaster 只是不执行采集的中继（如本项目中 OneMaster 由 DiscoveryCenter 承担），则绑定到 Master 的 **Plugin 规则不会有实际执行者**，表现为"绑定后无上报数据"。
+
+**所有机器**
+- 用途：主机级**通用采集**——每台装了 OneAgent 的机器都执行。
+- 典型场景：Agent 类型插件（`server` 物理机信息、custom_cpu/custom_memory）；新增机器会自动开始采集。
+- 权限：仅 `cmdb_admin`/`admin` 用户可见可选（后端 `__valid_exec_target` 强制校验 `is_app_admin("cmdb")`）。
+- 限制：Master（`0x0000`）被排除；SNMP、HTTP 类型规则被排除。
+
+**指定机器**
+- 用途：**定点采集**——只针对特定一台或多台机器。
+- 典型场景：插件只跑在特定机房/特定应用的主机上；或**灰度验证**时先绑定一台机器跑通再放开。
+- 目标集合固定，不随机器增减变化。
+- 权限：非 admin 用户只能指定自己拥有 `op_duty`/`rd_duty` 权限的机器。
+
+**从CMDB中选择**
+- 用途：按 CI 属性**动态圈定目标**，目标集合跟随 CMDB 数据变化。
+- 典型场景：只采集生产环境（`env:prod`）、按地域/负责人筛选；CMDB 新增符合条件的 CI 自动覆盖，删除则自动停止采集，无需手动改绑定。
+- 实现：同步时先用 `oneagent_id:<id>` 找到 Agent 自己的 CI（取其 `_id`），再判断该 `_id` 是否命中 `query_expr` 的 CI 搜索结果，命中才下发。
+
+#### 选择建议
+
+| 需求 | 应选 |
+|------|------|
+| 所有机器都要采集 | **所有机器**（需 admin 权限） |
+| 只跑特定几台 | **指定机器** |
+| 目标随 CMDB 属性变化（如只采 prod） | **从CMDB中选择** |
+| 集中式/控制面任务（云平台、SNMP、子网扫描） | **Master机器** |
+
+> 注意：Plugin 规则在 OneMaster 不执行采集的部署下，**不要**绑定到 Master 机器。
+
 ---
 
 ## 核心概念
