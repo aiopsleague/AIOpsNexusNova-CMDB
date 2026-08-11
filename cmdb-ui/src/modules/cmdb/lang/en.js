@@ -918,6 +918,8 @@ if __name__ == "__main__":
         newThisWeek: 'New this week',
         newThisMonth: 'New this month',
         log: 'Log',
+        logConfig: 'Log Type Configuration',
+        execLogTypes: 'Record Types',
         discoveryCardResoureTip: 'Number of resource types automatically discovered',
         addPlugin: 'Add plugin',
         pluginSearchTip: 'Please search the rules',

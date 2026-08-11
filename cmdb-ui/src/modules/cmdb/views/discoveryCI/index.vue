@@ -184,7 +184,30 @@
           :footer="null"
           :width="596"
         >
-          <div class="log-modal-title">{{ $t('cmdb.ad.log') }}</div>
+          <div class="log-modal-title">
+            <span>{{ $t('cmdb.ad.log') }}</span>
+            <a
+              class="log-config-toggle"
+              @click="showLogConfig = !showLogConfig"
+              :title="$t('cmdb.ad.logConfig')"
+            >
+              <a-icon type="setting" :class="{ 'log-config-icon-active': showLogConfig }" />
+            </a>
+          </div>
+          <div v-if="showLogConfig" class="log-config-area">
+            <span class="log-config-label">{{ $t('cmdb.ad.execLogTypes') }}:</span>
+            <a-checkbox-group
+              v-model="execLogTypes"
+              :disabled="logConfigSaving"
+              @change="handleLogTypesChange"
+            >
+              <a-checkbox value="add">add</a-checkbox>
+              <a-checkbox value="update">update</a-checkbox>
+              <a-checkbox value="delete">delete</a-checkbox>
+              <a-checkbox value="accept">accept</a-checkbox>
+              <a-checkbox value="sync">sync</a-checkbox>
+            </a-checkbox-group>
+          </div>
           <p ref="logModelText" class="log-modal-text">
             <span
               v-for="(item, index) in logTextArray"
@@ -219,6 +242,7 @@ import {
   getAdcExecHistories,
   getAdcById
 } from '../../api/discovery'
+import { getSystemConfig, saveSystemConfig } from '../../api/system_config'
 import { getCITableColumns, strLength } from '../../utils/helper'
 
 export default {
@@ -240,6 +264,9 @@ export default {
       searchValue: '',
       logModalVisible: false,
       logTextArray: [],
+      showLogConfig: false,
+      execLogTypes: ['add', 'update', 'delete', 'accept'],
+      logConfigSaving: false,
       acceptByFilters: [],
       selectedCount: 0,
       loading: false,
@@ -480,10 +507,22 @@ export default {
 
     async clickLog() {
       this.logModalVisible = true
-      const logRes = await getAdcExecHistories({
-        type_id: this.currentType,
-        last_size: 1000
-      })
+      this.showLogConfig = false
+
+      const [logRes, configRes] = await Promise.all([
+        getAdcExecHistories({
+          type_id: this.currentType,
+          last_size: 1000
+        }),
+        getSystemConfig({ name: 'auto_discovery_exec_log_types' }).catch(() => null)
+      ])
+
+      if (configRes?.option?.v) {
+        this.execLogTypes = configRes.option.v
+      } else {
+        this.execLogTypes = ['add', 'update', 'delete', 'accept']
+      }
+
       let logTextArray = []
       if (logRes?.result?.length) {
         logTextArray = logRes.result.map((log) => {
@@ -497,6 +536,17 @@ export default {
           textEl.scrollTop = textEl.scrollHeight
         }
       })
+    },
+    async handleLogTypesChange(checkedValues) {
+      this.logConfigSaving = true
+      try {
+        await saveSystemConfig({
+          name: 'auto_discovery_exec_log_types',
+          option: { v: checkedValues }
+        })
+      } finally {
+        this.logConfigSaving = false
+      }
     },
     getRowSeq(row) {
       return this.$refs.xTable.getVxetableRef().getRowSeq(row)
@@ -680,8 +730,51 @@ export default {
 }
 
 .log-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 24px;
   font-size: 14px;
   font-weight: 500;
+}
+
+.log-config-toggle {
+  color: @text-color_3;
+  font-size: 14px;
+  transition: color 0.2s;
+
+  &:hover {
+    color: @primary-color;
+  }
+}
+
+.log-config-icon-active {
+  color: @primary-color;
+}
+
+.log-config-area {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #fafafa;
+  border: 1px solid @border-color-base;
+  border-radius: 4px;
+
+  .log-config-label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 12px;
+    color: @text-color_3;
+  }
+
+  /deep/ .ant-checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+
+    .ant-checkbox-wrapper {
+      margin-right: 0;
+    }
+  }
 }
 
 .log-modal-text {

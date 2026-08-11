@@ -551,6 +551,17 @@ class AutoDiscoveryCITypeRelationCRUD(DBMixin):
 class AutoDiscoveryCICRUD(DBMixin):
     cls = AutoDiscoveryCI
 
+    @staticmethod
+    def _get_exec_log_types():
+        """Return the list of enabled execution history log types.
+
+        Configured via SystemConfig ``auto_discovery_exec_log_types``.
+        Defaults to ``['add', 'update', 'delete', 'accept']``.
+        Add ``'sync'`` to also record unchanged-instance sync events.
+        """
+        return (SystemConfigManager.get('auto_discovery_exec_log_types') or {}).get(
+            'option', {}).get('v') or ['add', 'update', 'delete', 'accept']
+
     @classmethod
     def get_by_adt_id(cls, adt_id):
         return cls.cls.get_by(adt_id=adt_id, to_dict=False)
@@ -637,6 +648,13 @@ class AutoDiscoveryCICRUD(DBMixin):
 
         adt = AutoDiscoveryCIType.get_by_id(kwargs['adt_id']) or abort(404, ErrFormat.adt_not_found)
 
+        adr_name = ''
+        if adt.adr_id:
+            adr = AutoDiscoveryRule.get_by_id(adt.adr_id)
+            adr_name = adr.name if adr else ''
+        agent_name = kwargs.get('oneagent_name', '-') or '-'
+        exec_log_types = self._get_exec_log_types()
+
         existed = self.cls.get_by(type_id=kwargs['type_id'],
                                   unique_value=kwargs.get("unique_value"),
                                   first=True, to_dict=False)
@@ -647,8 +665,11 @@ class AutoDiscoveryCICRUD(DBMixin):
                 instance.update(kwargs['instance'])
                 kwargs['instance'] = instance
                 existed.update(filter_none=False, **kwargs)
-                AutoDiscoveryExecHistoryCRUD().add(type_id=adt.type_id,
-                                                   stdout="update resource: {}".format(kwargs.get('unique_value')))
+                if 'update' in exec_log_types:
+                    AutoDiscoveryExecHistoryCRUD().add(
+                        type_id=adt.type_id,
+                        stdout="update resource: {} | rule: {} | agent: {}".format(
+                            kwargs.get('unique_value'), adr_name, agent_name))
                 changed = True
             else:
                 # Data unchanged, but still record who reported it and refresh
@@ -657,10 +678,18 @@ class AutoDiscoveryCICRUD(DBMixin):
                 existed.update(oneagent_id=kwargs.get('oneagent_id'),
                                oneagent_name=kwargs.get('oneagent_name'),
                                updated_at=datetime.datetime.now())
+                if 'sync' in exec_log_types:
+                    AutoDiscoveryExecHistoryCRUD().add(
+                        type_id=adt.type_id,
+                        stdout="sync resource: {} | rule: {} | agent: {}".format(
+                            kwargs.get('unique_value'), adr_name, agent_name))
         else:
             existed = self.cls.create(**kwargs)
-            AutoDiscoveryExecHistoryCRUD().add(type_id=adt.type_id,
-                                               stdout="add resource: {}".format(kwargs.get('unique_value')))
+            if 'add' in exec_log_types:
+                AutoDiscoveryExecHistoryCRUD().add(
+                    type_id=adt.type_id,
+                    stdout="add resource: {} | rule: {} | agent: {}".format(
+                        kwargs.get('unique_value'), adr_name, agent_name))
             changed = True
 
         if adt.auto_accept and changed:
@@ -691,8 +720,17 @@ class AutoDiscoveryCICRUD(DBMixin):
         if adt:
             adt.update(updated_at=datetime.datetime.now())
 
-        AutoDiscoveryExecHistoryCRUD().add(type_id=inst.type_id,
-                                           stdout="delete resource: {}".format(inst.unique_value))
+        exec_log_types = self._get_exec_log_types()
+
+        if 'delete' in exec_log_types:
+            adr_name = ''
+            if adt and adt.adr_id:
+                adr = AutoDiscoveryRule.get_by_id(adt.adr_id)
+                adr_name = adr.name if adr else ''
+
+            AutoDiscoveryExecHistoryCRUD().add(
+                type_id=inst.type_id,
+                stdout="delete resource: {} | rule: {} | agent: -".format(inst.unique_value, adr_name))
 
         self._after_delete(inst)
 
@@ -714,8 +752,16 @@ class AutoDiscoveryCICRUD(DBMixin):
         if adt:
             adt.update(updated_at=datetime.datetime.now())
 
-        AutoDiscoveryExecHistoryCRUD().add(type_id=type_id,
-                                           stdout="delete resource: {}".format(unique_value))
+        exec_log_types = cls._get_exec_log_types()
+        if 'delete' in exec_log_types:
+            adr_name = ''
+            if adt and adt.adr_id:
+                adr = AutoDiscoveryRule.get_by_id(adt.adr_id)
+                adr_name = adr.name if adr else ''
+
+            AutoDiscoveryExecHistoryCRUD().add(
+                type_id=type_id,
+                stdout="delete resource: {} | rule: {} | agent: -".format(unique_value, adr_name))
         # TODO: delete ci
 
     @classmethod
@@ -745,8 +791,17 @@ class AutoDiscoveryCICRUD(DBMixin):
                 ci_dict = {k: jsonpath.jsonpath(v, path_mapping[k]) if k in path_mapping else v
                            for k, v in ci_dict.items()}
             ci_id = CIManager.add(adc.type_id, is_auto_discovery=True, _is_admin=True, **ci_dict)
-            AutoDiscoveryExecHistoryCRUD().add(type_id=adt.type_id,
-                                               stdout="accept resource: {}".format(adc.unique_value))
+
+            exec_log_types = cls._get_exec_log_types()
+            if 'accept' in exec_log_types:
+                adr_name = ''
+                if adt.adr_id:
+                    adr = AutoDiscoveryRule.get_by_id(adt.adr_id)
+                    adr_name = adr.name if adr else ''
+
+                AutoDiscoveryExecHistoryCRUD().add(
+                    type_id=adt.type_id,
+                    stdout="accept resource: {} | rule: {} | agent: -".format(adc.unique_value, adr_name))
 
         build_relations_for_ad_accept.apply_async(args=(adc.to_dict(), ci_id, ad_key2attr), queue=CMDB_QUEUE)
 

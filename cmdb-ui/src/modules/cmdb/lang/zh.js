@@ -914,6 +914,8 @@ if __name__ == "__main__":
         newThisWeek: '本周新增',
         newThisMonth: '本月新增',
         log: '日志',
+        logConfig: '日志类型配置',
+        execLogTypes: '记录类型',
         discoveryCardResoureTip: '自动发现的资源类型数',
         addPlugin: '新增插件',
         pluginSearchTip: '请搜索规则',
