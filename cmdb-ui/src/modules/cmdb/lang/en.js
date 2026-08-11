@@ -843,7 +843,7 @@ const cmdb_en = {
         adrType: 'Type',
         isInner: 'Built-in',
         createdAt: 'Report time',
-        updatedAt: 'Report updated time',
+        updatedAt: 'Updated time',
         deleteADC: 'Confirm to delete this data?',
         batchDelete: 'Confirm to delete this data?',
         agent: 'Server',

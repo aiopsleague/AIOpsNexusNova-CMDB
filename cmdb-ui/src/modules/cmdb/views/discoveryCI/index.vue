@@ -112,15 +112,15 @@
                 </span>
               </template>
             </vxe-column>
-            <vxe-column field="oneagent_name" :title="$t('cmdb.ad.oneagentName')" min-width="120"></vxe-column>
-            <vxe-column field="oneagent_id" :title="$t('cmdb.ad.oneagentId')" min-width="110"></vxe-column>
-            <vxe-column field="adr_name" :title="$t('cmdb.ad.adrName')" min-width="120"></vxe-column>
-            <vxe-column field="adr_type" :title="$t('cmdb.ad.adrType')" min-width="90"></vxe-column>
-            <vxe-column field="is_inner" :title="$t('cmdb.ad.isInner')" min-width="90" align="center">
+            <vxe-column field="oneagent_name" :title="$t('cmdb.ad.oneagentName')" v-bind="columns.length ? { width: '130px' } : { minWidth: '130px' }"></vxe-column>
+            <vxe-column field="oneagent_id" :title="$t('cmdb.ad.oneagentId')" v-bind="columns.length ? { width: '110px' } : { minWidth: '110px' }"></vxe-column>
+            <vxe-column field="adr_name" :title="$t('cmdb.ad.adrName')" v-bind="columns.length ? { width: '130px' } : { minWidth: '130px' }"></vxe-column>
+            <vxe-column field="adr_type" :title="$t('cmdb.ad.adrType')" v-bind="columns.length ? { width: '80px' } : { minWidth: '80px' }"></vxe-column>
+            <vxe-column field="is_inner" :title="$t('cmdb.ad.isInner')" align="center" v-bind="columns.length ? { width: '80px' } : { minWidth: '80px' }">
               <template #default="{row}">{{ row.is_inner ? $t('yes') : $t('no') }}</template>
             </vxe-column>
-            <vxe-column field="created_at" :title="$t('cmdb.ad.createdAt')" min-width="160" sortable></vxe-column>
-            <vxe-column field="updated_at" :title="$t('cmdb.ad.updatedAt')" min-width="160" sortable></vxe-column>
+            <vxe-column field="created_at" :title="$t('cmdb.ad.createdAt')" sortable v-bind="columns.length ? { width: '170px' } : { minWidth: '170px' }"></vxe-column>
+            <vxe-column field="updated_at" :title="$t('cmdb.ad.updatedAt')" sortable v-bind="columns.length ? { width: '180px' } : { minWidth: '180px' }"></vxe-column>
             <vxe-column
               field="accept_by"
               :title="$t('cmdb.ad.acceptBy')"
@@ -219,7 +219,7 @@ import {
   getAdcExecHistories,
   getAdcById
 } from '../../api/discovery'
-import { getCITableColumns } from '../../utils/helper'
+import { getCITableColumns, strLength } from '../../utils/helper'
 
 export default {
   name: 'DiscoveryCI',
@@ -351,7 +351,18 @@ export default {
     },
     getColumns(data, attrList) {
       const width = document.getElementById('discovery-ci').clientWidth - 50
-      return getCITableColumns(data, attrList, width)
+      const columns = getCITableColumns(data, attrList, width)
+      // getCITableColumns sizes columns from the cell data only; when the
+      // header title is wider than the data (e.g. short id, Chinese aliases)
+      // vxe-table ellipsizes the header. Give each column a width that fits
+      // its title plus padding.
+      columns.forEach((col) => {
+        const headerWidth = strLength(col.title) + 50
+        if (col.width === undefined || col.width < headerWidth) {
+          col.width = headerWidth
+        }
+      })
+      return columns
     },
     accept(row) {
       this.selectedRowKeys = []
