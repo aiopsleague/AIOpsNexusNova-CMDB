@@ -591,7 +591,7 @@ class AutoDiscoveryCIType(Model):
 
     auto_accept = db.Column(db.Boolean, default=False)
 
-    agent_id = db.Column(db.String(8), index=True)
+    agent_id = db.Column(db.String(64), index=True)
     query_expr = db.Column(db.Text)
 
     interval = db.Column(db.Integer)  # seconds, > 2.4.5: deprecated
@@ -634,7 +634,7 @@ class AutoDiscoveryRuleSyncHistory(Model2):
     __tablename__ = "c_ad_rule_sync_histories"
 
     adt_id = db.Column(db.Integer, db.ForeignKey('c_ad_ci_types.id'))
-    oneagent_id = db.Column(db.String(8))
+    oneagent_id = db.Column(db.String(64))
     oneagent_name = db.Column(db.String(64))
     sync_at = db.Column(db.DateTime, default=datetime.datetime.now())
 
@@ -697,7 +697,7 @@ class IPAMSubnetScan(Model):
     last_scan_time = db.Column(db.DateTime)
 
     # scan rules
-    agent_id = db.Column(db.String(8), index=True)
+    agent_id = db.Column(db.String(64), index=True)
     cron = db.Column(db.String(128))
 
 
