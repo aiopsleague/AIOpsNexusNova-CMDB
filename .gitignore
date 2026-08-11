@@ -1,7 +1,7 @@
 *~
 # .idea
 # .vscode
-migrates
+# migrates
 # config.cfg
 *.log
 *_packed.js
