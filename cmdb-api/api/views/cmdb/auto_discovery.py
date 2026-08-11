@@ -406,6 +406,19 @@ def auto_discovery_exec_history_view_post():
     return dict(code=200)
 
 
+@router.delete("/adc/exec/histories/{type_id:int}")
+def auto_discovery_exec_history_view_delete(type_id: int):
+    from api.extensions import db
+    from api.models.cmdb import AutoDiscoveryExecHistory
+
+    db.session.query(AutoDiscoveryExecHistory).filter(
+        AutoDiscoveryExecHistory.type_id == type_id
+    ).delete()
+    db.session.commit()
+
+    return dict(code=200)
+
+
 @router.get("/adc/counter")
 @args_required('type_id')
 def auto_discovery_counter_view_get():

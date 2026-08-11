@@ -217,6 +217,16 @@
               {{ item }}
             </span>
           </p>
+          <div v-if="logTextArray.length" class="log-modal-footer">
+            <a-button
+              type="danger"
+              size="small"
+              :loading="logClearing"
+              @click="clearLogs"
+            >
+              {{ $t('cmdb.ad.clearLog') }}
+            </a-button>
+          </div>
         </a-modal>
       </div>
 
@@ -240,7 +250,8 @@ import {
   getADCCiTypesAttrs,
   deleteAdc,
   getAdcExecHistories,
-  getAdcById
+  getAdcById,
+  deleteAdcExecHistories
 } from '../../api/discovery'
 import { getSystemConfig, saveSystemConfig } from '../../api/system_config'
 import { getCITableColumns, strLength } from '../../utils/helper'
@@ -267,6 +278,7 @@ export default {
       showLogConfig: false,
       execLogTypes: ['add', 'update', 'delete', 'accept'],
       logConfigSaving: false,
+      logClearing: false,
       acceptByFilters: [],
       selectedCount: 0,
       loading: false,
@@ -548,6 +560,22 @@ export default {
         this.logConfigSaving = false
       }
     },
+    async clearLogs() {
+      const that = this
+      this.$confirm({
+        title: that.$t('warning'),
+        content: that.$t('cmdb.ad.confirmClearLog'),
+        onOk() {
+          that.logClearing = true
+          deleteAdcExecHistories(that.currentType).then(() => {
+            that.logTextArray = []
+            that.$message.success(that.$t('cmdb.ad.clearLogSuccess'))
+          }).finally(() => {
+            that.logClearing = false
+          })
+        }
+      })
+    },
     getRowSeq(row) {
       return this.$refs.xTable.getVxetableRef().getRowSeq(row)
     }
@@ -793,5 +821,10 @@ export default {
     white-space: pre-wrap;
     word-break: break-all;
   }
+}
+
+.log-modal-footer {
+  margin-top: 12px;
+  text-align: right;
 }
 </style>

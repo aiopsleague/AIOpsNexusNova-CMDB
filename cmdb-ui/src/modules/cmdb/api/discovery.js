@@ -169,6 +169,13 @@ export function getAdcExecHistories(params) {
   })
 }
 
+export function deleteAdcExecHistories(type_id) {
+  return axios({
+    url: `v0.1/adc/exec/histories/${type_id}`,
+    method: 'DELETE'
+  })
+}
+
 export function getAdtSyncHistories(adt_id) {
   return axios({
     url: `/v0.1/adt/${adt_id}/sync/histories`,
