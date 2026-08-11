@@ -619,6 +619,10 @@ class AutoDiscoveryCI(Model):
     unique_value = db.Column(db.String(128), index=True)
     instance = db.Column(db.JSON)
 
+    # Which OneAgent reported this discovery instance.
+    oneagent_id = db.Column(db.String(64), index=True)
+    oneagent_name = db.Column(db.String(64))
+
     ci_id = db.Column(db.Integer, index=True)
 
     is_accept = db.Column(db.Boolean, default=False)

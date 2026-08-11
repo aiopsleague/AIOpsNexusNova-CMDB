@@ -590,6 +590,10 @@ class AutoDiscoveryCICRUD(DBMixin):
         if not adts:
             return 0, []
         adt2attr_map = {i.id: i.attributes or {} for i in adts}
+        adt2adr = {}
+        for adt in adts:
+            adr = AutoDiscoveryRule.get_by_id(adt.adr_id)
+            adt2adr[adt.id] = adr
 
         query = db.session.query(cls.cls).filter(cls.cls.deleted.is_(False))
 
@@ -608,6 +612,11 @@ class AutoDiscoveryCICRUD(DBMixin):
             adt_id = item['adt_id']
             item['instance'] = {adt2attr_map[adt_id][k]: v for k, v in item.get('instance').items()
                                 if (not fl or k in fl) and adt2attr_map.get(adt_id, {}).get(k)}
+            # Attach the discovery rule (plugin) info for display.
+            adr = adt2adr.get(adt_id)
+            item['adr_name'] = adr.name if adr else ''
+            item['adr_type'] = adr.type if adr else ''
+            item['is_inner'] = bool(adr and adr.is_inner)
             result.append(item)
 
         numfound = query.count()
@@ -641,6 +650,13 @@ class AutoDiscoveryCICRUD(DBMixin):
                 AutoDiscoveryExecHistoryCRUD().add(type_id=adt.type_id,
                                                    stdout="update resource: {}".format(kwargs.get('unique_value')))
                 changed = True
+            else:
+                # Data unchanged, but still record who reported it and refresh
+                # the last-report time so the pool always shows the syncing
+                # agent and when it last synced.
+                existed.update(oneagent_id=kwargs.get('oneagent_id'),
+                               oneagent_name=kwargs.get('oneagent_name'),
+                               updated_at=datetime.datetime.now())
         else:
             existed = self.cls.create(**kwargs)
             AutoDiscoveryExecHistoryCRUD().add(type_id=adt.type_id,

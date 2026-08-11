@@ -112,6 +112,15 @@
                 </span>
               </template>
             </vxe-column>
+            <vxe-column field="oneagent_name" :title="$t('cmdb.ad.oneagentName')" min-width="120"></vxe-column>
+            <vxe-column field="oneagent_id" :title="$t('cmdb.ad.oneagentId')" min-width="110"></vxe-column>
+            <vxe-column field="adr_name" :title="$t('cmdb.ad.adrName')" min-width="120"></vxe-column>
+            <vxe-column field="adr_type" :title="$t('cmdb.ad.adrType')" min-width="90"></vxe-column>
+            <vxe-column field="is_inner" :title="$t('cmdb.ad.isInner')" min-width="90" align="center">
+              <template #default="{row}">{{ row.is_inner ? $t('yes') : $t('no') }}</template>
+            </vxe-column>
+            <vxe-column field="created_at" :title="$t('cmdb.ad.createdAt')" min-width="160" sortable></vxe-column>
+            <vxe-column field="updated_at" :title="$t('cmdb.ad.updatedAt')" min-width="160" sortable></vxe-column>
             <vxe-column
               field="accept_by"
               :title="$t('cmdb.ad.acceptBy')"
