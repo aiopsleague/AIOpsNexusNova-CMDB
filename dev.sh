@@ -40,7 +40,7 @@ c_red()   { printf '\033[31m%s\033[0m\n' "$*"; }
 c_yellow(){ printf '\033[33m%s\033[0m\n' "$*"; }
 
 # 后端/前端共用的本地连接参数（docker 把 3306 映射到 23306，6379 直接暴露）
-export TZ=UTC   # 容器/本机若是东八区，JWT iat 会落到未来导致 token 全部失效
+export TZ=Asia/Shanghai
 export SECRET_KEY="${SECRET_KEY:-dev-secret-key}"
 export MYSQL_HOST=127.0.0.1
 export MYSQL_PORT=23306
