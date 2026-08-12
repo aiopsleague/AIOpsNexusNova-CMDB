@@ -1354,12 +1354,12 @@ export default {
     float: left;
     background-color: #f7f8fa;
     border-right: 1px solid #e8eaed;
-    padding-bottom: 12px;
-    padding-right: 8px;
+    padding: 12px 8px;
 
     .topo-left-content {
-      max-height: calc(100% - 45px);
+      height: calc(100% - 45px);
       overflow: hidden;
+      margin-top: 10px;
 
       &:hover {
         overflow: auto;
@@ -1399,7 +1399,7 @@ export default {
       position: relative;
       padding: 10px 12px 10px 22px;
       margin-bottom: 8px;
-      color: #333;
+      color: @text-color_1;
       cursor: pointer;
       font-size: 15px;
       font-weight: 600;
@@ -1461,6 +1461,7 @@ export default {
 
       &:hover {
         background-color: @primary-color_7;
+        box-shadow: 0px 2px 8px fade(@primary-color, 15%);
 
         // &::before {
         //   opacity: 1;
@@ -1503,6 +1504,9 @@ export default {
       .topo-left-detail-action {
         display: none;
         margin-left: auto;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 10;
       }
 
       .topo-left-detail-title {
@@ -1512,10 +1516,12 @@ export default {
         font-size: 14px;
         color: @text-color_1;
         transition: color 0.2s ease;
+        flex: 1;
       }
 
       .topo-left-detail-icon {
-        display: flex;
+        display: inline-flex;
+        flex-shrink: 0;
         align-items: center;
         justify-content: center;
         width: 24px;
@@ -1544,7 +1550,7 @@ export default {
 
       &:hover {
         background-color: @primary-color_7;
-        transform: translateX(2px);
+        box-shadow: 0px 2px 8px fade(@primary-color, 15%);
 
         .topo-left-detail-icon {
           transform: scale(1.05);
@@ -1562,6 +1568,8 @@ export default {
     .selected {
       background-color: @primary-color_6;
       box-shadow: 0 1px 3px fade(@primary-color, 10%);
+      position: relative;
+      z-index: 1;
 
       &::before {
         opacity: 1;
