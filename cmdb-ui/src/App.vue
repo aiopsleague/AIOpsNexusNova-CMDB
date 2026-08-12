@@ -1,6 +1,7 @@
 <template>
   <a-config-provider :locale="antdLocale">
     <div id="app" :class="{ 'ops-fullscreen': isOpsFullScreen, 'ops-only-topmenu': isOpsOnlyTopMenu }">
+      <bg-orbs />
       <router-view v-if="alive" />
     </div>
   </a-config-provider>
@@ -16,9 +17,13 @@ import { getSystemLanguage } from '@/api/system.js'
 
 import { h } from 'snabbdom'
 import { DomEditor, Boot } from '@wangeditor/editor'
+import BgOrbs from '@/components/BgOrbs/BgOrbs.vue'
 
 export default {
   mixins: [AppDeviceEnquire],
+  components: {
+    BgOrbs,
+  },
   provide() {
     return {
       reload: this.reload,

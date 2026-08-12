@@ -24,8 +24,9 @@
 html[data-theme='dark'] {
 
   /* ---- A1. backdrop-filter on all major containers ---- */
-  .ant-layout,
-  .ant-layout-content,
+  /* NOTE: .ant-layout / .ant-layout-content are intentionally NOT blurred here —
+     their backgrounds are transparent so the animated orbs show through, and the
+     individual panels (cards, tables, menu, ...) do their own backdrop-filter. */
   .ant-layout-header,
   .ant-layout-sider,
   .ant-layout-footer,
@@ -166,13 +167,13 @@ html[data-theme='dark'] {
     transition: all 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 
-  /* ---- A5. Hover lift effect ---- */
+  /* ---- A5. Hover lift effect (matches the liquid-glass reference) ---- */
   .ant-card:hover,
   .glass-panel:hover,
   .stat-item:hover {
-    transform: translateY(-3px) scale(1.01);
+    transform: translateY(-4px) scale(1.015);
     box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5),
-                inset 0 1px 2px 0 rgba(255, 255, 255, 0.5);
+                inset 0 1px 2px 0 rgba(255, 255, 255, 0.6);
   }
 
   /* ---- A6. Modal body: subtle glass surface ---- */
@@ -211,9 +212,17 @@ html[data-theme='dark'] {
 html[data-theme='dark'] {
 
   /* ---- B1. Layout backgrounds ---- */
+  /* Transparent so the animated orbs (section K) show through the glass panels.
+     Body keeps #080a10 (set by utils/theme.js + @body-background). */
   .ant-layout,
   .ant-layout-content {
-    background-color: #080a10;
+    background-color: transparent;
+  }
+  /* Stacking context above the fixed orb layer (z-index 0) so content paints
+     over the orbs; semi-transparent surfaces above still let them blur through. */
+  .ant-layout {
+    position: relative;
+    z-index: 1;
   }
   .ant-layout-header {
     background: rgba(20, 20, 30, 0.55);
@@ -2729,5 +2738,98 @@ html[data-theme='dark'] {
   }
   .ci-json-editor .jsoneditor-contextmenu .jsoneditor-separator {
     border-color: rgba(255, 255, 255, 0.08);
+  }
+}
+
+/* ================================================================
+   K. ANIMATED BACKGROUND ORBS (霓虹光斑) — FLUID-GLASS BACKDROP
+   ================================================================
+   Drifting neon blobs painted behind the app shell (fixed, z-index 0).
+   .ant-layout gets position:relative + z-index:1 (section B1) so content
+   paints above them; semi-transparent glass panels blur them via
+   backdrop-filter. Only this dark.css carries these rules → inert in light
+   mode (plus a global guard in global.less hides the layer entirely).
+   ================================================================ */
+html[data-theme='dark'] {
+
+  /* ---- K1. Orb layer ---- */
+  .bg-orbs {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  /* ---- K2. Orb blobs: radial-gradient (no filter blur — GPU-cheap) ---- */
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    will-change: transform;
+    animation: bg-orb-float 18s ease-in-out infinite alternate;
+  }
+  .orb-1 {
+    width: 560px;
+    height: 560px;
+    top: -10%;
+    left: -8%;
+    background: radial-gradient(circle at 35% 35%, #7928ca 0%, #2a0a55 52%, rgba(42, 10, 85, 0) 72%);
+    opacity: 0.55;
+  }
+  .orb-2 {
+    width: 680px;
+    height: 680px;
+    bottom: -14%;
+    right: -10%;
+    background: radial-gradient(circle at 60% 40%, #00d2ff 0%, #003399 50%, rgba(0, 51, 153, 0) 70%);
+    opacity: 0.45;
+    animation-delay: -6s;
+  }
+  .orb-3 {
+    width: 460px;
+    height: 460px;
+    top: 52%;
+    left: 42%;
+    background: radial-gradient(circle at 50% 50%, #ff2d9b 0%, #5c0a4a 52%, rgba(92, 10, 74, 0) 72%);
+    opacity: 0.40;
+    animation-delay: -12s;
+  }
+
+  @keyframes bg-orb-float {
+    0%   { transform: translate(0, 0) scale(1); }
+    50%  { transform: translate(50px, -40px) scale(1.12); }
+    100% { transform: translate(-40px, 45px) scale(0.94); }
+  }
+
+  /* Respect OS-level reduced-motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    .orb {
+      animation: none;
+    }
+  }
+
+  /* Hide on fullscreen screens (defensive — the screen component also covers it) */
+  #app.ops-fullscreen .bg-orbs {
+    display: none;
+  }
+}
+
+/* ================================================================
+   L. MULTI-TAB — LIQUID GLASS (latent fix)
+   ================================================================
+   MultiTab.vue hardcodes an opaque tab-bar background (#1e1e24 in dark),
+   which breaks the glass look and blocks the orbs. !important beats the
+   inline style. (multiTab is off by default; keeps dark mode correct when
+   enabled.)
+   ================================================================ */
+html[data-theme='dark'] {
+  .ant-pro-multi-tab {
+    background: rgba(255, 255, 255, 0.06) !important;
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
 }

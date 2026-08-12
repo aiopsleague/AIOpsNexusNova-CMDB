@@ -24,6 +24,12 @@
 @import '~ant-design-vue/dist/antd.less';
 @import './static.less';
 
+// Background orbs (see components/BgOrbs/BgOrbs.vue) are inert unless the
+// dark/glass theme css is loaded. Guard here so light mode never renders them.
+html:not([data-theme='dark']) .bg-orbs {
+  display: none;
+}
+
 body {
   &.colorWeak {
     filter: invert(80%);
