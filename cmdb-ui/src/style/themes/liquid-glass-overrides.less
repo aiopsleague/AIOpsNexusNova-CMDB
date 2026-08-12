@@ -174,6 +174,31 @@ html[data-theme='liquid-glass'] {
     box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5),
                 inset 0 1px 2px 0 rgba(255, 255, 255, 0.5);
   }
+
+  /* ---- A6. Modal body: subtle glass surface ---- */
+  .ant-modal-body {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 0 0 14px 14px;
+    color: #f0f0f3;
+  }
+  .ant-modal-body::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  .ant-modal-body::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.18);
+  }
+
+  /* ---- A7. Card head: frosted glass header ---- */
+  .ant-card-head {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 14px 14px 0 0;
+  }
+  .ant-card-head .ant-card-head-title {
+    color: #f0f0f3;
+  }
 }
 
 /* ================================================================
@@ -351,6 +376,9 @@ html[data-theme='liquid-glass'] {
 
   /* userPanel */
   .user-panel-avatar {
+    width: 62px;
+    height: 62px;
+    line-height: 62px;
     background: rgba(108, 92, 231, 0.2);
     color: #a29bfe;
   }
@@ -557,6 +585,44 @@ html[data-theme='liquid-glass'] {
   }
   .el-button:hover,
   .el-button:focus { border-color: #a29bfe; color: #a29bfe; }
+  .el-descriptions__body {
+    background-color: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    color: #f0f0f3;
+  }
+  .el-descriptions__title {
+    color: #f0f0f3 !important;
+  }
+  .el-descriptions-item__label {
+    color: #9999a6 !important;
+    background-color: rgba(255, 255, 255, 0.04) !important;
+  }
+  .el-descriptions-item__label.is-bordered-label {
+    background: rgba(255, 255, 255, 0.04) !important;
+    color: #9999a6 !important;
+    border-color: rgba(255, 255, 255, 0.06) !important;
+  }
+  .el-descriptions-item__content {
+    color: #f0f0f3 !important;
+  }
+  .el-descriptions__table {
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+  .el-descriptions__table.is-bordered {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    background-color: transparent;
+  }
+  .el-descriptions__body table {
+    background: transparent !important;
+    border-collapse: collapse;
+  }
+  .el-descriptions-item__cell {
+    border-color: rgba(255, 255, 255, 0.06) !important;
+    background-color: transparent !important;
+  }
 }
 
 /* ================================================================
@@ -889,23 +955,65 @@ html[data-theme='liquid-glass'] {
   }
 
   /* Company structure: employee tabs */
-  .ops-setting-structure-sidebar-group-category-item {
-    color: #f0f0f3;
+  .ops-setting-structure-sidebar-group-header {
     &:hover {
-      color: #a29bfe;
       background-color: rgba(255, 255, 255, 0.06);
+    }
+    .ops-setting-structure-sidebar-group-header-title {
+      color: #f0f0f3;
+    }
+    &:hover .ops-setting-structure-sidebar-group-header-title {
+      color: #a29bfe;
+    }
+    .ops-setting-structure-sidebar-group-header-avatar {
+      background-color: rgba(108, 92, 231, 0.3);
+      > i { color: #f0f0f3; }
+    }
+  }
+  .ops-setting-structure-sidebar-group-header.group-selected {
+    background-color: rgba(108, 92, 231, 0.15) !important;
+    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
+  }
+  .ops-setting-structure-sidebar-group-header.group-selected .ops-setting-structure-sidebar-group-header-avatar {
+    background-color: rgba(108, 92, 231, 0.5) !important;
+  }
+  .ops-setting-structure-sidebar-group-header.group-selected .ops-setting-structure-sidebar-group-header-avatar > i {
+    color: #f0f0f3 !important;
+  }
+  .ops-setting-structure-sidebar-group-header.group-selected .ops-setting-structure-sidebar-group-header-title {
+    color: #a29bfe !important;
+    font-weight: 600;
+  }
+  .ops-setting-structure-sidebar-group-category-item {
+    color: #f0f0f3 !important;
+    &:hover {
+      color: #a29bfe !important;
+      background-color: rgba(255, 255, 255, 0.06) !important;
       &::before { background-color: #a29bfe; }
     }
     &::before { background-color: #555562; }
     &:not(:last-child)::after { background-color: rgba(255, 255, 255, 0.06); }
   }
+  .ops-setting-structure-sidebar-group-category-item .item-title {
+    color: #f0f0f3 !important;
+  }
   .item-selected {
-    color: #a29bfe;
-    background-color: rgba(108, 92, 231, 0.15);
+    color: #a29bfe !important;
+    background-color: rgba(108, 92, 231, 0.15) !important;
     &::before { background-color: #a29bfe; }
   }
-  .item-count-before { color: #9999a6; }
-  .item-count-after { color: #9999a6; }
+  .item-selected .item-title {
+    color: #a29bfe !important;
+  }
+  .item-count-before {
+    color: #a29bfe !important;
+    background-color: rgba(108, 92, 231, 0.15) !important;
+  }
+  .item-count-after {
+    color: #a29bfe !important;
+    background-color: rgba(108, 92, 231, 0.15) !important;
+  }
 
   /* BatchUpload steps */
   .setting-structure-upload .setting-structure-upload-steps {
@@ -959,6 +1067,46 @@ html[data-theme='liquid-glass'] {
   }
 
   /* Preference / Subscription */
+  .cmdb-preference-left {
+    background-color: rgba(20, 20, 30, 0.5);
+  }
+  .cmdb-preference-group-title > span {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    color: #f0f0f3 !important;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
+  }
+  .cmdb-preference-group-content {
+    color: #f0f0f3 !important;
+    border-radius: 8px;
+  }
+  .cmdb-preference-group-content:hover {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    box-shadow: 0 2px 8px rgba(108, 92, 231, 0.15) !important;
+  }
+  .cmdb-preference-group-content-action {
+    color: #a29bfe !important;
+  }
+  .cmdb-preference-avatar {
+    background-color: rgba(30, 30, 40, 0.5) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  .cmdb-preference-right-header-auto {
+    background: linear-gradient(90deg, #6c5ce7 0%, #8c7cff 47%, #a29bfe 100%) !important;
+    color: #f0f0f3 !important;
+  }
+  .cmdb-preference-type {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
+  }
+  .cmdb-preference-type:hover {
+    box-shadow: 0 8px 28px rgba(108, 92, 231, 0.3) !important;
+  }
   .cmdb-preference-content {
     .cmdb-preference-header .cmdb-preference-title { color: #f0f0f3 !important; }
     .cmdb-preference-colleague { color: #9999a6; }
@@ -997,6 +1145,624 @@ html[data-theme='liquid-glass'] {
   /* CI list page — left panel (pane-one > ci-left) */
   .ci-types-left-header-input input { background-color: rgba(255, 255, 255, 0.06) !important; }
   .ci-types-left-header-input .ant-input-prefix { color: #9999a6 !important; }
+
+  /* CI types (模型配置) left panel */
+  .ci-types-left {
+    background-color: rgba(20, 20, 30, 0.5) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+  .ci-types-left .ci-types-left-group {
+    color: #f0f0f3 !important;
+    background-color: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(6px) saturate(140%);
+    -webkit-backdrop-filter: blur(6px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+  }
+  .ci-types-left .ci-types-left-group-name {
+    color: #f0f0f3 !important;
+  }
+  .ci-types-left .ci-types-left-group > div:first-child > span:last-child {
+    background: rgba(255, 255, 255, 0.08);
+    color: #9999a6 !important;
+  }
+  .ci-types-left .ci-types-left-group:hover {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
+  }
+  .ci-types-left .ci-types-left-detail {
+    background-color: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(6px) saturate(140%);
+    -webkit-backdrop-filter: blur(6px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+  }
+  .ci-types-left .ci-types-left-detail-icon {
+    background-color: rgba(30, 30, 40, 0.5) !important;
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: none;
+  }
+  .ci-types-left .ci-types-left-detail-title {
+    color: #f0f0f3 !important;
+  }
+  .ci-types-left .ci-types-left-detail:hover {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
+  }
+  .ci-types-left .ci-types-left-detail:hover .ci-types-left-detail-title {
+    color: #a29bfe !important;
+  }
+  .ci-types-left .selected {
+    background-color: rgba(108, 92, 231, 0.15) !important;
+    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
+    box-shadow: 0 1px 3px rgba(108, 92, 231, 0.2);
+  }
+  .ci-types-left .selected .ci-types-left-detail-title {
+    color: #a29bfe !important;
+  }
+  .ci-types-left .selected .ci-types-left-detail-icon {
+    box-shadow: 0 2px 4px rgba(108, 92, 231, 0.2);
+  }
+  .ci-types-left .ci-types-left-group::before,
+  .ci-types-left .ci-types-left-detail::before {
+    background: #a29bfe;
+  }
+  .ci-types-right {
+    background-color: #080a10 !important;
+  }
+
+  /* CI types (模型配置) right panel — CITypeDetail sub-components */
+  .ad-btns-item {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    color: #f0f0f3 !important;
+  }
+  .ad-btns-item:hover {
+    background-color: rgba(108, 92, 231, 0.15) !important;
+    color: #a29bfe !important;
+  }
+  .attribute-card {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+  .attribute-card:hover {
+    box-shadow: 0 8px 24px rgba(108, 92, 231, 0.25) !important;
+  }
+  .attribute-card .attribute-card-name {
+    color: #f0f0f3 !important;
+  }
+  .attribute-card .attribute-card-name-default-show {
+    color: #a29bfe !important;
+  }
+  .attribute-card .attribute-card_value-type {
+    color: #555562 !important;
+  }
+  .attribute-card .attribute-card-footer {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-top-color: rgba(255, 255, 255, 0.06) !important;
+  }
+  .attribute-card-inherited {
+    background-color: rgba(255, 255, 255, 0.02) !important;
+  }
+  .attribute-card-inherited .attribute-card-footer {
+    background: rgba(255, 255, 255, 0.02) !important;
+  }
+  .attribute-card-value-type-icon {
+    background: rgba(30, 30, 40, 0.5) !important;
+    box-shadow: 0 1px 2px rgba(108, 92, 231, 0.2) !important;
+    color: #a29bfe !important;
+  }
+  .attribute-card-value-type-icon .ops-icon,
+  .attribute-card-value-type-icon i {
+    color: #a29bfe !important;
+  }
+  .attribute-card-footer-popover .ant-descriptions-bordered .ant-descriptions-item-label {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+  }
+  .attrbute-store-search-input .ant-input {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    color: #f0f0f3 !important;
+  }
+  .oneterm-sync-tab-title-pro {
+    background-color: rgba(108, 92, 231, 0.15) !important;
+    color: #a29bfe !important;
+  }
+  .tab-builtin-tag {
+    background-color: rgba(108, 92, 231, 0.15) !important;
+    color: #a29bfe !important;
+  }
+  .trigger-tips {
+    background-color: rgba(108, 92, 231, 0.12) !important;
+    border-color: rgba(108, 92, 231, 0.3) !important;
+  }
+
+  /* Auto discovery (setting-discovery) page */
+  .setting-discovery-body {
+    background-color: rgba(20, 20, 30, 0.5) !important;
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  .setting-discovery-search .ant-input {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    color: #f0f0f3 !important;
+  }
+  .setting-discovery-radio-item {
+    color: #9999a6 !important;
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .setting-discovery-radio-item:hover {
+    color: #a29bfe !important;
+    background-color: rgba(108, 92, 231, 0.1) !important;
+  }
+  .setting-discovery-radio-item_active {
+    background-color: rgba(108, 92, 231, 0.2) !important;
+    color: #a29bfe !important;
+    border-color: rgba(108, 92, 231, 0.3);
+  }
+  .setting-discovery-add {
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+  }
+  .setting-discovery-add:hover {
+    border-color: rgba(108, 92, 231, 0.4) !important;
+    background: rgba(108, 92, 231, 0.08) !important;
+  }
+  .setting-discovery-add-icon {
+    color: #555562 !important;
+  }
+  .setting-discovery-add:hover .setting-discovery-add-icon {
+    color: #a29bfe !important;
+  }
+  .setting-discovery-add-text {
+    color: #9999a6 !important;
+  }
+  .setting-discovery-empty-text {
+    color: #9999a6 !important;
+  }
+  .setting-discovery .type-header {
+    border-left-color: #a29bfe !important;
+    background: linear-gradient(90deg, rgba(108, 92, 231, 0.12) 0%, transparent 100%) !important;
+  }
+  .setting-discovery .type-header > div {
+    color: #f0f0f3 !important;
+  }
+  .setting-discovery-header-action-btn {
+    background-color: rgba(108, 92, 231, 0.1) !important;
+    border-color: rgba(108, 92, 231, 0.3) !important;
+    color: #a29bfe !important;
+  }
+
+  /* Discovery card (自动发现卡片) */
+  .discovery-card {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
+    border-radius: 10px;
+  }
+  .discovery-card:hover,
+  .discovery-card.discovery-card-small:hover {
+    box-shadow: 0 8px 28px rgba(108, 92, 231, 0.3) !important;
+  }
+  .discovery-card .discovery-background-top {
+    background: linear-gradient(90.54deg, #6c5ce7 1.32%, #a29bfe 99.13%) !important;
+  }
+  .discovery-card .discovery-top {
+    background-color: rgba(30, 30, 40, 0.7) !important;
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    border-radius: 8px;
+  }
+  .discovery-card .discovery-header > span {
+    color: #f0f0f3 !important;
+  }
+  .discovery-card .discovery-resources-count {
+    color: #9999a6 !important;
+  }
+  .discovery-card .discovery-resources-item {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    color: #9999a6 !important;
+  }
+  .discovery-card .discovery-footer-tag {
+    color: #a29bfe !important;
+    background-color: rgba(108, 92, 231, 0.15) !important;
+  }
+  .discovery-card-small-selected .discovery-top {
+    background-color: rgba(108, 92, 231, 0.15) !important;
+  }
+  .discovery-card-inner {
+    border-top-color: rgba(108, 92, 231, 0.4) !important;
+  }
+  .discovery-card-inner-text {
+    color: #a29bfe !important;
+  }
+
+  /* Attributes transfer (cmdb-transfer) */
+  .cmdb-transfer .ant-transfer-list {
+    background-color: rgba(20, 20, 30, 0.5) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    border-radius: 10px;
+  }
+  .cmdb-transfer .ant-transfer-list .ant-transfer-list-header {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .cmdb-transfer .ant-transfer-list-header-title {
+    color: #a29bfe !important;
+  }
+  .cmdb-transfer .ant-transfer-list-content-item {
+    border-left-color: transparent !important;
+    color: #f0f0f3 !important;
+  }
+  .cmdb-transfer .ant-transfer-list-icon {
+    background-color: rgba(30, 30, 40, 0.6) !important;
+    color: #a29bfe !important;
+  }
+  .cmdb-transfer .ant-transfer-list-lock-icon {
+    color: #555562 !important;
+  }
+  .cmdb-transfer .ant-transfer-list-lock-icon:hover {
+    color: #a29bfe !important;
+  }
+  .cmdb-transfer .ant-transfer-list-content-item-selected {
+    background-color: rgba(108, 92, 231, 0.15) !important;
+    border-color: rgba(108, 92, 231, 0.3) !important;
+    color: #a29bfe !important;
+  }
+  .cmdb-transfer .default-attr-arrow {
+    background-color: rgba(30, 30, 40, 0.6) !important;
+  }
+  .cmdb-transfer .default-attr-item-selected {
+    background-color: rgba(108, 92, 231, 0.15) !important;
+  }
+  .cmdb-transfer .default-attr-item:hover {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+  }
+
+  /* Employee / Role transfer (授权用户/部门) */
+  .employee-transfer .employee-transfer-left,
+  .employee-transfer .employee-transfer-right,
+  .role-transfer .role-transfer-left,
+  .role-transfer .role-transfer-right {
+    background-color: rgba(20, 20, 30, 0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    border-radius: 10px;
+  }
+  .employee-transfer .employee-transfer-right .employee-transfer-right-selected,
+  .role-transfer .role-transfer-right .role-transfer-right-selected {
+    background-color: rgba(108, 92, 231, 0.15) !important;
+    color: #a29bfe !important;
+  }
+  .employee-transfer .employee-transfer-right-item,
+  .role-transfer .role-transfer-right-item {
+    color: #f0f0f3 !important;
+  }
+  .employee-transfer .operation-left,
+  .employee-transfer .operation-right,
+  .role-transfer .operation-left,
+  .role-transfer .operation-right {
+    background-color: rgba(108, 92, 231, 0.15) !important;
+    color: #a29bfe !important;
+  }
+  .employee-transfer .operation-left:hover,
+  .employee-transfer .operation-right:hover,
+  .role-transfer .operation-left:hover,
+  .role-transfer .operation-right:hover {
+    background-color: rgba(108, 92, 231, 0.35) !important;
+    color: #f0f0f3 !important;
+  }
+
+  /* vue-treeselect inside employee-transfer-left */
+  .employee-transfer .vue-treeselect__control {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 8px;
+  }
+  .employee-transfer .vue-treeselect__menu {
+    background-color: rgba(20, 20, 30, 0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+  }
+  .employee-transfer .vue-treeselect__option {
+    color: #f0f0f3 !important;
+  }
+  .employee-transfer .vue-treeselect__option--highlight,
+  .employee-transfer .vue-treeselect__option:hover {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    color: #a29bfe !important;
+  }
+  .employee-transfer .vue-treeselect__option--selected {
+    background-color: rgba(108, 92, 231, 0.15) !important;
+    color: #a29bfe !important;
+  }
+  .employee-transfer .vue-treeselect__placeholder,
+  .employee-transfer .vue-treeselect__single-value {
+    color: #9999a6 !important;
+  }
+  .employee-transfer .vue-treeselect__multi-value-item {
+    background-color: rgba(108, 92, 231, 0.15) !important;
+    border-color: rgba(108, 92, 231, 0.3) !important;
+    color: #a29bfe !important;
+  }
+  .employee-transfer .vue-treeselect__multi-value-item .vue-treeselect__multi-value-label {
+    color: #a29bfe !important;
+  }
+
+  /* DCIM (数据中心) — stats cards, rack grid, tree */
+  .dcim-stats-card {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
+    filter: none !important;
+  }
+  .dcim-stats-card .dcim-stats-card-title {
+    color: #9999a6 !important;
+  }
+  .dcim-stats-card .dcim-stats-count-label {
+    color: #9999a6 !important;
+  }
+  .dcim-stats-card .dcim-stats-count-value {
+    color: #f0f0f3 !important;
+  }
+  .dcim-stats-card .dcim-stats-icon {
+    background-color: rgba(108, 92, 231, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .rack-grid-item {
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    backdrop-filter: blur(8px) saturate(140%);
+    -webkit-backdrop-filter: blur(8px) saturate(140%);
+  }
+  .rack-grid-item:hover {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    box-shadow: 0 8px 24px rgba(108, 92, 231, 0.25) !important;
+  }
+  .dcim-tree-header-calc {
+    border-top-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  .dcim-tree .ant-tree-switcher-icon {
+    color: #555562 !important;
+  }
+  .dcim-tree-node-icon {
+    color: #555562 !important;
+  }
+  .dcim-tree-node-count {
+    color: #555562 !important;
+  }
+  .dcim-tree-node-title {
+    color: #f0f0f3 !important;
+  }
+  .dcim-tree-node-action:hover {
+    color: #a29bfe !important;
+  }
+
+  /* Rack detail (rack-detail) — DCIM 机柜详情 */
+  .rack-detail .rack-header {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+  }
+  .rack-detail .rack-header-name {
+    color: #f0f0f3 !important;
+  }
+  .rack-detail .rack-header-name-value {
+    color: #a29bfe !important;
+  }
+  .rack-detail .rack-header-count-name {
+    color: #9999a6 !important;
+  }
+  .rack-detail .rack-header-count-value {
+    color: #f0f0f3 !important;
+  }
+  .device-list-tabs-item {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+    border-color: rgba(255, 255, 255, 0.06) !important;
+    border-radius: 6px;
+    backdrop-filter: blur(8px) saturate(140%);
+    -webkit-backdrop-filter: blur(8px) saturate(140%);
+  }
+  .device-list-tabs-item-name {
+    color: #f0f0f3 !important;
+  }
+  .device-list-tabs-item_active {
+    background-color: rgba(108, 92, 231, 0.15) !important;
+    border-color: rgba(108, 92, 231, 0.3) !important;
+  }
+  .device-list-tabs-item_active .device-list-tabs-item-name {
+    color: #a29bfe !important;
+  }
+  .device-list-tabs-item:hover .device-list-tabs-item-name {
+    color: #a29bfe !important;
+  }
+
+  /* Common settings (通用设置) pages */
+  .ops-setting-companyinfo,
+  .ops-setting-auth,
+  .setting-auth,
+  .setting-person-left,
+  .setting-person-right {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  .ops-setting-prometheus,
+  .ops-setting-grafana,
+  .ops-setting-file-storage,
+  .ops-setting-file-preview {
+    background-color: rgba(20, 20, 30, 0.5) !important;
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border-radius: 14px;
+  }
+  .ops-setting-notice-basic,
+  .ops-setting-notice-mail {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  .notice-email-wrapper {
+    background-color: transparent !important;
+  }
+  .notice-email-wrapper .notice-email-error-tips {
+    background-color: rgba(253, 76, 106, 0.15) !important;
+    color: #f0f0f3 !important;
+    border: 1px solid rgba(253, 76, 106, 0.3);
+  }
+  .setting-person-left-item {
+    color: #9999a6 !important;
+    border-left-color: transparent !important;
+  }
+  .setting-person-left-item:hover,
+  .setting-person-left-item-selected {
+    color: #a29bfe !important;
+    background-color: rgba(108, 92, 231, 0.15) !important;
+    border-left-color: #a29bfe !important;
+  }
+  .ops-setting-structure {
+    background-color: rgba(20, 20, 30, 0.5) !important;
+  }
+  .ops-setting-structure-sidebar {
+    background-color: rgba(20, 20, 30, 0.55) !important;
+    border-right-color: rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+  }
+  .ops-setting-structure-main {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+  }
+  .ops-setting-structure .item-count-after {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: #9999a6 !important;
+  }
+  .history-scene-item-selected {
+    background-color: rgba(108, 92, 231, 0.15) !important;
+    color: #a29bfe !important;
+  }
+
+  /* ACL secret key (用户密钥) */
+  .acl-secret-key {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  .acl-secret-key .ant-input[disabled] {
+    color: #9999a6 !important;
+    background-color: rgba(255, 255, 255, 0.04) !important;
+  }
+  .acl-history,
+  .acl-operation-history {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  .acl-users,
+  .acl-roles,
+  .acl-resources,
+  .acl-apps,
+  .acl-resource-types,
+  .acl-trigger {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  .acl-apps-add {
+    border: 1px dashed rgba(255, 255, 255, 0.15) !important;
+    background-color: rgba(255, 255, 255, 0.03) !important;
+    border-radius: 10px;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .acl-apps-add:hover {
+    border-color: rgba(108, 92, 231, 0.4) !important;
+    background-color: rgba(108, 92, 231, 0.08) !important;
+  }
+  .acl-apps-add .acl-apps-add-icon {
+    color: #a29bfe !important;
+  }
+  .model-relation {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  .model-select-name {
+    color: #9999a6 !important;
+  }
+
+  /* OneTerm sync tab (oneterm-sync-tab) */
+  .oneterm-sync-tab .config-card .ant-card-head {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  }
+  .oneterm-sync-tab .config-card .card-title {
+    color: #f0f0f3 !important;
+  }
+  .oneterm-sync-tab .config-card .card-title .anticon,
+  .oneterm-sync-tab .config-card .card-title .ops-icon {
+    color: #a29bfe !important;
+  }
+  .oneterm-sync-tab .footer-actions {
+    background: rgba(20, 20, 30, 0.85) !important;
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.25);
+  }
+
   .ci-left {
     background-color: rgba(20, 20, 30, 0.55) !important;
     border-right-color: rgba(255, 255, 255, 0.08) !important;

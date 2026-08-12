@@ -2,7 +2,6 @@
   <div class="user-panel">
     <a-avatar
       class="user-panel-avatar"
-      size="small"
       icon="user"
       :src="avatarSrc"
     />
