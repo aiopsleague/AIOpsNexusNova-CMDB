@@ -92,16 +92,13 @@ export default {
               url += `&${prefix}${v.name}=${encodeURIComponent(v.value)}`
             }
           })
-          // If no theme parameter is configured in var_mapping, use system theme
+          // If no theme parameter is configured in var_mapping, pass the resolved
+          // app theme. Grafana has no glass theme, so the dark-based liquid-glass
+          // maps to Grafana's built-in 'dark'.
           const hasThemeVar = (r.vars || []).some((v) => v.name === 'theme')
           if (!hasThemeVar) {
-            const theme = this.$store.state.app.themeMode || 'system'
-            if (theme === 'system') {
-              const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-              url += `&theme=${prefersDark ? 'dark' : 'light'}`
-            } else {
-              url += `&theme=${theme}`
-            }
+            const resolved = this.$store.state.app.theme || 'light'
+            url += `&theme=${resolved === 'liquid-glass' ? 'dark' : 'light'}`
           }
           this.iframeUrl = url
         }

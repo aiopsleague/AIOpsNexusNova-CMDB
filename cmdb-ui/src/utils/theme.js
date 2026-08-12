@@ -1,5 +1,5 @@
 /**
- * Runtime theme system: resolve light/dark/liquid-glass/system and apply the
+ * Runtime theme system: resolve light/liquid-glass/system and apply the
  * appropriate theme css link.
  * See docs/superpowers/specs/2026-08-12-theme-settings-design.md
  *     docs/superpowers/specs/2026-08-12-liquid-glass-theme-design.md
@@ -10,18 +10,16 @@
 // aggressively cache it; add a query param to bypass that cache.
 // - dev: Date.now() so every reload refetches the freshly regenerated css
 // - prod: fixed version, bump on release to invalidate stale cached css
-const DARK_CSS_VERSION = process.env.NODE_ENV === 'development' ? Date.now() : '20260812'
+const THEME_CSS_VERSION = process.env.NODE_ENV === 'development' ? Date.now() : '20260812'
 const BASE = process.env.BASE_URL || '/'
 
 // Map resolved theme → CSS path (light has no CSS file)
 const THEME_CSS_MAP = {
-  dark: `${BASE}themes/dark.css?v=${DARK_CSS_VERSION}`,
-  'liquid-glass': `${BASE}themes/liquid-glass.css?v=${DARK_CSS_VERSION}`
+  'liquid-glass': `${BASE}themes/liquid-glass.css?v=${THEME_CSS_VERSION}`
 }
 
 // Body backgrounds per theme (set to match base bg, prevents white flash)
 const THEME_BODY_BG = {
-  dark: '#121216',
   'liquid-glass': '#080a10'
 }
 
@@ -36,7 +34,6 @@ export function getTopoCanvasBg() {
     if (v) return v
   }
   const theme = document.documentElement.getAttribute('data-theme')
-  if (theme === 'dark') return '#121216'
   if (theme === 'liquid-glass') return '#080a10'
   return '#FFFFFF'
 }
@@ -47,29 +44,30 @@ export function getSystemDark () {
 
 /**
  * Resolve a user-chosen themeMode to the actual theme value.
- * 'system' follows OS preference → 'dark' | 'light'
+ * 'system' follows OS preference → 'liquid-glass' | 'light'
  * 'liquid-glass' → 'liquid-glass'
- * everything else → 'dark' | 'light'
+ * everything else (incl. legacy persisted 'dark') → 'liquid-glass'
  */
 export function resolveTheme (mode) {
   if (mode === 'system') {
-    return getSystemDark() ? 'dark' : 'light'
+    return getSystemDark() ? 'liquid-glass' : 'light'
   }
-  if (mode === 'liquid-glass') {
-    return 'liquid-glass'
+  if (mode === 'light') {
+    return 'light'
   }
-  return mode === 'dark' ? 'dark' : 'light'
+  // 'liquid-glass' resolves to itself; the removed standalone 'dark' theme
+  // falls back to the dark-based liquid-glass theme.
+  return 'liquid-glass'
 }
 
 /**
  * Sync the <link id="theme-style"> element to load the correct CSS file.
- * - dark / liquid-glass → injects the corresponding <link>
+ * - liquid-glass → injects the <link>
  * - light → removes the <link>
- * Switches href when moving between dark ↔ liquid-glass.
  */
 function syncThemeCss (theme) {
   const link = document.getElementById('theme-style')
-  const cssPath = THEME_CSS_MAP[theme]  // undefined for 'light'
+  const cssPath = THEME_CSS_MAP[theme] // undefined for 'light'
 
   if (cssPath) {
     if (!link) {
@@ -79,7 +77,6 @@ function syncThemeCss (theme) {
       el.href = cssPath
       document.head.appendChild(el)
     } else if (link.getAttribute('href') !== cssPath) {
-      // Switching between dark ↔ liquid-glass: update href
       link.setAttribute('href', cssPath)
     }
   } else if (link) {
@@ -96,7 +93,6 @@ function syncThemeCss (theme) {
  * 4. Dispatch ops:theme-change event for charts/components
  */
 export function applyTheme (resolved) {
-  const isDark = resolved === 'dark'
   const isLiquid = resolved === 'liquid-glass'
 
   document.documentElement.setAttribute('data-theme', resolved)
@@ -104,13 +100,7 @@ export function applyTheme (resolved) {
 
   // Sync body background to avoid white flash between route transitions
   if (document.body) {
-    if (isLiquid) {
-      document.body.style.backgroundColor = THEME_BODY_BG['liquid-glass']
-    } else if (isDark) {
-      document.body.style.backgroundColor = THEME_BODY_BG['dark']
-    } else {
-      document.body.style.backgroundColor = ''
-    }
+    document.body.style.backgroundColor = isLiquid ? THEME_BODY_BG['liquid-glass'] : ''
   }
 
   // Notify charts/components that need to re-render on theme change

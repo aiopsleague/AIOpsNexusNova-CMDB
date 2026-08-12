@@ -155,10 +155,6 @@ export default {
           key: 'light'
         },
         {
-          title: 'userPanel.themeDark',
-          key: 'dark'
-        },
-        {
           title: 'userPanel.themeLiquidGlass',
           key: 'liquid-glass'
         },

@@ -16,7 +16,7 @@
 export default {
   primaryColor: '#6c5ce7', // primary color of ant design
   navTheme: 'dark', // theme for nav menu
-  themeMode: 'system', // theme mode: light | dark | system
+  themeMode: 'system', // theme mode: light | liquid-glass | system (system: OS dark → liquid-glass)
   layout: 'sidemenu', // nav menu position: sidemenu or topmenu
   contentWidth: 'Fixed', // layout of content: Fluid or Fixed, only works when layout is topmenu
   fixedHeader: true, // sticky header

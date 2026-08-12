@@ -28,15 +28,15 @@
           }
         }
         var mode = readLs('pro__THEME_MODE')
-        var isDark = mode === 'dark' || (mode !== 'light' && mode !== 'liquid-glass' && !!window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
-        var isLiquid = mode === 'liquid-glass'
-        if (isDark || isLiquid) {
-          var theme = isLiquid ? 'liquid-glass' : 'dark'
-          var bg = isLiquid ? '#080a10' : '#141414'
-          document.documentElement.setAttribute('data-theme', theme)
+        var prefersDark = !!window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        // The standalone 'dark' theme was removed — legacy persisted values map
+        // to the dark-based liquid-glass theme.
+        var isDark = mode === 'liquid-glass' || mode === 'dark' || ((!mode || mode === 'system') && prefersDark)
+        if (isDark) {
+          document.documentElement.setAttribute('data-theme', 'liquid-glass')
           var style = document.createElement('style')
           style.id = 'theme-init'
-          style.textContent = 'body{background-color:' + bg + '}#loading-mask{background-color:' + bg + '}'
+          style.textContent = 'body{background-color:#080a10}#loading-mask{background-color:#080a10}'
           document.head.appendChild(style)
         }
       })()

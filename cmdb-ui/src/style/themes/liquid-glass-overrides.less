@@ -3,18 +3,17 @@
  *
  * Two responsibilities:
  * 1. Glass-specific effects (backdrop-filter, box-shadow, radius, transitions)
- *    that dark theme doesn't have.
+ *    that the base dark palette doesn't have.
  * 2. Color overrides for hardcoded light values in scoped component styles
- *    and third-party libraries. Mirrors dark-overrides.less structure but
- *    with semi-transparent rgba values and `html[data-theme='liquid-glass']` prefix.
+ *    and third-party libraries. Mirrors base-dark-overrides.less structure but
+ *    with semi-transparent rgba values.
  *
  * All rules scoped under `html[data-theme='liquid-glass']` (specificity 0,2,1).
  *
- * NOTE: This file re-compiles dark-overrides.less and dark-business.less with
- * liquid-glass variables via liquid-glass.less. The Less variables in those
- * files resolve to semi-transparent rgba values. However their selectors are
- * `html[data-theme='dark']`. The critical non-antd overrides are duplicated
- * here with `html[data-theme='liquid-glass']`.
+ * NOTE: base-dark-overrides.less / base-dark-business.less are re-compiled with
+ * liquid-glass variables via liquid-glass.less and are scoped under
+ * `html[data-theme='liquid-glass']` too. This file is imported after them, so
+ * its tuned rgba values and glass effects win on equal-specificity ties.
  */
 
 /* ================================================================
@@ -203,7 +202,7 @@ html[data-theme='liquid-glass'] {
 
 /* ================================================================
    B. LAYOUT & COMPONENT COLOR OVERRIDES
-   Mirror dark-overrides.less sections A/B/C/D with glass values.
+   Mirror base-dark-overrides.less sections A/B/C/D with glass values.
    Only the rules that target non-antd elements or hardcoded values.
    Antd components are fully handled by liquid-glass-vars.less.
    ================================================================ */
@@ -328,7 +327,7 @@ html[data-theme='liquid-glass'] {
 }
 
 /* ================================================================
-   C. SHARED COMPONENTS (mirrors dark-overrides section B)
+   C. SHARED COMPONENTS (mirrors base-dark-overrides section B)
    ================================================================ */
 
 html[data-theme='liquid-glass'] {
@@ -652,7 +651,7 @@ html[data-theme='liquid-glass'] {
 }
 
 /* ================================================================
-   F. BIZ MODULE OVERRIDES (mirrors dark-business.less / dark-overrides C-E)
+   F. BIZ MODULE OVERRIDES (mirrors base-dark-business.less / base-dark-overrides C-E)
    Key business module panels that need liquid-glass colors.
    ================================================================ */
 
@@ -1136,7 +1135,7 @@ html[data-theme='liquid-glass'] {
 }
 
 /* ================================================================
-   G. BUSINESS MODULE SCOPED BACKGROUNDS (mirrors dark-business.less)
+   G. BUSINESS MODULE SCOPED BACKGROUNDS (mirrors base-dark-business.less)
    Key business panel backgrounds. Glass variants use semi-transparent
    values while keeping text colors same as dark.
    ================================================================ */

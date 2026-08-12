@@ -1,17 +1,19 @@
 /**
- * Dark theme overrides for project custom styles.
- * With global.less inlined into dark.css (via build-theme.js), most project
- * classes already compile with dark variables. Only hardcoded light values and
- * antd hardcoded values need explicit overrides here.
- * All rules are scoped under `html[data-theme='dark']` so they win over scoped
- * styles (specificity 0,2,1 > scoped 0,2,0) regardless of css load order,
- * without relying on !important.
+ * Liquid-glass base overrides for project custom styles (the dark base palette
+ * liquid-glass inherits from).
+ * With global.less inlined into liquid-glass.css (via build-theme.js), most
+ * project classes already compile with glass variables. Only hardcoded light
+ * values and antd hardcoded values need explicit overrides here.
+ * All rules are scoped under `html[data-theme='liquid-glass']` so they win over
+ * scoped styles (specificity 0,2,1 > scoped 0,2,0) regardless of css load order,
+ * without relying on !important. liquid-glass-overrides.less is imported after
+ * this file, so its tuned rgba values win on equal-specificity ties.
  *
  * Color spec: purple-based dark scheme — #121216 / #1E1E24 / #282830 / #2E2E38.
  */
 
 /* ===== A. layout & component hardcoded colors ===== */
-html[data-theme='dark'] {
+html[data-theme='liquid-glass'] {
   /* layout backgrounds */
   .ant-layout,
   .ant-layout-content {
@@ -109,7 +111,7 @@ html[data-theme='dark'] {
 }
 
 /* ===== B. shared-component scoped light colors ===== */
-html[data-theme='dark'] {
+html[data-theme='liquid-glass'] {
   /* CMDBFilterComp */
   .table-filter .table-filter-extra-icon:hover {
     background: #1f1b3d;
@@ -240,7 +242,7 @@ html[data-theme='dark'] {
 }
 
 /* ===== C. third-party libs (vxe-table / element-ui) ===== */
-html[data-theme='dark'] {
+html[data-theme='liquid-glass'] {
   /* vxe-table: bare tables not wrapped in ops-stripe/ops-unstripe */
   .vxe-table {
     color: #f0f0f3;
@@ -350,7 +352,7 @@ html[data-theme='dark'] {
 }
 
 /* ===== role=menuitem overrides (Menu / Dropdown / Select / Cascader / TreeSelect) ===== */
-html[data-theme='dark'] {
+html[data-theme='liquid-glass'] {
   .ant-dropdown,
   .ant-dropdown-menu,
   .ant-select-dropdown,
@@ -373,7 +375,7 @@ html[data-theme='dark'] {
 }
 
 /* ===== CI detail gradient cards (linear-gradient light bg, generator can't match gradient) ===== */
-html[data-theme='dark'] {
+html[data-theme='liquid-glass'] {
   /* white card gradients → dark surface */
   .ci-detail-title-card,
   .prom-stat-card,
@@ -410,7 +412,7 @@ html[data-theme='dark'] {
 }
 
 /* ===== CI detail relation topology nodes (standalone less file, generator only scans .vue style blocks) ===== */
-html[data-theme='dark'] {
+html[data-theme='liquid-glass'] {
   .ci-detail-relation-topo .ci-detail-relation-topo-node {
     background: #1e1e24;
     border-color: #2e2e38;
@@ -421,7 +423,7 @@ html[data-theme='dark'] {
 }
 
 /* ===== rgba white translucent backgrounds (generator only matches #hex, rgba() is missed) ===== */
-html[data-theme='dark'] {
+html[data-theme='liquid-glass'] {
   /* CI detail relation topo: layout switch + node labels */
   .ci-detail-relation-topo .topo-layout-switch {
     background: rgba(30, 30, 36, 0.92);
@@ -439,7 +441,7 @@ html[data-theme='dark'] {
 }
 
 /* ===== search form border (SearchForm non-scoped border color #d9d9d9) ===== */
-html[data-theme='dark'] {
+html[data-theme='liquid-glass'] {
   .ci-searchform-expression > input {
     border-bottom-color: #2e2e38;
   }
@@ -449,7 +451,7 @@ html[data-theme='dark'] {
 }
 
 /* ===== CSS Module components: driven by CSS variables (hash class names can't be matched directly) ===== */
-html[data-theme='dark'] {
+html[data-theme='liquid-glass'] {
   /* sidebar menu search box (Menu/index.module.less var --ops-side-menu-search-bg) */
   --ops-side-menu-search-bg: #1e1e24;
   /* topology canvas background (relation-graph canvas, read by topology_view on repaint) */
@@ -459,7 +461,7 @@ html[data-theme='dark'] {
 }
 
 /* ===== split pane components (SplitPane / TwoColumnLayout) ===== */
-html[data-theme='dark'] {
+html[data-theme='liquid-glass'] {
   .split-pane {
     background-color: #121216;
   }
@@ -500,7 +502,7 @@ html[data-theme='dark'] {
 /* ===== Active/selected text readability: @primary-color (#6c5ce7) has poor contrast
        on dark selected backgrounds (#18152e / #121216). Override with lighter accent
        (#a29bfe / #8c7cff) matching the sidebar menu selected-text pattern. ===== */
-html[data-theme='dark'] {
+html[data-theme='liquid-glass'] {
   /* CI left panel — selected item name */
   .ci-left-item_active .ci-left-item-name {
     color: #a29bfe;
@@ -517,7 +519,7 @@ html[data-theme='dark'] {
 }
 
 /* ===== TopMenu — global non-scoped styles use light static.less vars; dark.css misses them ===== */
-html[data-theme='dark'] {
+html[data-theme='liquid-glass'] {
   .top-menu {
     > span {
       color: #f0f0f3;
@@ -546,7 +548,7 @@ html[data-theme='dark'] {
 }
 
 /* ===== Company structure: employee tabs — consistent with CI left / sidebar menu ===== */
-html[data-theme='dark'] {
+html[data-theme='liquid-glass'] {
   .ops-setting-structure-sidebar-group-category-item {
     color: #f0f0f3;
     &:hover {
@@ -583,7 +585,7 @@ html[data-theme='dark'] {
 }
 
 /* ===== BatchUpload step: icon/text/connector line colors ===== */
-html[data-theme='dark'] {
+html[data-theme='liquid-glass'] {
   .setting-structure-upload .setting-structure-upload-steps {
     .setting-structure-upload-step {
       /* icon: dimmed for unselected steps */
@@ -617,7 +619,7 @@ html[data-theme='dark'] {
 }
 
 /* ===== UserMenu: icons, text, hover/active states ===== */
-html[data-theme='dark'] {
+html[data-theme='liquid-glass'] {
   .user-wrapper {
     /* settings button icon: old blue #2F54EB → accent */
     .common-settings-btn-icon {
@@ -657,7 +659,7 @@ html[data-theme='dark'] {
 }
 
 /* ===== Ghost primary button: lighter accent for dark backgrounds ===== */
-html[data-theme='dark'] {
+html[data-theme='liquid-glass'] {
   .ant-btn-background-ghost.ant-btn-primary {
     color: #a29bfe;
     border-color: #a29bfe;
@@ -675,7 +677,7 @@ html[data-theme='dark'] {
 }
 
 /* ===== Search form bar filter ===== */
-html[data-theme='dark'] {
+html[data-theme='liquid-glass'] {
   .search-form-bar-filter {
     color: #9999a6 !important;
     &:hover {
@@ -691,7 +693,7 @@ html[data-theme='dark'] {
 }
 
 /* ===== CI detail tab extra content ===== */
-html[data-theme='dark'] {
+html[data-theme='liquid-glass'] {
   .tab-bar-extra {
     color: #9999a6;
     a {
@@ -704,7 +706,7 @@ html[data-theme='dark'] {
 }
 
 /* ===== Preference / Subscription: rgba text colors on dark bg ===== */
-html[data-theme='dark'] {
+html[data-theme='liquid-glass'] {
   .cmdb-preference-content {
     .cmdb-preference-header .cmdb-preference-title {
       color: #f0f0f3 !important;
@@ -736,7 +738,7 @@ html[data-theme='dark'] {
 }
 
 /* ===== Inline-style text color overrides (must use !important to beat inline style specificity) ===== */
-html[data-theme='dark'] {
+html[data-theme='liquid-glass'] {
   /* Override inline dark text colors that become invisible on dark backgrounds */
   [style*='color: #333'],
   [style*='color:#333'],

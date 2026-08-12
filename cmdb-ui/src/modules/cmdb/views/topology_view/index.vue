@@ -338,7 +338,7 @@ import CMDBExprDrawer from '@/components/CMDBExprDrawer'
 import { v4 as uuidv4 } from 'uuid'
 import CMDBTypeSelectAntd from '@/modules/cmdb/components/cmdbTypeSelect/cmdbTypeSelectAntd'
 // relation-graph canvas background is drawn from options, css cannot cover it.
-// Use theme util which handles dark / liquid-glass / light.
+// Use theme util which handles liquid-glass / light.
 import { getTopoCanvasBg } from '@/utils/theme'
 
 const currentTopoKey = 'ops_cmdb_topo_currentId'

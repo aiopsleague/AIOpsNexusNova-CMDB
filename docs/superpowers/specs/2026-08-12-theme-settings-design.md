@@ -1,6 +1,7 @@
 # 主题设置功能设计
 
 > 日期：2026-08-12 | 状态：已实施
+> 更新：2026-08-13 — 独立 dark 主题已移除。切换器仅保留 light / liquid-glass / system，system 在 OS 暗色下解析为 liquid-glass。dark.css 与 dark.less 入口删除；dark-vars/overrides/business.less 重命名为 base-dark-*，作为 liquid-glass 的共享基础层。
 
 ## 背景
 

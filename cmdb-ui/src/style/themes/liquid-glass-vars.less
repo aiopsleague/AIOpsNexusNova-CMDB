@@ -3,15 +3,15 @@
  * Inherits all dark theme variables, overrides only glass-specific ones
  * (panel backgrounds → semi-transparent, borders → brighter, shadows → deeper).
  *
- * Strategy: @import dark-vars.less first (get all 140 dark variables),
+ * Strategy: @import base-dark-vars.less first (get all 140 dark variables),
  * then override ~25 variables with liquid-glass semi-transparent values.
  *
  * Color spec: dark base #080a10 with radial-gradient orbs visible through
  * semi-transparent glass panels + backdrop-filter blur + saturation boost.
  */
 
-/* ==================== Inherit dark variables ==================== */
-@import "./dark-vars.less";
+/* ==================== Inherit base dark variables ==================== */
+@import "./base-dark-vars.less";
 
 /* ==================== Override: glass-specific variables ==================== */
 

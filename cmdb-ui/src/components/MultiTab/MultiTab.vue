@@ -30,7 +30,8 @@ export default {
   name: 'MultiTab',
   computed: {
     ...mapState({
-      navTheme: (state) => state.app.theme
+      // liquid-glass is dark-based → antd menu/layout expects 'dark' or 'light'
+      navTheme: (state) => (state.app.theme === 'liquid-glass' ? 'dark' : state.app.theme)
     }),
     tabBarStyle () {
       return {

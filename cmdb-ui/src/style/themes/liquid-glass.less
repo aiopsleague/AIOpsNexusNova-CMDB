@@ -7,15 +7,15 @@
  * high-specificity prefix (0,2,1) that wins over duplicated light rules in
  * lazy-loaded chunk css regardless of load order.
  *
- * Structure mirrors dark.less:
+ * Structure:
  * - antd import must come BEFORE variable overrides (last definition wins).
  * - liquid-glass-vars is imported at root (for overrides/business) and re-imported
  *   inside the block via `@import (multiple)` to shadow antd's light variables.
- * - dark-overrides.less and dark-business.less are re-compiled with glass variables
- *   → the Less variables inside them resolve to semi-transparent rgba values.
+ * - base-dark-overrides.less and base-dark-business.less are re-compiled with glass
+ *   variables → the Less variables inside them resolve to semi-transparent rgba values.
  */
 
-/* Inherit dark variables, then override with glass values */
+/* Inherit base dark variables, then override with glass values */
 @import "./liquid-glass-vars.less";
 
 html[data-theme='liquid-glass'] {
@@ -25,9 +25,9 @@ html[data-theme='liquid-glass'] {
   @import (multiple) "./liquid-glass-vars.less";
 }
 
-/* Re-compile dark business overrides with glass variables */
-@import "./dark-business.less";
-/* Re-compile dark project overrides with glass variables */
-@import "./dark-overrides.less";
+/* Re-compile base business overrides with glass variables */
+@import "./base-dark-business.less";
+/* Re-compile base project overrides with glass variables */
+@import "./base-dark-overrides.less";
 /* Glass-specific overrides: backdrop-filter, highlights, radius, transitions */
 @import "./liquid-glass-overrides.less";

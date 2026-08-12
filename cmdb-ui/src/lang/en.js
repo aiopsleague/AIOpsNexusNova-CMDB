@@ -209,7 +209,6 @@ export default {
       switchLanguage: 'Switch Language',
       themeSetting: 'Theme',
       themeLight: 'Light',
-      themeDark: 'Dark',
       themeLiquidGlass: 'Liquid',
       themeSystem: 'System',
       bindAccount: 'Bind Account',

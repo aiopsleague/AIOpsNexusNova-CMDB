@@ -1,17 +1,17 @@
 /**
- * Generate dark overrides for cmdb/acl business module scoped light backgrounds
- * AND dark text colors.
+ * Generate the liquid-glass base business overrides for cmdb/acl business module
+ * scoped light backgrounds AND dark text colors.
  * Scans src/modules/{cmdb,acl}/views/*.vue and standalone .less scoped styles,
  * expands less nesting, maps common light bg colors to the dark palette and
  * dark text colors to light equivalents, and writes
- * src/style/themes/dark-business.less (consumed by dark.less).
- * Usage: node scripts/gen-dark-business.js
+ * src/style/themes/base-dark-business.less (consumed by liquid-glass.less).
+ * Usage: node scripts/gen-base-dark-business.js
  */
 const fs = require('fs')
 const path = require('path')
 
 const CWD = path.resolve(__dirname, '..')
-const OUT = path.join(CWD, 'src/style/themes/dark-business.less')
+const OUT = path.join(CWD, 'src/style/themes/base-dark-business.less')
 
 // Light backgrounds → dark surface equivalents
 const COLOR_MAP = {
@@ -152,7 +152,7 @@ function extract (file) {
       if (t.endsWith('{')) {
         let sel = t.slice(0, -1).trim()
         const p = stack[stack.length - 1] || ''
-        if (p) sel = sel.includes('&') ? sel.replace(/\&/g, p) : p + ' ' + sel
+        if (p) sel = sel.includes('&') ? sel.replace(/&/g, p) : p + ' ' + sel
         stack.push(sel.split(',').pop().trim())
       } else if (t === '}') {
         stack.pop()
@@ -255,12 +255,13 @@ for (const f of files) {
   if (rules.length) groups.push(`\n/* ${rel} */\n${rules.join('\n')}`)
 }
 
-let out = `/**
- * Business module scoped light-background and dark-text overrides (auto-generated).
- * Scoped under html[data-theme='dark'] to beat scoped [data-v] specificity.
- * Regenerate: node scripts/gen-dark-business.js
+const out = `/**
+ * Business module scoped light-background and dark-text overrides (auto-generated),
+ * forming the liquid-glass base layer.
+ * Scoped under html[data-theme='liquid-glass'] to beat scoped [data-v] specificity.
+ * Regenerate: node scripts/gen-base-dark-business.js
  */
-html[data-theme='dark'] {
+html[data-theme='liquid-glass'] {
 ${groups.join('\n')}
 }
 `

@@ -1,6 +1,7 @@
 # 流体玻璃主题（Liquid Glass）设计
 
 > 日期：2026-08-12 | 状态：待审核
+> 更新：2026-08-13 — 独立 dark 主题已移除，流体玻璃成为唯一暗色主题。其继承的 dark-vars/overrides/business.less 已重命名为 base-dark-*；system 在 OS 暗色下解析为 liquid-glass。
 
 ## 背景
 
