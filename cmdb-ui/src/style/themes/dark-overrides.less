@@ -287,6 +287,24 @@ html[data-theme='dark'] {
   }
 }
 
+/* ===== rgba 白色半透明背景（生成脚本只匹配 #hex，rgba() 被漏） ===== */
+html[data-theme='dark'] {
+  /* CI 详情关系拓扑：布局切换按钮 + 节点标签 */
+  .ci-detail-relation-topo .topo-layout-switch {
+    background: rgba(31, 31, 31, 0.92);
+  }
+  .ci-detail-relation-topo .butterflies-label {
+    background: rgba(31, 31, 31, 0.9);
+    color: rgba(255, 255, 255, 0.85);
+  }
+  /* 资源搜索历史列表：recent/favor 标签项 */
+  .history-list .history-recent .recent-list-item,
+  .history-list .history-favor .favor-list-item,
+  .history-list .history-favor .favor-list-item-selected {
+    background-color: rgba(31, 31, 31, 0.9);
+  }
+}
+
 /* ===== 搜索表单外框（SearchForm 非 scoped 字面色 #d9d9d9） ===== */
 html[data-theme='dark'] {
   .ci-searchform-expression > input {
