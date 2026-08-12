@@ -45,10 +45,6 @@ html[data-theme='liquid-glass'] {
   .ant-modal-header,
   .ant-popover-inner,
   .ant-popover-arrow,
-  .ant-drawer-content-wrapper,
-  .ant-drawer-content,
-  .ant-drawer-header,
-  .ant-drawer-body,
   .ant-tooltip-inner,
   .ant-message-notice-content,
   .ant-notification-notice,
@@ -100,7 +96,6 @@ html[data-theme='liquid-glass'] {
   .ant-card,
   .ant-modal-content,
   .ant-popover-inner,
-  .ant-drawer-content-wrapper,
   .sidebar,
   .glass-panel {
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45),
@@ -238,6 +233,19 @@ html[data-theme='liquid-glass'] {
   /* Header user avatar */
   .header .user-wrapper .action .avatar {
     background-color: rgba(30, 30, 40, 0.6);
+  }
+
+  /* Drawer: solid dark backgrounds (no backdrop-filter to avoid breaking
+     the absolutely-positioned bottom action bar) */
+  .ant-drawer-content {
+    background: #14141c;
+  }
+  .ant-drawer-header {
+    background: #14141c;
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+  }
+  .ant-drawer-body {
+    background: #14141c;
   }
 
   /* Drawer bottom action bar */
@@ -664,8 +672,143 @@ html[data-theme='liquid-glass'] {
     background-color: rgba(20, 20, 30, 0.5);
     border-right-color: rgba(255, 255, 255, 0.06);
   }
+
+  /* Discovery CI sidebar items (cmdb-adc-side-item) — liquid glass hover/selected */
+  .two-column-layout-sidebar .cmdb-adc-group-title {
+    color: #9999a6;
+  }
+  .two-column-layout-sidebar .cmdb-adc-group-count {
+    color: #9999a6;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .two-column-layout-sidebar .cmdb-adc-side-item .cmdb-adc-side-name {
+    color: #f0f0f3;
+  }
+  .two-column-layout-sidebar .cmdb-adc-side-item .cmdb-adc-side-icon {
+    background: rgba(30, 30, 40, 0.5);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: none;
+  }
+  /* Hover: frosted glass */
+  .two-column-layout-sidebar .cmdb-adc-side-item:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
+  }
+  .two-column-layout-sidebar .cmdb-adc-side-item:hover .cmdb-adc-side-name {
+    color: #a29bfe;
+  }
+  /* Selected: purple glass */
+  .two-column-layout-sidebar .cmdb-adc-side-item-selected {
+    background-color: rgba(108, 92, 231, 0.15);
+    box-shadow: 0 1px 3px rgba(108, 92, 231, 0.2);
+    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
+  }
+  .two-column-layout-sidebar .cmdb-adc-side-item-selected .cmdb-adc-side-name {
+    color: #a29bfe;
+    font-weight: 600;
+  }
+  .two-column-layout-sidebar .cmdb-adc-side-item-selected .cmdb-adc-side-icon {
+    box-shadow: 0 2px 4px rgba(108, 92, 231, 0.2);
+  }
+
+  /* Discovery CI counter cards (counter-wrap / counter-group / counter-item) */
+  .counter-wrap .counter-group {
+    background: rgba(255, 255, 255, 0.04) !important;
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
+  }
+  .counter-wrap .counter-group:hover {
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3),
+                inset 0 1px 2px 0 rgba(255, 255, 255, 0.18);
+  }
+  .counter-wrap .counter-item:not(:last-child)::after {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .counter-wrap .counter-item-title {
+    color: #9999a6 !important;
+  }
+  .counter-wrap .counter-item-number {
+    color: #f0f0f3 !important;
+  }
+  .counter-wrap .counter-item-percent-null {
+    color: #555562 !important;
+  }
   .tree-views-left,
   .tree-views-right { background-color: rgba(30, 30, 40, 0.5); }
+
+  /* Tree views custom-header (tree node headers) — liquid glass */
+  .tree-views-left .custom-header:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
+  }
+  .tree-views-left .custom-header-selected {
+    background-color: rgba(108, 92, 231, 0.15) !important;
+    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
+    box-shadow: 0 1px 3px rgba(108, 92, 231, 0.2);
+  }
+  .tree-views-left .custom-header .tree-views-left-header-name {
+    color: #f0f0f3;
+  }
+  .tree-views-left .custom-header:hover .tree-views-left-header-name {
+    color: #a29bfe;
+  }
+  .tree-views-left .custom-header-selected .tree-views-left-header-name {
+    color: #a29bfe;
+  }
+  .tree-views-left .custom-header .action:hover {
+    background-color: rgba(108, 92, 231, 0.15);
+  }
+  /* Hide ant-tree default switcher (avoid duplicate caret with TreeViewsNode) */
+  .tree-views-left .ant-tree-switcher,
+  .tree-views-left .ant-tree-switcher-icon {
+    display: none !important;
+  }
+  .tree-views-left .ant-tree-node-content-wrapper:hover,
+  .tree-views-left .ant-tree-node-content-wrapper.ant-tree-node-selected,
+  .tree-views-left .ant-tree li .ant-tree-node-content-wrapper.ant-tree-node-selected {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
+  }
+  .tree-views-left .ant-tree .tree-views-node i {
+    color: #555562;
+  }
+  .tree-views-left .ant-tree .tree-views-node-content > span:first-child {
+    color: #f0f0f3;
+    transition: color 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .tree-views-left .ant-tree .tree-views-node-content > span:last-child {
+    color: #555562;
+  }
+  /* Hover / selected node title → light purple */
+  .tree-views-left .ant-tree-node-content-wrapper:hover .tree-views-node-content > span:first-child,
+  .tree-views-left .ant-tree-node-content-wrapper.ant-tree-node-selected .tree-views-node-content > span:first-child {
+    color: #a29bfe;
+  }
+
+  /* Resource hierarchy (资源层级): indentation guide lines */
+  .tree-views-left .ant-tree-child-tree {
+    border-left: 1px dashed rgba(255, 255, 255, 0.1);
+    margin-left: 11px;
+    padding-left: 4px;
+  }
+  .tree-views-left .ant-tree-child-tree .ant-tree-child-tree {
+    border-left-color: rgba(255, 255, 255, 0.06);
+  }
+  .tree-views-left .ant-tree-node-content-wrapper {
+    border-radius: 6px;
+  }
+  .tree-views-left .ant-tree-title {
+    padding-left: 4px;
+  }
 
   /* Active/selected text readability */
   .ci-left-item_active .ci-left-item-name { color: #a29bfe; }
@@ -800,24 +943,45 @@ html[data-theme='liquid-glass'] {
    ================================================================ */
 
 html[data-theme='liquid-glass'] {
-  /* CI list page */
+  /* CI list page — left panel (pane-one > ci-left) */
   .ci-types-left-header-input input { background-color: rgba(255, 255, 255, 0.06) !important; }
-  .ci-left { background-color: rgba(30, 30, 40, 0.5); }
-  .ci-left-item .ci-icon { background-color: rgba(255, 255, 255, 0.06); }
-  .ci-left-item_active { background-color: rgba(108, 92, 231, 0.15); }
-  .ci-left-item:hover { background-color: rgba(255, 255, 255, 0.06); }
   .ci-types-left-header-input .ant-input-prefix { color: #9999a6 !important; }
+  .ci-left {
+    background-color: rgba(20, 20, 30, 0.55) !important;
+    border-right-color: rgba(255, 255, 255, 0.08) !important;
+  }
   .ci-left-group-name { color: #9999a6; }
+  .ci-left-item .ci-icon {
+    background-color: rgba(30, 30, 40, 0.5) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: none !important;
+  }
   .ci-left-item-name { color: #f0f0f3; }
+  .ci-left-item:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
+  }
+  .ci-left-item:hover .ci-left-item-name { color: #a29bfe; }
+  .ci-left-item_active {
+    background-color: rgba(108, 92, 231, 0.15);
+    box-shadow: 0 1px 3px rgba(108, 92, 231, 0.2);
+    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
+  }
   .ci-left-item_active .ci-left-item-name { color: #a29bfe; }
+  .ci-left-item_active .ci-icon {
+    box-shadow: 0 2px 4px rgba(108, 92, 231, 0.2) !important;
+  }
+  .ci-left-item .ci-icon .ci-icon-letter {
+    background-color: rgba(108, 92, 231, 0.2) !important;
+    color: #a29bfe !important;
+    box-shadow: 0 1px 2px rgba(108, 92, 231, 0.2) !important;
+  }
 
   /* CI detail page / instance list */
   .ci-detail-page { background-color: #080a10 !important; }
   .cmdb-ci { background-color: #080a10 !important; }
-
-  /* CI left panel (index.vue) */
-  .ci-left { background-color: rgba(20, 20, 30, 0.55) !important; }
-  .ci-left-item .ci-icon { background-color: rgba(30, 30, 40, 0.5) !important; }
 
   /* CI history table wrapper (change history in ciDetailTab) */
   .ci-history-table {
