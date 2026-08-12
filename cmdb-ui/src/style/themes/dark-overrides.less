@@ -2451,6 +2451,24 @@ html[data-theme='dark'] {
     border-radius: 12px;
   }
 
+  /* Trigger record table inside the CI detail page: match the resource-data
+     tables (relation / history) — a dark translucent panel, not the lighter
+     white-glass used on the standalone operation-history pages. Also strip the
+     scoped table.less bright border (#e8e8e8 + 2px radius) off the inner vxe.
+     height:100% gives the vxe table (height="auto") a definite parent height,
+     so it fills the tab pane and scrolls internally instead of stretching. */
+  .ci-detail-tab .operation-history-table {
+    background: rgba(30, 30, 40, 0.5) !important;
+    border-color: rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    height: 100%;
+    overflow: hidden;
+    .vxe-table {
+      border: none !important;
+      border-radius: 0 !important;
+    }
+  }
+
   /* vxe header: glass + light text */
   .operation-history-table .vxe-header--row,
   .operation-history-table .vxe-header--column {
