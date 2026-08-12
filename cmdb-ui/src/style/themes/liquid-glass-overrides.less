@@ -248,6 +248,19 @@ html[data-theme='liquid-glass'] {
     background: #14141c;
   }
 
+  /* Drawer close button (anticon-right for right placement): purple glass */
+  .custom-drawer-close {
+    background: rgba(108, 92, 231, 0.35) !important;
+    color: #a29bfe !important;
+    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+  .custom-drawer-close:hover {
+    background: rgba(108, 92, 231, 0.55) !important;
+    color: #f0f0f3 !important;
+  }
+
   /* Drawer bottom action bar */
   .custom-drawer-bottom-action {
     background: rgba(30, 30, 40, 0.7);
@@ -665,12 +678,20 @@ html[data-theme='liquid-glass'] {
   }
   .split-pane .spliter-wrap { background-color: #080a10; }
   .split-pane .pane-one,
-  .split-pane .pane-two { background-color: rgba(30, 30, 40, 0.5); }
+  .split-pane .pane-two {
+    background-color: rgba(30, 30, 40, 0.4);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+  }
+  .split-pane .pane-one {
+    border-right: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.06);
+  }
   .two-column-layout { background-color: rgba(30, 30, 40, 0.5); }
   .two-column-layout-main { background-color: rgba(30, 30, 40, 0.5) !important; }
   .two-column-layout-sidebar {
     background-color: rgba(20, 20, 30, 0.5);
-    border-right-color: rgba(255, 255, 255, 0.06);
+    border-right: 1px solid rgba(255, 255, 255, 0.12) !important;
   }
 
   /* Discovery CI sidebar items (cmdb-adc-side-item) — liquid glass hover/selected */
@@ -739,6 +760,36 @@ html[data-theme='liquid-glass'] {
   .counter-wrap .counter-item-percent-null {
     color: #555562 !important;
   }
+
+  /* IPAM/DCIM overview stats cards (stats-card) — liquid glass */
+  .overview .stats .stats-card,
+  .stats .stats-card {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
+  }
+  .overview .stats .stats-card-title,
+  .stats .stats-card .stats-card-title {
+    color: #9999a6 !important;
+  }
+  .overview .stats .stats-card-data-label,
+  .stats .stats-card .stats-card-data-label {
+    color: #9999a6 !important;
+  }
+  .overview .stats .stats-card-data-value,
+  .stats .stats-card .stats-card-data-value {
+    color: #f0f0f3 !important;
+  }
+  .overview .stats .stats-card-logo,
+  .stats .stats-card .stats-card-logo {
+    background-color: rgba(108, 92, 231, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
   .tree-views-left,
   .tree-views-right { background-color: rgba(30, 30, 40, 0.5); }
 
@@ -1171,25 +1222,77 @@ html[data-theme='liquid-glass'] {
     background-color: rgba(20, 20, 30, 0.5) !important;
     border-right-color: rgba(255, 255, 255, 0.08) !important;
   }
+  .topo-left .topo-left-title {
+    color: #9999a6 !important;
+  }
+  /* Scrollbar: glass-colored */
+  .topo-left .topo-left-content::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+  }
+  .topo-left .topo-left-content::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.18) !important;
+  }
   .topo-left .topo-left-group {
-    color: #f0f0f3;
+    color: #f0f0f3 !important;
+    background-color: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(6px) saturate(140%);
+    -webkit-backdrop-filter: blur(6px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+  }
+  .topo-left .topo-left-group-name {
+    color: #f0f0f3 !important;
   }
   .topo-left .topo-left-group > div:first-child > span:last-child {
     background: rgba(255, 255, 255, 0.08);
-    color: #9999a6;
+    color: #9999a6 !important;
   }
   .topo-left .topo-left-group:hover {
-    background-color: rgba(255, 255, 255, 0.04);
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
   }
   .topo-left .topo-left-detail-icon {
-    background: rgba(30, 30, 40, 0.5);
+    background: rgba(30, 30, 40, 0.5) !important;
     border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: none;
+  }
+  .topo-left .topo-left-detail-title {
+    color: #f0f0f3 !important;
+  }
+  .topo-left .topo-left-detail {
+    background-color: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(6px) saturate(140%);
+    -webkit-backdrop-filter: blur(6px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
   }
   .topo-left .topo-left-detail:hover {
-    background-color: rgba(255, 255, 255, 0.04);
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
+  }
+  .topo-left .topo-left-detail:hover .topo-left-detail-title {
+    color: #a29bfe !important;
   }
   .topo-left .selected {
-    background-color: rgba(108, 92, 231, 0.12);
+    background-color: rgba(108, 92, 231, 0.15) !important;
+    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
+    box-shadow: 0 1px 3px rgba(108, 92, 231, 0.2);
+  }
+  .topo-left .selected .topo-left-detail-title {
+    color: #a29bfe !important;
+  }
+  .topo-left .selected .topo-left-detail-icon {
+    box-shadow: 0 2px 4px rgba(108, 92, 231, 0.2);
+  }
+  /* Left indicator bar (::before): purple accent */
+  .topo-left .topo-left-group::before,
+  .topo-left .topo-left-detail::before {
+    background: #a29bfe;
   }
 
   /* Topology right main area */
@@ -1233,6 +1336,9 @@ html[data-theme='liquid-glass'] {
   }
 
   /* Topology search input */
+  .cmdb-topo-left-input {
+    margin-bottom: 12px;
+  }
   .cmdb-topo-left-input input {
     background-color: rgba(255, 255, 255, 0.06) !important;
     border-color: rgba(255, 255, 255, 0.1) !important;
