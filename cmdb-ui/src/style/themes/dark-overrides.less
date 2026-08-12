@@ -731,6 +731,8 @@ html[data-theme='dark'] {
   --ops-side-menu-search-bg: rgba(20, 20, 30, 0.55);
   --ops-topo-canvas-bg: #080a10;
   --ops-pane-trigger-bg: rgba(20, 20, 30, 0.55);
+  /* attribute-card value-type icon chip (attributeCard.vue scoped background var) */
+  --ops-value-type-icon-bg: rgba(255, 255, 255, 0.08);
 
   /* Split pane */
   .split-pane { background-color: #080a10; }
@@ -1153,10 +1155,6 @@ html[data-theme='dark'] {
   }
   .ci-types-left .ci-types-left-group {
     color: #f0f0f3 !important;
-    background-color: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(6px) saturate(140%);
-    -webkit-backdrop-filter: blur(6px) saturate(140%);
-    border: 1px solid rgba(255, 255, 255, 0.04);
     border-radius: 8px;
   }
   .ci-types-left .ci-types-left-group-name {
@@ -1168,15 +1166,9 @@ html[data-theme='dark'] {
   }
   .ci-types-left .ci-types-left-group:hover {
     background-color: rgba(255, 255, 255, 0.06) !important;
-    border-color: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(8px) saturate(150%);
-    -webkit-backdrop-filter: blur(8px) saturate(150%);
+    box-shadow: 0 2px 8px rgba(108, 92, 231, 0.15) !important;
   }
   .ci-types-left .ci-types-left-detail {
-    background-color: rgba(255, 255, 255, 0.02);
-    backdrop-filter: blur(6px) saturate(140%);
-    -webkit-backdrop-filter: blur(6px) saturate(140%);
-    border: 1px solid rgba(255, 255, 255, 0.03);
     border-radius: 8px;
   }
   .ci-types-left .ci-types-left-detail-icon {
@@ -1189,9 +1181,7 @@ html[data-theme='dark'] {
   }
   .ci-types-left .ci-types-left-detail:hover {
     background-color: rgba(255, 255, 255, 0.06) !important;
-    border-color: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(8px) saturate(150%);
-    -webkit-backdrop-filter: blur(8px) saturate(150%);
+    box-shadow: 0 2px 8px rgba(108, 92, 231, 0.15) !important;
   }
   .ci-types-left .ci-types-left-detail:hover .ci-types-left-detail-title {
     color: #a29bfe !important;
@@ -1260,12 +1250,20 @@ html[data-theme='dark'] {
     background: rgba(255, 255, 255, 0.02) !important;
   }
   .attribute-card-value-type-icon {
-    background: rgba(30, 30, 40, 0.5) !important;
-    box-shadow: 0 1px 2px rgba(108, 92, 231, 0.2) !important;
+    background: var(--ops-value-type-icon-bg) !important;
+    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18), 0 1px 2px rgba(108, 92, 231, 0.25) !important;
     color: #a29bfe !important;
   }
   .attribute-card-value-type-icon .ops-icon,
   .attribute-card-value-type-icon i {
+    color: #a29bfe !important;
+  }
+  .value-type-icon {
+    // single-color value-type icons inherit currentColor — match liquid-glass accent in dark mode
     color: #a29bfe !important;
   }
   .attribute-card-footer-popover .ant-descriptions-bordered .ant-descriptions-item-label {

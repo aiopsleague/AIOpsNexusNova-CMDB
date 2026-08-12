@@ -179,47 +179,47 @@ export const getPropertyIcon = (attr) => {
     switch (attr.value_type) {
         case '0':
             if (attr.is_reference) {
-              return 'duose-quote'
+              return 'icon-xianxing-yilianjie'
             }
 
-            return 'duose-shishu'
+            return 'icon-xianxing-shishu'
         case '1':
-            return 'duose-fudianshu'
+            return 'icon-xianxing-fudianshu'
         case '2':
             if (attr.is_file) {
                 return 'file'
             }
             if (attr.is_password) {
-                return 'duose-password'
+                return 'icon-xianxing-password'
             }
             if (attr.is_link) {
-                return 'duose-link'
+                return 'icon-xianxing-link'
             }
             if (attr.is_index === false) {
-              return 'duose-changwenben1'
+              return 'itsm-textarea'
             }
-            return 'duose-wenben'
+            return 'icon-xianxing-wenben'
         case '3':
-            return 'duose-datetime'
+            return 'icon-xianxing-datetime'
         case '4':
-            return 'duose-date'
+            return 'icon-xianxing-date'
         case '5':
-            return 'duose-time'
+            return 'icon-xianxing-time'
         case '6':
-            return 'duose-json'
+            return 'icon-xianxing-json'
         case '7':
             if (attr.is_bool) {
-              return 'duose-boole'
+              return 'icon-xianxing-queren'
             }
-            return 'duose-password'
+            return 'icon-xianxing-password'
         case '8':
-            return 'duose-link'
+            return 'icon-xianxing-link'
         case '9':
-            return 'duose-changwenben1'
+            return 'itsm-textarea'
         case '10':
-            return 'duose-boole'
+            return 'icon-xianxing-queren'
         case '11':
-            return 'duose-quote'
+            return 'icon-xianxing-yilianjie'
         case '12':
             return 'file'
         default:

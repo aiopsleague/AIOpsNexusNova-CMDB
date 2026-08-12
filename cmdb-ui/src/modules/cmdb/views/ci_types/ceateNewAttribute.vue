@@ -52,7 +52,7 @@
             @change="handleChangeValueType"
           >
             <a-select-option :value="item.key" :key="item.key" v-for="(item) in valueTypeMap">
-              <ops-icon :type="getPropertyIcon({ value_type: item.key })" />
+              <span class="value-type-icon"><ops-icon :type="getPropertyIcon({ value_type: item.key })" /></span>
               <span class="value-type-text">{{ item.value }}</span>
               <span class="value-type-des" v-if="item.key === '2'">{{ $t('cmdb.ciType.shortTextTip') }}</span>
               <span class="value-type-des" v-if="item.key === '3'">yyyy-mm-dd HH:MM:SS</span>
@@ -799,6 +799,10 @@ export default {
 }
 .value-type-text {
   margin: 0 4px;
+}
+.value-type-icon {
+  // single-color value-type icons: default to the light theme primary blue; dark theme overrides
+  color: @primary-color;
 }
 </style>
 <style lang="less">

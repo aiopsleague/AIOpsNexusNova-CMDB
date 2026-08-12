@@ -268,7 +268,8 @@ export default {
       width: 32px;
       height: 32px;
       font-size: 16px;
-      background: #ffffff !important;
+      // dark theme overrides the variable in dark-overrides.less with a liquid-glass surface
+      background: var(--ops-value-type-icon-bg, #ffffff) !important;
       box-shadow: 0px 1px 2px rgba(47, 84, 235, 0.2);
       border-radius: 2px;
       text-align: center;

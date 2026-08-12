@@ -67,7 +67,7 @@
           @change="handleChangeValueType"
         >
           <a-select-option :value="key" :key="key" v-for="(value, key) in valueTypeMap">
-            <ops-icon :type="getPropertyIcon({ value_type: key })" />
+            <span class="value-type-icon"><ops-icon :type="getPropertyIcon({ value_type: key })" /></span>
             <span class="value-type-text">{{ value }}</span>
           </a-select-option>
         </a-select>
@@ -967,6 +967,10 @@ export default {
 }
 .value-type-text {
   margin-left: 4px;
+}
+.value-type-icon {
+  // single-color value-type icons: default to the light theme primary blue; dark theme overrides
+  color: @primary-color;
 }
 </style>
 <style lang="less">

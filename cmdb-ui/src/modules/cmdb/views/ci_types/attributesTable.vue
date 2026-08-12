@@ -29,7 +29,7 @@
                 'ci-types-attributes-filter-selected': attrTypeFilter.includes(item.key),
               }"
             >
-              <ops-icon :type="getPropertyIcon({ value_type: item.key })" />
+              <span class="value-type-icon"><ops-icon :type="getPropertyIcon({ value_type: item.key })" /></span>
               {{ item.value }}
             </span>
           </a-tooltip>
@@ -601,6 +601,10 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.value-type-icon {
+  // single-color value-type icons: default to the light theme primary blue; dark theme overrides
+  color: @primary-color;
+}
 .fold {
   width: calc(100% - 216px);
   display: inline-block;

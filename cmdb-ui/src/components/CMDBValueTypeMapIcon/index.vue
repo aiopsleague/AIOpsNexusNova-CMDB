@@ -1,5 +1,5 @@
 <template>
-  <span>
+  <span class="value-type-icon">
     <ops-icon :type="getPropertyIcon(attr)" />
   </span>
 </template>
@@ -45,29 +45,29 @@ export default {
 
       switch (valueType) {
         case '0':
-          return 'duose-shishu'
+          return 'icon-xianxing-shishu'
         case '1':
-          return 'duose-fudianshu'
+          return 'icon-xianxing-fudianshu'
         case '2':
-          return 'duose-wenben'
+          return 'icon-xianxing-wenben'
         case '3':
-          return 'duose-datetime'
+          return 'icon-xianxing-datetime'
         case '4':
-          return 'duose-date'
+          return 'icon-xianxing-date'
         case '5':
-          return 'duose-time'
+          return 'icon-xianxing-time'
         case '6':
-          return 'duose-json'
+          return 'icon-xianxing-json'
         case '7':
-          return 'duose-password'
+          return 'icon-xianxing-password'
         case '8':
-          return 'duose-link'
+          return 'icon-xianxing-link'
         case '9':
-          return 'duose-changwenben1'
+          return 'itsm-textarea'
         case '10':
-          return 'duose-boole'
+          return 'icon-xianxing-queren'
         case '11':
-          return 'duose-quote'
+          return 'icon-xianxing-yilianjie'
         case '12':
           return 'file'
         default:
@@ -78,4 +78,11 @@ export default {
 }
 </script>
 
-<style></style>
+<style scoped lang="less">
+.value-type-icon {
+  // single-color value-type icons inherit currentColor; light mode defaults to
+  // the light theme primary blue (@primary-color); dark theme overrides to the
+  // liquid-glass accent in src/style/themes/dark-overrides.less.
+  color: @primary-color;
+}
+</style>

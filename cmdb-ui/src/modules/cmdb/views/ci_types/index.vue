@@ -1190,7 +1190,7 @@ export default {
       position: relative;
       padding: 10px 12px 10px 22px;
       margin-bottom: 8px;
-      color: #333;
+      color: @text-color_1;
       cursor: pointer;
       font-size: 15px;
       font-weight: 600;
@@ -1252,6 +1252,7 @@ export default {
 
       &:hover {
         background-color: @primary-color_7;
+        box-shadow: 0px 2px 8px fade(@primary-color, 15%);
 
         // &::before {
         //   opacity: 1;
@@ -1312,6 +1313,7 @@ export default {
 
       &:hover {
         background-color: @primary-color_7;
+        box-shadow: 0px 2px 8px fade(@primary-color, 15%);
 
         .ci-types-left-detail-icon {
           transform: scale(1.05);
