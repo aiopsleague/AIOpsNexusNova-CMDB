@@ -5,6 +5,7 @@
 <script>
 import _ from 'lodash'
 import * as echarts from 'echarts'
+import { getEchartsTheme } from '@/utils/echarts-theme'
 export default {
   name: 'SystemCounter',
   inject: ['statistics'],
@@ -29,10 +30,27 @@ export default {
       },
     },
   },
+  mounted() {
+    window.addEventListener('ops:theme-change', this.handleThemeChange)
+  },
+  beforeDestroy() {
+    window.removeEventListener('ops:theme-change', this.handleThemeChange)
+    if (this.chart) {
+      this.chart.dispose()
+      this.chart = null
+    }
+  },
   methods: {
+    handleThemeChange() {
+      if (!this.chart || !document.getElementById('system-counter')) return
+      const option = this.chart.getOption()
+      this.chart.dispose()
+      this.chart = echarts.init(document.getElementById('system-counter'), getEchartsTheme())
+      this.chart.setOption(option)
+    },
     setChart() {
       if (!this.chart) {
-        this.chart = echarts.init(document.getElementById('system-counter'))
+        this.chart = echarts.init(document.getElementById('system-counter'), getEchartsTheme())
       }
       const sum = _.sum(Object.values(this.system_counter))
       this.chart.setOption({

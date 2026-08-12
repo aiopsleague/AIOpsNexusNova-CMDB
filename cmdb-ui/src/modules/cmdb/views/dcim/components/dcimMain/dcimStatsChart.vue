@@ -12,6 +12,7 @@
 
 <script>
 import * as echarts from 'echarts'
+import { getEchartsTheme } from '@/utils/echarts-theme'
 
 export default {
   name: 'DCIMStatsChart',
@@ -34,13 +35,24 @@ export default {
       }
     }
   },
+  mounted() {
+    window.addEventListener('ops:theme-change', this.handleThemeChange)
+  },
   beforeDestroy() {
+    window.removeEventListener('ops:theme-change', this.handleThemeChange)
     if (this.chart) {
       this.chart.dispose()
       this.chart = null
     }
   },
   methods: {
+    handleThemeChange() {
+      if (!this.chart || !this.$refs.statsChartRef) return
+      const option = this.chart.getOption()
+      this.chart.dispose()
+      this.chart = echarts.init(this.$refs.statsChartRef, getEchartsTheme())
+      this.chart.setOption(option)
+    },
     updateChart(data) {
       const option = {
         color: data?.map?.((item) => item.color) || [],
@@ -74,7 +86,7 @@ export default {
       this.$nextTick(() => {
         if (!this.chart) {
           const el = this.$refs.statsChartRef
-          this.chart = echarts.init(el)
+          this.chart = echarts.init(el, getEchartsTheme())
         }
         this.chart.setOption(option)
       })

@@ -6,6 +6,7 @@
 
 <script>
 import * as echarts from 'echarts'
+import { getEchartsTheme } from '@/utils/echarts-theme'
 export default {
   name: 'BusinessCounter',
   inject: ['statistics'],
@@ -37,11 +38,28 @@ export default {
       },
     },
   },
+  mounted() {
+    window.addEventListener('ops:theme-change', this.handleThemeChange)
+  },
+  beforeDestroy() {
+    window.removeEventListener('ops:theme-change', this.handleThemeChange)
+    if (this.chart) {
+      this.chart.dispose()
+      this.chart = null
+    }
+  },
   methods: {
+    handleThemeChange() {
+      if (!this.chart || !document.getElementById('business-counter')) return
+      const option = this.chart.getOption()
+      this.chart.dispose()
+      this.chart = echarts.init(document.getElementById('business-counter'), getEchartsTheme())
+      this.chart.setOption(option)
+    },
     setChart() {
       const that = this
       if (!this.chart) {
-        this.chart = echarts.init(document.getElementById('business-counter'))
+        this.chart = echarts.init(document.getElementById('business-counter'), getEchartsTheme())
         this.chart.on('updateAxisPointer', function(event) {
           const xAxisInfo = event.axesInfo[0]
           if (xAxisInfo) {

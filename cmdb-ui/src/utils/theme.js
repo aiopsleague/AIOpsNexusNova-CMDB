@@ -40,6 +40,10 @@ export function applyTheme (resolved) {
   if (document.body) {
     document.body.style.backgroundColor = dark ? '#141414' : ''
   }
+  // notify charts/components that need to re-render on theme change
+  if (typeof window !== 'undefined' && typeof window.CustomEvent === 'function') {
+    window.dispatchEvent(new CustomEvent('ops:theme-change', { detail: { theme: resolved } }))
+  }
 }
 
 export function initThemeSystem (store) {

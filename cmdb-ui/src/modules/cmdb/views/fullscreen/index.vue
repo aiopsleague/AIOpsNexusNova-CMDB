@@ -153,6 +153,7 @@
 import _ from 'lodash'
 import $ from 'jquery'
 import * as echarts from 'echarts'
+import { getEchartsTheme } from '@/utils/echarts-theme'
 import AssetsCard from './assetsCard.vue'
 import ProcessLine from './processLine.vue'
 export default {
@@ -279,11 +280,12 @@ export default {
     },
   },
   mounted() {
+    window.addEventListener('ops:theme-change', this.handleThemeChange)
     console.log(this.windowHeight, this.windowWidth)
     this.$nextTick(() => {
       $('#fullScreenButton').trigger('click')
-      this.chart1 = echarts.init(document.getElementById(`pie-box`))
-      this.chart2 = echarts.init(document.getElementById(`line-box`))
+      this.chart1 = echarts.init(document.getElementById(`pie-box`), getEchartsTheme())
+      this.chart2 = echarts.init(document.getElementById(`line-box`), getEchartsTheme())
 
       this.chart1.setOption({
         backgroundColor: 'transparent',
@@ -447,6 +449,7 @@ export default {
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.resizeChart)
+    window.removeEventListener('ops:theme-change', this.handleThemeChange)
     if (this.chart1) {
       this.chart1.dispose()
       this.chart1 = null
@@ -457,6 +460,22 @@ export default {
     }
   },
   methods: {
+    handleThemeChange() {
+      const el1 = document.getElementById('pie-box')
+      const el2 = document.getElementById('line-box')
+      if (this.chart1 && el1) {
+        const option = this.chart1.getOption()
+        this.chart1.dispose()
+        this.chart1 = echarts.init(el1, getEchartsTheme())
+        this.chart1.setOption(option)
+      }
+      if (this.chart2 && el2) {
+        const option = this.chart2.getOption()
+        this.chart2.dispose()
+        this.chart2 = echarts.init(el2, getEchartsTheme())
+        this.chart2.setOption(option)
+      }
+    },
     handleFullscreen() {
       const element = document.documentElement
       console.log(this.isFullscreen)

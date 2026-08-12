@@ -66,6 +66,7 @@
 
 <script>
 import * as echarts from 'echarts'
+import { getEchartsTheme } from '@/utils/echarts-theme'
 import { mixin } from '@/utils/mixin'
 import { toThousands } from '../../utils/helper'
 import {
@@ -187,9 +188,11 @@ export default {
   },
   mounted() {
     window.addEventListener('resize', this.resizeChart)
+    window.addEventListener('ops:theme-change', this.handleThemeChange)
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.resizeChart)
+    window.removeEventListener('ops:theme-change', this.handleThemeChange)
     if (this.chart) {
       this.chart.dispose()
       this.chart = null
@@ -197,9 +200,17 @@ export default {
   },
   methods: {
     toThousands,
+    handleThemeChange() {
+      const el = document.getElementById(`cmdb-dashboard-${this.chartId}-${this.editable}`)
+      if (!this.chart || !el) return
+      const option = this.chart.getOption()
+      this.chart.dispose()
+      this.chart = echarts.init(el, getEchartsTheme())
+      this.chart.setOption(option, true)
+    },
     setChart() {
       if (!this.chart) {
-        this.chart = echarts.init(document.getElementById(`cmdb-dashboard-${this.chartId}-${this.editable}`))
+        this.chart = echarts.init(document.getElementById(`cmdb-dashboard-${this.chartId}-${this.editable}`), getEchartsTheme())
       }
       if (this.category === 1 && this.options.chartType === 'bar') {
         this.chart.setOption(category_1_bar_options(this.data, this.options), true)
