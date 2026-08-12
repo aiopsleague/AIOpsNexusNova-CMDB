@@ -287,6 +287,17 @@ html[data-theme='dark'] {
   }
 }
 
+/* ===== CI 详情关系拓扑节点（独立 less 文件，生成脚本只扫 .vue style 块） ===== */
+html[data-theme='dark'] {
+  .ci-detail-relation-topo .ci-detail-relation-topo-node {
+    background: #1f1f1f;
+    border-color: #434343;
+  }
+  .ci-detail-relation-topo .ci-detail-relation-topo-node .title {
+    color: rgba(255, 255, 255, 0.85);
+  }
+}
+
 /* ===== rgba 白色半透明背景（生成脚本只匹配 #hex，rgba() 被漏） ===== */
 html[data-theme='dark'] {
   /* CI 详情关系拓扑：布局切换按钮 + 节点标签 */

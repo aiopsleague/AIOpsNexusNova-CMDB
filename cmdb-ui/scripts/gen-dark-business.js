@@ -49,10 +49,12 @@ function mapColor (hex) {
 
 function extract (file) {
   const s = fs.readFileSync(file, 'utf8')
+  const isLess = file.endsWith('.less')
   // Scan ALL style blocks. Non-scoped pages (e.g. tree_views uses plain
   // <style lang="less">) keep light backgrounds there; a scoped-only scan
   // silently misses them and leaves those containers bright in dark mode.
-  const blocks = s.match(/<style[^>]*>([\s\S]*?)<\/style>/g) || []
+  // Standalone .less files (component-imported) are parsed as-is.
+  const blocks = isLess ? [s] : (s.match(/<style[^>]*>([\s\S]*?)<\/style>/g) || [])
   if (!blocks.length) return []
   const out = []
   for (const block of blocks) {
@@ -89,7 +91,10 @@ function walk (d, files = []) {
   for (const e of fs.readdirSync(d, { withFileTypes: true })) {
     const p = path.join(d, e.name)
     if (e.isDirectory()) walk(p, files)
-    else if (/\.vue$/.test(e.name)) files.push(p)
+    // .vue: <style> blocks; .less: standalone style files that components
+    // @import (e.g. ciDetailRelationTopo/index.less) - their light bgs would
+    // otherwise be missed
+    else if (/\.(vue|less)$/.test(e.name)) files.push(p)
   }
   return files
 }
