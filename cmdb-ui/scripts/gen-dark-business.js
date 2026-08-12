@@ -49,12 +49,16 @@ function mapColor (hex) {
 
 function extract (file) {
   const s = fs.readFileSync(file, 'utf8')
-  const scoped = s.match(/<style[^>]*scoped[^>]*>([\s\S]*?)<\/style>/)
-  if (!scoped) return []
-  const lines = scoped[1].split('\n')
+  // Scan ALL style blocks. Non-scoped pages (e.g. tree_views uses plain
+  // <style lang="less">) keep light backgrounds there; a scoped-only scan
+  // silently misses them and leaves those containers bright in dark mode.
+  const blocks = s.match(/<style[^>]*>([\s\S]*?)<\/style>/g) || []
+  if (!blocks.length) return []
   const out = []
-  const stack = []
-  for (const line of lines) {
+  for (const block of blocks) {
+    const lines = block.replace(/^<style[^>]*>\s*/, '').split('\n')
+    const stack = []
+    for (const line of lines) {
     const t = line.trim()
     if (!t || t.startsWith('//') || t.startsWith('/*')) continue
     if (t.endsWith('{')) {
@@ -76,6 +80,7 @@ function extract (file) {
         }
       }
     }
+  }
   }
   return out
 }

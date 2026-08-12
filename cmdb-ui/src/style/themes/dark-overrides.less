@@ -226,3 +226,85 @@ html[data-theme='dark'] {
     color: #2f54eb;
   }
 }
+
+/* ===== role=menuitem 相关（Menu / Dropdown / Select / Cascader / TreeSelect） ===== */
+html[data-theme='dark'] {
+  .ant-dropdown,
+  .ant-dropdown-menu,
+  .ant-select-dropdown,
+  .ant-cascader-dropdown,
+  .ant-cascader-menu,
+  .ant-select-dropdown-menu {
+    background-color: #1f1f1f;
+  }
+  .ant-dropdown-menu-item,
+  .ant-select-dropdown-menu-item,
+  .ant-cascader-menu-item {
+    background-color: transparent;
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .ant-dropdown-menu-item:hover,
+  .ant-select-dropdown-menu-item:hover,
+  .ant-cascader-menu-item:hover {
+    background-color: #131629;
+  }
+}
+
+/* ===== 搜索表单外框（SearchForm 非 scoped 字面色 #d9d9d9） ===== */
+html[data-theme='dark'] {
+  .ci-searchform-expression > input {
+    border-bottom-color: #434343;
+  }
+  .ci-searchform-expression .ant-input-suffix {
+    color: rgba(255, 255, 255, 0.45);
+  }
+}
+
+/* ===== CSS Module 组件：通过 CSS 变量驱动（hash 类名无法直接匹配） ===== */
+html[data-theme='dark'] {
+  /* 侧边菜单搜索框（Menu/index.module.less 的 --ops-side-menu-search-bg） */
+  --ops-side-menu-search-bg: #001529;
+  /* 拓扑图画布背景（relation-graph canvas，由 topology_view 读取并重绘） */
+  --ops-topo-canvas-bg: #141414;
+  /* 分栏分隔条（SplitPane 内联样式 var(--ops-pane-trigger-bg)） */
+  --ops-pane-trigger-bg: #1f1f1f;
+}
+
+/* ===== 分栏组件（SplitPane / TwoColumnLayout） ===== */
+html[data-theme='dark'] {
+  .split-pane {
+    background-color: #141414;
+  }
+  .split-pane.row .pane-trigger,
+  .split-pane.column .pane-trigger {
+    /* 内联样式 triggerColor 优先，需 !important 压过（含 var() fallback 情形） */
+    background-color: #1f1f1f !important;
+  }
+  .split-pane .collapse-btn {
+    background-color: #1f1f1f;
+    border-color: transparent;
+  }
+  .split-pane .spliter-wrap {
+    background-color: #141414;
+  }
+  /* pane 面板本身兜底（内容透明时保证 pane 区域暗色） */
+  .split-pane .pane-one,
+  .split-pane .pane-two {
+    background-color: #1f1f1f;
+  }
+  .two-column-layout {
+    background-color: #1f1f1f;
+  }
+  .two-column-layout-main {
+    background-color: #1f1f1f !important;
+  }
+  .two-column-layout-sidebar {
+    background-color: #1f1f1f;
+    border-right-color: #303030;
+  }
+  /* 资源层级视图（tree_views）pane 根容器：dark-business 生成遗漏 */
+  .tree-views-left,
+  .tree-views-right {
+    background-color: #1f1f1f;
+  }
+}

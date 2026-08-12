@@ -36,7 +36,7 @@ export default {
     },
     triggerColor: {
       type: String,
-      default: '#f7f8fa',
+      default: 'var(--ops-pane-trigger-bg, #f7f8fa)',
     },
     triggerLength: {
       type: Number,

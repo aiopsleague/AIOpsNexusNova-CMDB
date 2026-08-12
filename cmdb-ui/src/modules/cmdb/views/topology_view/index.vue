@@ -339,6 +339,16 @@ import { v4 as uuidv4 } from 'uuid'
 import CMDBTypeSelectAntd from '@/modules/cmdb/components/cmdbTypeSelect/cmdbTypeSelectAntd'
 
 const currentTopoKey = 'ops_cmdb_topo_currentId'
+
+// relation-graph canvas background is drawn from options, css cannot cover it.
+// Read the css variable set by dark-overrides.less (or fall back to theme attr).
+function getTopoCanvasBg() {
+  if (typeof window !== 'undefined' && window.getComputedStyle) {
+    const v = window.getComputedStyle(document.documentElement).getPropertyValue('--ops-topo-canvas-bg').trim()
+    if (v) return v
+  }
+  return document.documentElement.getAttribute('data-theme') === 'dark' ? '#141414' : '#FFFFFF'
+}
 export default {
   name: 'TopologyView',
   components: {
@@ -388,7 +398,7 @@ export default {
       max_per_width: 200,
       min_per_height: 40,
       max_per_height: undefined,
-      backgroundColor: '#FFFFFF',
+      backgroundColor: getTopoCanvasBg(),
       // defaultLineColor: '#CACDD9',
       // defaultNodeColor: '#29AAE1',
       // defaultNodeFontColor: '#ffffff',
@@ -493,6 +503,7 @@ export default {
     }
   },
   async mounted() {
+    window.addEventListener('ops:theme-change', this.handleTopoThemeChange)
     searchResourceType({ page_size: 9999, app_id: 'cmdb' }).then((res) => {
       this.resource_type = { groups: res.groups, id2perms: res.id2perms }
     })
@@ -504,6 +515,9 @@ export default {
     if (this.currentId) {
       this.showTopoView(this.currentId.split('%')[1])
     }
+  },
+  beforeDestroy() {
+    window.removeEventListener('ops:theme-change', this.handleTopoThemeChange)
   },
   computed: {
     windowHeight() {
@@ -575,6 +589,15 @@ export default {
     }
   },
   methods: {
+    handleTopoThemeChange() {
+      this.graphOptions2.backgroundColor = getTopoCanvasBg()
+      this.graphOptionsPrivew.backgroundColor = getTopoCanvasBg()
+      this.$nextTick(() => {
+        if (this.$refs.showTopoView) this.$refs.showTopoView.refresh()
+        if (this.$refs.previewTopoView) this.$refs.previewTopoView.refresh()
+        if (this.$refs.ciTypeRelationGraph) this.$refs.ciTypeRelationGraph.refresh()
+      })
+    },
     closeNodeTips(e) {
       e.preventDefault()
       e.stopPropagation()

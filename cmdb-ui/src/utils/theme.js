@@ -3,8 +3,13 @@
  * See docs/superpowers/specs/2026-08-12-theme-settings-design.md
  */
 
-// dark css is served from public/ at dev/build time (see scripts/build-theme.js)
-const DARK_CSS_PATH = `${process.env.BASE_URL || '/'}themes/dark.css`
+// dark css is served from public/ at dev/build time (see scripts/build-theme.js).
+// It is injected as a dynamic <link> with no content hash, so browsers may
+// aggressively cache it; add a query param to bypass that cache.
+// - dev: Date.now() so every reload refetches the freshly regenerated css
+// - prod: fixed version, bump on release to invalidate stale cached css
+const DARK_CSS_VERSION = process.env.NODE_ENV === 'development' ? Date.now() : '20260812'
+const DARK_CSS_PATH = `${process.env.BASE_URL || '/'}themes/dark.css?v=${DARK_CSS_VERSION}`
 
 export function getSystemDark () {
   return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
