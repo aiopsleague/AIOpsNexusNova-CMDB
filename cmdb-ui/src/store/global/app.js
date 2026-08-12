@@ -1,7 +1,9 @@
 import Vue from 'vue'
+import { resolveTheme } from '@/utils/theme'
 import {
   SIDEBAR_TYPE,
   DEFAULT_THEME,
+  THEME_MODE,
   DEFAULT_LAYOUT_MODE,
   DEFAULT_COLOR,
   DEFAULT_COLOR_WEAK,
@@ -17,6 +19,7 @@ const app = {
     sidebar: true,
     device: 'desktop',
     theme: '',
+    themeMode: 'system',
     layout: '',
     contentWidth: '',
     fixedHeader: true,
@@ -43,6 +46,12 @@ const app = {
       // setStore('_DEFAULT_THEME', theme)
       Vue.ls.set(DEFAULT_THEME, theme)
       state.theme = theme
+    },
+    TOGGLE_THEME_MODE: (state, mode) => {
+      Vue.ls.set(THEME_MODE, mode)
+      state.themeMode = mode
+      state.theme = resolveTheme(mode)
+      Vue.ls.set(DEFAULT_THEME, state.theme)
     },
     TOGGLE_LAYOUT_MODE: (state, layout) => {
       Vue.ls.set(DEFAULT_LAYOUT_MODE, layout)
@@ -92,6 +101,9 @@ const app = {
     },
     ToggleTheme({ commit }, theme) {
       commit('TOGGLE_THEME', theme)
+    },
+    ToggleThemeMode({ commit }, mode) {
+      commit('TOGGLE_THEME_MODE', mode)
     },
     ToggleLayoutMode({ commit }, mode) {
       commit('TOGGLE_LAYOUT_MODE', mode)

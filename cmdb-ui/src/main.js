@@ -7,6 +7,7 @@ import bootstrap from './core/bootstrap'
 import './core/use'
 import './guard' // guard permission control
 import './utils/filter' // global filter
+import { initThemeSystem } from './utils/theme'
 import Setting from './config/setting'
 import { Icon } from 'ant-design-vue'
 import i18n from './lang'
@@ -19,6 +20,7 @@ Vue.component('ops-icon', customIcon)
 var vue
 
 async function start() {
+  initThemeSystem(store)
   const _vue = new Vue({
     router,
     store,

@@ -3,7 +3,7 @@ import store from '@/store/'
 import {
   ACCESS_TOKEN,
   DEFAULT_COLOR,
-  DEFAULT_THEME,
+  THEME_MODE,
   DEFAULT_LAYOUT_MODE,
   DEFAULT_COLOR_WEAK,
   SIDEBAR_TYPE,
@@ -17,7 +17,7 @@ import config from '@/config/setting'
 
 export default function Initializer () {
   store.commit('SET_SIDEBAR_TYPE', Vue.ls.get(SIDEBAR_TYPE, true))
-  store.commit('TOGGLE_THEME', Vue.ls.get(DEFAULT_THEME, config.navTheme))
+  store.commit('TOGGLE_THEME_MODE', Vue.ls.get(THEME_MODE, config.themeMode))
   store.commit('TOGGLE_LAYOUT_MODE', Vue.ls.get(DEFAULT_LAYOUT_MODE, config.layout))
   store.commit('TOGGLE_FIXED_HEADER', Vue.ls.get(DEFAULT_FIXED_HEADER, config.fixedHeader))
   store.commit('TOGGLE_FIXED_SIDERBAR', Vue.ls.get(DEFAULT_FIXED_SIDEMENU, config.fixSiderbar))

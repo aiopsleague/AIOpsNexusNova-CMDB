@@ -12,6 +12,33 @@
     <link rel="stylesheet" href="<%= htmlWebpackPlugin.options.cdn.css[i] %>" />
     <% } %>
     <script>
+      // Anti-flash theme init: read persisted theme mode (vue-ls format {value,expire})
+      // and set data-theme + minimal dark css before first paint. The real dark.css
+      // is appended by src/utils/theme.js after head is parsed.
+      /* eslint-disable */
+      (function () {
+        function readLs (key) {
+          try {
+            var raw = localStorage.getItem(key)
+            if (!raw) return null
+            var data = JSON.parse(raw)
+            return data && typeof data === 'object' && 'value' in data ? data.value : data
+          } catch (e) {
+            return null
+          }
+        }
+        var mode = readLs('pro__THEME_MODE')
+        var dark = mode === 'dark' || (mode !== 'light' && !!window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        if (dark) {
+          document.documentElement.setAttribute('data-theme', 'dark')
+          var style = document.createElement('style')
+          style.id = 'theme-init'
+          style.textContent = 'body{background-color:#141414}#loading-mask{background-color:#141414}'
+          document.head.appendChild(style)
+        }
+      })()
+    </script>
+    <script>
       const userAgent = navigator.userAgent
       const isEdge = userAgent.indexOf("Edge") > -1
       const isChrome = userAgent.indexOf("Chrome") > -1 && userAgent.indexOf("Safari") > -1 && !isEdge
