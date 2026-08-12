@@ -2,15 +2,28 @@
  * Dark theme compilation entry.
  * Compiles antd full less + project styles (global.less) + dark variables +
  * project overrides into a standalone css via scripts/build-theme.js.
+ *
+ * All rules are nested under `html[data-theme='dark']` so they carry a
+ * high-specificity prefix (0,2,1) that wins over duplicated light rules in
+ * lazy-loaded chunk css regardless of load order (project components re-import
+ * antd/global.less via `@import '../index.less'` etc).
+ *
  * NOTE:
  * - antd import must come BEFORE variable overrides (last definition wins).
+ * - dark-vars is imported at root (for dark-overrides/business) and re-imported
+ *   inside the block via `@import (multiple)` to shadow antd's light variables.
  * - the `~` alias is not supported by bare less; build-theme.js inlines
  *   ../global.less and strips its antd import, so dark.less is compiled only
  *   through the build script.
  */
-@import "ant-design-vue/lib/style/index.less";
-@import "ant-design-vue/lib/style/components.less";
-@import "../global.less";
 @import "./dark-vars.less";
+
+html[data-theme='dark'] {
+  @import "ant-design-vue/lib/style/index.less";
+  @import "ant-design-vue/lib/style/components.less";
+  @import "../global.less";
+  @import (multiple) "./dark-vars.less";
+}
+
 @import "./dark-overrides.less";
 @import "./dark-business.less";

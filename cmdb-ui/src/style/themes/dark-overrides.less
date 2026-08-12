@@ -8,6 +8,20 @@
  * without relying on !important.
  */
 html[data-theme='dark'] {
+  /* 内容区/布局背景：global.less 被 use.js / App.vue / BasicLayout.vue 多处引入，
+     可能随布局 chunk 在 dark.css 之后加载（同特异性依赖顺序），
+     用 html[data-theme='dark'] 高特异性确保暗色，不依赖 css 加载顺序 */
+  .ant-layout,
+  .ant-layout-content {
+    background-color: #141414;
+  }
+  .ant-layout-header {
+    background: #1f1f1f;
+  }
+  .ant-layout-sider {
+    background: #001529;
+  }
+
   /* logo 背景透明，由 sider/header 背景提供（暗色下避免白色方块） */
   .logo {
     background: transparent;

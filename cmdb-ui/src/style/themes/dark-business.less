@@ -7,6 +7,9 @@ html[data-theme='dark'] {
 
 /* src/modules/cmdb/views/batch/index.vue */
   .cmdb-batch-upload { background-color: #1f1f1f; }
+  .cmdb-batch-upload-steps { background-color: #1f1f1f; }
+  .cmdb-batch-upload-card .ant-card-head { background-color: #1f1f1f !important; }
+  .cmdb-batch-upload-action { background-color: #1f1f1f; }
 
 /* src/modules/cmdb/views/batch/modules/CiUploadTable.vue */
   .cmdb-batch-upload-table .upload-placeholder { background-color: #1f1f1f; }
@@ -14,8 +17,16 @@ html[data-theme='dark'] {
 /* src/modules/cmdb/views/batch/modules/UploadResult.vue */
   .cmdb-batch-upload-result .error-details .error-list { background-color: #2a1215; }
 
+/* src/modules/cmdb/views/ci/ciDetailPage.vue */
+  .ci-detail-page { background-color: #1f1f1f; }
+
 /* src/modules/cmdb/views/ci/index.vue */
+  .ci-types-left-header-input input { background-color: #1f1f1f !important; }
   .ci-left { background-color: #1f1f1f; }
+  .ci-left-item .ci-icon { background-color: #1f1f1f; }
+
+/* src/modules/cmdb/views/ci/instanceList.vue */
+  .cmdb-ci { background-color: #1f1f1f; }
 
 /* src/modules/cmdb/views/ci/modules/ciDetailComponent/ciDetailTableTitle.vue */
   .ci-detail-table-title { background-color: #1f1f1f; }
@@ -30,11 +41,21 @@ html[data-theme='dark'] {
   .ci-relation-table-tab { background-color: #1f1f1f; }
   .ci-relation-table-container { background-color: #1f1f1f; }
 
+/* src/modules/cmdb/views/ci/modules/ciDetailPrometheus.vue */
+  .prom-alert-table { background-color: #1f1f1f; }
+
 /* src/modules/cmdb/views/ci_types/adTab.vue */
   .ad-btns-item { background-color: #1f1f1f; }
 
 /* src/modules/cmdb/views/ci_types/attrAD/cidrTags/index.vue */
+  .cidr-tag { background-color: #1f1f1f; }
   .cidr-tag-item { background-color: #171e2e; }
+
+/* src/modules/cmdb/views/ci_types/attrAD/privateCloud/vcenterForm.vue */
+  .private-cloud-wrap .input-disabled input { background-color: #262626 !important; }
+
+/* src/modules/cmdb/views/ci_types/attrAD/publicCloud/index.vue */
+  .public-cloud-wrap .input-disabled input { background-color: #262626 !important; }
 
 /* src/modules/cmdb/views/ci_types/attrADTest.vue */
   .check-modal-status-online { background-color: #1f1f1f; }
@@ -52,21 +73,37 @@ html[data-theme='dark'] {
 
 /* src/modules/cmdb/views/ci_types/index.vue */
   .ci-types-wrap .ci-types-left { background-color: #1f1f1f; }
+  .ci-types-wrap .ci-types-left-header-input input { background-color: #1f1f1f !important; }
   .ci-types-wrap .ci-types-left .ci-types-left-group > div:first-child > span:last-child { background-color: #303030; }
+  .ci-types-wrap .ci-types-left .ci-types-left-detail-icon { background-color: #1f1f1f; }
+  .ci-types-wrap .ci-types-right { background-color: #1f1f1f; }
+
+/* src/modules/cmdb/views/ci_types/onetermSync/attributeMappingTable.vue */
+  .attribute-mapping-table .ant-table .ant-table-thead > tr > th { background-color: #1f1f1f !important; }
+  .attribute-mapping-table .ant-table .ant-table-tbody > tr:hover > td { background-color: #262626 !important; }
+
+/* src/modules/cmdb/views/ci_types/onetermSync/index.vue */
+  .oneterm-sync-tab .config-card .ant-card-head { background-color: #1f1f1f !important; }
+  .oneterm-sync-tab .footer-actions { background-color: #1f1f1f; }
 
 /* src/modules/cmdb/views/ci_types/onetermSync/syncLogDrawer.vue */
   .sync-log-drawer .filter-section { background-color: #1f1f1f; }
   .sync-log-drawer .stats-footer { background-color: #1f1f1f; }
+  .sync-log-drawer .ant-table .ant-table-tbody > tr:hover > td { background-color: #262626 !important; }
   .log-details .changes-content { background-color: #262626; }
 
 /* src/modules/cmdb/views/ci_types/preValueArea.vue */
   .tab-builtin-tag { background-color: #1f2738; }
+
+/* src/modules/cmdb/views/ci_types/preValueAttr/attrFilter/valueControls.vue */
+  .select-filter .ant-select-selection { background-color: #1f1f1f !important; }
 
 /* src/modules/cmdb/views/ci_types/preValueAttr/builtin/userFilterComp/index.vue */
   .table-filter .table-filter-add > a:hover { background-color: #1f1f1f; }
   .table-filter .table-filter-extra-icon:hover { background-color: #1f1f1f; }
 
 /* src/modules/cmdb/views/ci_types/triggerForm.vue */
+  .auto-complete-wrapper .auto-complete-wrapper-popover { background-color: #1f1f1f; }
   .trigger-tips { background-color: #111d2c; }
 
 /* src/modules/cmdb/views/custom_dashboard/chartForm.vue */
@@ -99,18 +136,22 @@ html[data-theme='dark'] {
   .table-wrap .add-btn { background-color: #1a1f2e; }
 
 /* src/modules/cmdb/views/discovery/discoveryCard.vue */
+  .discovery-card .discovery-top { background-color: #1f1f1f; }
   .discovery-card .discovery-top .discovery-footer-tag { background-color: #171e2e; }
   .discovery-card-small-selected .discovery-top { background-color: #1f1f1f; }
 
 /* src/modules/cmdb/views/discovery/index.vue */
   .setting-discovery-header-action-btn { background-color: #1a1f2e; }
+  .setting-discovery-body { background-color: #1f1f1f; }
   .setting-discovery-body .setting-discovery-add { background-color: #1f1f1f; }
 
 /* src/modules/cmdb/views/discoveryCI/components/adcCounter.vue */
+  .counter-wrap .counter-group { background-color: #1f1f1f; }
   .counter-wrap .counter-group .counter-item:not(:last-child)::after { background-color: #303030; }
 
 /* src/modules/cmdb/views/discoveryCI/index.vue */
   .cmdb-adc .cmdb-adc-group-count { background-color: #303030; }
+  .cmdb-adc .cmdb-adc-side-item .cmdb-adc-side-icon { background-color: #1f1f1f; }
   .log-config-area { background-color: #1f1f1f; }
 
 /* src/modules/cmdb/views/ipam/modules/address/gridIP.vue */
@@ -136,12 +177,17 @@ html[data-theme='dark'] {
 
 /* src/modules/cmdb/views/mobile/CIMobileDetail.vue */
   .mobile-detail-page { background-color: #262626; }
+  .mobile-header { background-color: #1f1f1f; }
+  .mobile-card { background-color: #1f1f1f; }
   .mobile-card-title { background-color: #1f1f1f; }
   .mobile-card-title-collapsible:active { background-color: #262626; }
   .mobile-relation-item:active { background-color: #262626; }
   .mobile-relation-type { background-color: #262626; }
   .mobile-history-old { background-color: #2a1215; }
   .mobile-history-new { background-color: #1f1f1f; }
+
+/* src/modules/cmdb/views/model_relation/index.vue */
+  .model-relation { background-color: #1f1f1f; }
 
 /* src/modules/cmdb/views/operation_history/modules/relation.vue */
   .relation-description .ci-info { background-color: #262626; }
@@ -151,15 +197,27 @@ html[data-theme='dark'] {
 
 /* src/modules/cmdb/views/preference/index.vue */
   .cmdb-preference .cmdb-preference-left .cmdb-preference-group .cmdb-preference-group-title > span { background-color: #1f1f1f; }
+  .cmdb-preference .cmdb-preference-right .cmdb-preference-content .cmdb-preference-type { background-color: #1f1f1f; }
   .cmdb-preference .cmdb-preference-right .cmdb-preference-content .cmdb-preference-type .cmdb-preference-footor-unsubscribed-gap { background-color: #1f1f1f; }
+  .cmdb-preference .cmdb-preference-avatar { background-color: #1f1f1f; }
+
+/* src/modules/cmdb/views/preference_relation/index.vue */
+  .preference-relation-wrapper .ci-type-relation { background-color: #1f1f1f; }
+  .preference-relation-wrapper .relation-views { background-color: #1f1f1f; }
+
+/* src/modules/cmdb/views/resource_search/index.vue */
+  .resource-search { background-color: #1f1f1f; }
 
 /* src/modules/cmdb/views/resource_search_2/relationSearch/components/ciTable.vue */
   .search-table .table-path-header-relation { background-color: #1f1f1f; }
+  .search-table .table-path-header-cell { background-color: #1a1f2e !important; }
+  .search-table .table-path-cell { background-color: #14181f !important; }
 
 /* src/modules/cmdb/views/resource_search_2/relationSearch/components/filterPopover.vue */
   .search-condition-filter { background-color: #1f1f1f; }
 
 /* src/modules/cmdb/views/resource_search_2/relationSearch/components/searchCondition.vue */
+  .search-condition-control .ant-dropdown-content { background-color: #1f1f1f !important; }
   .search-condition-path-divider { background-color: #303030; }
   .search-condition-favor-item { background-color: #1a1f2e; }
   .search-condition-hide { background-color: #1a1f2e; }
@@ -173,10 +231,14 @@ html[data-theme='dark'] {
   .instance-detail { background-color: #1f1f1f; }
 
 /* src/modules/cmdb/views/resource_search_2/resourceSearch/components/instanceList.vue */
+  .list-wrap .list-container .list-card { background-color: #1f1f1f; }
   .list-wrap .list-container .list-card-selected { background-color: #14181f; }
+  .list-wrap .list-container .list-card-model { background-color: #1f1f1f; }
 
 /* src/modules/cmdb/views/resource_search_2/resourceSearch/components/searchInput.vue */
   .search-input .search-area .search-input-component { background-color: #1f1f1f; }
+  .search-input .search-area .search-input-component .ant-input:focus { background-color: #1f1f1f !important; }
+  .search-input .search-area .search-textarea-component .ant-input:focus { background-color: #1f1f1f !important; }
   .search-input .operation-area .search-mode-switch-slide { background-color: #1f1f1f; }
 
 /* src/modules/cmdb/views/resource_search_2/resourceSearch/index.vue */
@@ -185,6 +247,30 @@ html[data-theme='dark'] {
 /* src/modules/cmdb/views/topology_view/index.vue */
   .topo-wrap .topo-left { background-color: #1f1f1f; }
   .topo-wrap .topo-left .topo-left-group > div:first-child > span:last-child { background-color: #303030; }
+  .topo-wrap .topo-left .topo-left-detail .topo-left-detail-icon { background-color: #1f1f1f; }
+  .topo-wrap .topo-right { background-color: #1f1f1f; }
   .topo-wrap .node-tips { background-color: #1f1f1f; }
   .topo-wrap .node-tips .ant-descriptions-bordered .ant-descriptions-item-label { background-color: #1f1f1f; }
+  .relation-graph { background-color: #1f1f1f !important; }
+
+/* src/modules/acl/views/history.vue */
+  .acl-history { background-color: #1f1f1f; }
+
+/* src/modules/acl/views/module/permCollectForm.vue */
+  .custom-filter-dropdown { background-color: #1f1f1f; }
+
+/* src/modules/acl/views/operation_history/index.vue */
+  .acl-operation-history { background-color: #1f1f1f; }
+
+/* src/modules/acl/views/resource_types.vue */
+  .acl-resource-types { background-color: #1f1f1f; }
+
+/* src/modules/acl/views/resources.vue */
+  .acl-resources { background-color: #1f1f1f; }
+
+/* src/modules/acl/views/trigger.vue */
+  .acl-trigger { background-color: #1f1f1f; }
+
+/* src/modules/acl/views/users.vue */
+  .acl-users { background-color: #1f1f1f; }
 }

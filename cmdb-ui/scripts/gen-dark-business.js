@@ -67,8 +67,13 @@ function extract (file) {
       stack.pop()
     } else {
       const m = t.match(/background(?:-color)?\s*:\s*(#[0-9a-fA-F]{3,8})/)
-      if (m && parseInt(m[1].slice(1, 7), 16) >= 0xe0e0e0) {
-        out.push({ sel: stack[stack.length - 1] || '', color: m[1].toLowerCase() })
+      if (m) {
+        const hex = m[1].toLowerCase()
+        // expand 3-digit hex (#fff -> #ffffff) before judging brightness
+        const full = hex.length === 4 ? `#${hex[1]}${hex[1]}${hex[2]}${hex[2]}${hex[3]}${hex[3]}` : hex
+        if (parseInt(full.slice(1, 7), 16) >= 0xe0e0e0) {
+          out.push({ sel: stack[stack.length - 1] || '', color: full })
+        }
       }
     }
   }
@@ -94,11 +99,16 @@ for (const f of files) {
   const rel = path.relative(CWD, f)
   const rules = []
   for (const h of hits) {
-    if (!h.sel || /deep|>>>|:global|^\s*&-/.test(h.sel)) continue
-    const key = h.sel + '|' + h.color
+    if (!h.sel || /:global|^\s*&-/.test(h.sel)) continue
+    // /deep/ compiles to [data-v] on the parent (higher specificity), so use
+    // !important for those; plain selectors rely on html[data-theme='dark'] prefix
+    const isDeep = /\/deep\/|>>>|::v-deep/.test(h.sel)
+    const sel = h.sel.replace(/\/deep\/|>>>|::v-deep/g, ' ').replace(/\s+/g, ' ').trim()
+    if (!sel) continue
+    const key = sel + '|' + h.color
     if (seen.has(key)) continue
     seen.add(key)
-    rules.push(`  ${h.sel} { background-color: ${mapColor(h.color)}; }`)
+    rules.push(`  ${sel} { background-color: ${mapColor(h.color)}${isDeep ? ' !important' : ''}; }`)
   }
   if (rules.length) groups.push(`\n/* ${rel} */\n${rules.join('\n')}`)
 }
