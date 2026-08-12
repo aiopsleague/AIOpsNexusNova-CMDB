@@ -64,6 +64,23 @@
 
     <div class="user-panel-row">
       <div class="user-panel-row-label">
+        {{ $t('userPanel.themeSetting') }}
+      </div>
+
+      <div class="user-panel-theme">
+        <div
+          v-for="(t, index) in themeList"
+          :key="index"
+          :class="['user-panel-theme-item', t.key === themeMode ? 'user-panel-theme-item_active' : '']"
+          @click="changeTheme(t.key)"
+        >
+          {{ $t(t.title) }}
+        </div>
+      </div>
+    </div>
+
+    <div class="user-panel-row">
+      <div class="user-panel-row-label">
         {{ $t('userPanel.bindAccount') }}
       </div>
 
@@ -133,6 +150,20 @@ export default {
           key: 'en'
         },
       ],
+      themeList: [
+        {
+          title: 'userPanel.themeLight',
+          key: 'light'
+        },
+        {
+          title: 'userPanel.themeDark',
+          key: 'dark'
+        },
+        {
+          title: 'userPanel.themeSystem',
+          key: 'system'
+        },
+      ],
       bindList: [
         {
           type: 'wechatApp',
@@ -171,7 +202,8 @@ export default {
       email: (state) => state.user.email,
       locale: (state) => state.locale,
       userInfo: (state) => state.user,
-      companyName: (state) => state.company.name
+      companyName: (state) => state.company.name,
+      themeMode: (state) => state.app.themeMode
     }),
     avatarSrc() {
       const avatar = this.userInfo.avatar
@@ -202,6 +234,9 @@ export default {
       this.$nextTick(() => {
         setDocumentTitle(`${this.$t(this.$route.meta.title)} - ${domTitle}`)
       })
+    },
+    changeTheme(mode) {
+      this.$store.dispatch('ToggleThemeMode', mode)
     },
     handleBindInfo(platform) {
       const isBind = this?.userInfo?.notice_info?.[platform]
@@ -419,6 +454,40 @@ export default {
       cursor: pointer;
 
       &:first-child {
+        border-right: solid 1px #E4E7ED;
+      }
+
+      &_active {
+        background-color: #EBEFF8;
+        color: #2F54EB;
+      }
+
+      &:hover {
+        color: #2F54EB;
+      }
+    }
+  }
+
+  &-theme {
+    display: flex;
+    align-items: center;
+    height: 28px;
+    border-radius: 28px;
+    overflow: hidden;
+
+    &-item {
+      flex: 1;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #F7F8FA;
+      cursor: pointer;
+      font-size: 12px;
+      white-space: nowrap;
+      padding: 0 8px;
+
+      &:not(:last-child) {
         border-right: solid 1px #E4E7ED;
       }
 

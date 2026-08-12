@@ -207,6 +207,10 @@ export default {
       accountPassword: 'Password',
       notice: 'Notice',
       switchLanguage: 'Switch Language',
+      themeSetting: 'Theme',
+      themeLight: 'Light',
+      themeDark: 'Dark',
+      themeSystem: 'System',
       bindAccount: 'Bind Account',
       switchAccount: 'Switch Account',
       logout: 'Logout'

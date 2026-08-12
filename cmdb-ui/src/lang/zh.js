@@ -207,6 +207,10 @@ export default {
       accountPassword: '账号密码',
       notice: '通知中心',
       switchLanguage: '切换语言',
+      themeSetting: '主题设置',
+      themeLight: '浅色',
+      themeDark: '深色',
+      themeSystem: '跟随系统',
       bindAccount: '绑定账号',
       switchAccount: '切换账号',
       logout: '退出账号'

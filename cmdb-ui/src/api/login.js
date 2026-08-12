@@ -44,7 +44,15 @@ export function getInfo() {
 
 export function logout() {
   const auth_type = localStorage.getItem('ops_auth_type')
+  // keep theme preference across logout (Vue.ls keys carry the pro__ namespace prefix)
+  const keepKeys = ['pro__THEME_MODE', 'pro__DEFAULT_THEME']
+  const kept = {}
+  keepKeys.forEach(k => {
+    const v = localStorage.getItem(k)
+    if (v !== null) kept[k] = v
+  })
   localStorage.clear()
+  Object.keys(kept).forEach(k => localStorage.setItem(k, kept[k]))
   return axios({
     url: auth_type ? `/${auth_type.toLowerCase()}/logout` : api.Logout,
     method: auth_type ? 'get' : 'post',
