@@ -149,9 +149,20 @@ html[data-theme='dark'] {
   .vxe-table--render-default {
     background: #1f1f1f;
   }
+  /* vxe 库把主体 table 设为白底（#fff），覆盖外层深色 */
+  .vxe-table--render-default .vxe-table--body-wrapper table {
+    background: transparent;
+  }
+  .vxe-table--render-default.border--default .vxe-table--header-wrapper,
+  .vxe-table--render-default.border--inner .vxe-table--header-wrapper {
+    background-color: #1f1f1f;
+  }
   .vxe-table--render-default .vxe-table--header-wrapper,
   .vxe-table--render-default .vxe-table--footer-wrapper {
     background-color: #1f1f1f;
+  }
+  .vxe-grid.is--maximize {
+    background: #1f1f1f;
   }
   .vxe-table--render-default .vxe-body--row.row--stripe {
     background-color: #14181f;

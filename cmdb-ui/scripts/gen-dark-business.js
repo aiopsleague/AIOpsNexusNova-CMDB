@@ -89,7 +89,15 @@ function walk (d, files = []) {
   return files
 }
 
-const files = [...walk(path.join(CWD, 'src/modules/cmdb/views')), ...walk(path.join(CWD, 'src/modules/acl/views'))]
+const scanDirs = [
+  'src/modules/cmdb/views',
+  'src/modules/acl/views',
+  'src/modules/cmdb/components',
+  'src/modules/acl/components',
+]
+const files = scanDirs
+  .filter((d) => fs.existsSync(path.join(CWD, d)))
+  .flatMap((d) => walk(path.join(CWD, d)))
 const seen = new Set()
 const groups = []
 
