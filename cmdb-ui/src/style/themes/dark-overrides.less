@@ -6,3 +6,38 @@
  * Filled incrementally per coverage catalog A-E
  * (see docs/superpowers/specs/2026-08-12-theme-settings-design.md).
  */
+
+/* ===== A. 布局骨架 ===== */
+html[data-theme='dark'] {
+  /* 顶栏（sidemenu 模式）：亮色主构建 .header 背景 #fff -> 暗色深灰 */
+  .header {
+    background: #1f1f1f;
+  }
+
+  /* logo 背景透明，由 sider/header 背景提供（暗色下避免白色方块） */
+  .logo {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  /* 侧边栏菜单：global.less 通用规则引用的亮色变量，暗色下用暗色变量覆盖 */
+  .ops-side-bar.ant-menu:not(.ant-menu-horizontal) .ant-menu-item-selected {
+    background: @layout-sidebar-selected-color;
+  }
+  .ops-side-bar.ant-menu .ant-menu-submenu-title:hover,
+  .ops-side-bar.ant-menu .ant-menu-item.ant-menu-item-active:hover {
+    background: @layout-sidebar-selected-color;
+  }
+  .ops-side-bar.ant-menu .ant-menu-submenu-content .ant-menu-submenu-active .ant-menu-submenu-title {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+  .ops-side-bar .ant-menu-submenu.ant-menu-submenu-placement-rightTop > .ant-menu {
+    background: @layout-sidebar-color;
+  }
+
+  /* 抽屉底部操作栏（global.less 写死白底 #fff / 边框 #e9e9e9） */
+  .custom-drawer-bottom-action {
+    background: #1f1f1f;
+    border-top-color: #303030;
+  }
+}

@@ -23,7 +23,7 @@
       v-else-if="isSideMenu()"
       mode="inline"
       :menus="sideBarMenu"
-      theme="light"
+      :theme="navTheme"
       :collapsed="collapsed"
       :collapsible="true"
     ></side-menu>

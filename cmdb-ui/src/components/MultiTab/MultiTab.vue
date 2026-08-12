@@ -11,7 +11,7 @@
       hideAdd
       v-model="activeKey"
       type="editable-card"
-      :tabBarStyle="{ background: '#FFF', margin: 0, paddingLeft: '16px', paddingTop: '1px' }"
+      :tabBarStyle="tabBarStyle"
       @edit="onEdit"
     >
       <a-tab-pane v-for="page in pages" :style="{ height: 0 }" :tab="page.meta.title" :key="page.fullPath" :closable="pages.length > 1">
@@ -24,8 +24,23 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+
 export default {
   name: 'MultiTab',
+  computed: {
+    ...mapState({
+      navTheme: (state) => state.app.theme
+    }),
+    tabBarStyle () {
+      return {
+        background: this.navTheme === 'dark' ? '#1f1f1f' : '#FFF',
+        margin: 0,
+        paddingLeft: '16px',
+        paddingTop: '1px'
+      }
+    }
+  },
   data () {
     return {
       fullPathList: [],
@@ -161,7 +176,7 @@ export default {
             hideAdd
             type={'editable-card'}
             v-model={this.activeKey}
-            tabBarStyle={{ background: '#FFF', margin: 0, paddingLeft: '16px', paddingTop: '1px' }}
+            tabBarStyle={this.tabBarStyle}
             {...{ on: { edit: onEdit } }}>
             {panes}
           </a-tabs>

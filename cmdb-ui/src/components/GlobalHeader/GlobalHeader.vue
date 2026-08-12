@@ -8,7 +8,7 @@
         ]"
         :style="{ padding: '0' }"
       >
-        <div v-if="mode === 'sidemenu'" class="header">
+        <div v-if="mode === 'sidemenu'" :class="['header', theme]">
           <a-icon
             v-if="device === 'mobile'"
             class="trigger"
