@@ -53,3 +53,75 @@ html[data-theme='dark'] {
   .ant-tag-geekblue { color: #2f54eb; background: #131629; border-color: #1f2f57; }
   .ant-tag-purple { color: #531dab; background: #1a1325; border-color: #341d52; }
 }
+
+/* ===== B. 共享组件 scoped 浅色 ===== */
+html[data-theme='dark'] {
+  /* CMDBFilterComp */
+  .table-filter .table-filter-extra-icon:hover {
+    background: #1a1f2e;
+  }
+
+  /* Crontab */
+  .popup-title {
+    background: #1f1f1f;
+  }
+  .popup-result .title {
+    background: #171e2e;
+  }
+
+  /* EmployeeTransfer / RoleTransfer */
+  .employee-transfer .employee-transfer-left,
+  .employee-transfer .employee-transfer-right,
+  .role-transfer .role-transfer-left,
+  .role-transfer .role-transfer-right {
+    background-color: #14181f;
+  }
+  .employee-transfer .employee-transfer-right .employee-transfer-right-selected,
+  .role-transfer .role-transfer-right .role-transfer-right-selected {
+    background-color: #171e2e;
+  }
+
+  /* MonacoCodeEditor */
+  .monaco-editor {
+    background: #1e1e1e;
+  }
+  .monaco-editor-toolbar {
+    background: #1f1f1f;
+  }
+
+  /* Result */
+  .result .extra {
+    background: #1f1f1f;
+  }
+
+  /* TwoColumnLayout */
+  .two-column-layout .two-column-layout-sidebar {
+    background: #1f1f1f;
+  }
+
+  /* HeadInfo */
+  .head-info em {
+    background: #262626;
+  }
+
+  /* UserMenu */
+  .user-wrapper .common-settings-btn,
+  .user-wrapper .lang-menu-item_active {
+    background: #171e2e;
+  }
+
+  /* userPanel */
+  .user-panel-avatar {
+    background: #1f1f1f;
+  }
+  .user-panel-btn-item,
+  .user-panel-lang-item,
+  .user-panel-theme-item {
+    background: #1f1f1f;
+  }
+  .user-panel-btn-item:hover,
+  .user-panel-lang-item_active,
+  .user-panel-theme-item_active {
+    background: #1a1f2e;
+  }
+}
