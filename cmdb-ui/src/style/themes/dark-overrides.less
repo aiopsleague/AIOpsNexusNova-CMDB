@@ -1072,6 +1072,19 @@ html[data-theme='dark'] {
   .cmdb-preference-left {
     background-color: rgba(20, 20, 30, 0.5);
   }
+  /* Subscription count chips (数据订阅 / 层级订阅) as liquid-glass pills:
+     the component passes backgroundColor: 'inherit' + boxShadow: 'none' inline,
+     so !important is required to beat the inline style. */
+  .cmdb-preference-left-card .ant-badge .ant-badge-count {
+    background: rgba(255, 255, 255, 0.12) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    /* @badge-text-color resolves to @component-background = rgba(255,255,255,0.06)
+       in the dark theme, which would make the digit invisible — force bright text */
+    color: #f0f0f3;
+  }
   .cmdb-preference-group-title > span {
     background-color: rgba(255, 255, 255, 0.04) !important;
     color: #f0f0f3 !important;
