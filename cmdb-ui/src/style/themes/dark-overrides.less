@@ -250,6 +250,43 @@ html[data-theme='dark'] {
   }
 }
 
+/* ===== CI 详情渐变卡片（linear-gradient 浅色背景，生成脚本不匹配渐变） ===== */
+html[data-theme='dark'] {
+  /* 白色系卡片渐变 -> 深灰 */
+  .ci-detail-title-card,
+  .prom-stat-card,
+  .ci-history-stat-card {
+    background: linear-gradient(135deg, #1f1f1f 0%, #262626 100%);
+  }
+  .ci-detail-title-card {
+    border-color: #303030;
+  }
+  .ci-detail-card-header {
+    background: linear-gradient(135deg, #1f1f1f 0%, #262626 100%);
+    border-bottom-color: #303030;
+  }
+  .prom-filter-bar {
+    background: linear-gradient(135deg, #1a1f2e 0%, #1f2738 100%);
+    border-color: #15395b;
+  }
+  /* 功能色 active 渐变 -> 深色调保留色相 */
+  .prom-stat-card.prom-stat-total.prom-stat-active,
+  .prom-stat-card.prom-stat-info.prom-stat-active {
+    background: linear-gradient(135deg, #1a1f2e 0%, #1f2738 100%);
+  }
+  .prom-stat-card.prom-stat-disaster.prom-stat-active,
+  .prom-stat-card.prom-stat-emergency.prom-stat-active,
+  .prom-stat-card.prom-stat-critical.prom-stat-active {
+    background: linear-gradient(135deg, #2a1215 0%, #331619 100%);
+  }
+  .prom-stat-card.prom-stat-important.prom-stat-active {
+    background: linear-gradient(135deg, #2b2111 0%, #362814 100%);
+  }
+  .prom-stat-card.prom-stat-warning.prom-stat-active {
+    background: linear-gradient(135deg, #2b2111 0%, #3a2f1a 100%);
+  }
+}
+
 /* ===== 搜索表单外框（SearchForm 非 scoped 字面色 #d9d9d9） ===== */
 html[data-theme='dark'] {
   .ci-searchform-expression > input {
