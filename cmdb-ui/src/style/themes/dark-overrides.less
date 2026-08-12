@@ -1,38 +1,22 @@
 /**
  * Dark theme overrides for project custom styles.
+ * With global.less inlined into dark.css (via build-theme.js), most project
+ * classes already compile with dark variables. Only hardcoded light values and
+ * antd hardcoded values need explicit overrides here.
  * All rules are scoped under `html[data-theme='dark']` so they win over scoped
  * styles (specificity 0,2,1 > scoped 0,2,0) regardless of css load order,
  * without relying on !important.
- * Filled incrementally per coverage catalog A-E
- * (see docs/superpowers/specs/2026-08-12-theme-settings-design.md).
  */
-
-/* ===== A. 布局骨架 ===== */
 html[data-theme='dark'] {
-  /* 顶栏（sidemenu 模式）：亮色主构建 .header 背景 #fff -> 暗色深灰 */
-  .header {
-    background: #1f1f1f;
-  }
-
   /* logo 背景透明，由 sider/header 背景提供（暗色下避免白色方块） */
   .logo {
     background: transparent;
     box-shadow: none;
   }
 
-  /* 侧边栏菜单：global.less 通用规则引用的亮色变量，暗色下用暗色变量覆盖 */
-  .ops-side-bar.ant-menu:not(.ant-menu-horizontal) .ant-menu-item-selected {
-    background: @layout-sidebar-selected-color;
-  }
-  .ops-side-bar.ant-menu .ant-menu-submenu-title:hover,
-  .ops-side-bar.ant-menu .ant-menu-item.ant-menu-item-active:hover {
-    background: @layout-sidebar-selected-color;
-  }
-  .ops-side-bar.ant-menu .ant-menu-submenu-content .ant-menu-submenu-active .ant-menu-submenu-title {
-    background-color: rgba(255, 255, 255, 0.08);
-  }
-  .ops-side-bar .ant-menu-submenu.ant-menu-submenu-placement-rightTop > .ant-menu {
-    background: @layout-sidebar-color;
+  /* 顶栏用户头像白底兜底 -> 深灰 */
+  .header .user-wrapper .action .avatar {
+    background-color: #1f1f1f;
   }
 
   /* 抽屉底部操作栏（global.less 写死白底 #fff / 边框 #e9e9e9） */
@@ -40,4 +24,32 @@ html[data-theme='dark'] {
     background: #1f1f1f;
     border-top-color: #303030;
   }
+
+  /* global.less 字面色残留 */
+  .dag-history-filter-inner:hover {
+    background: #262626;
+  }
+  .ops-input.ant-input[disabled] {
+    background-color: #1f1f1f;
+  }
+
+  /* radio-button 禁用选中态（antd 写死 tint(@black, 90%)） */
+  .ant-radio-button-wrapper-disabled.ant-radio-button-wrapper-checked {
+    background-color: #262626;
+    color: rgba(255, 255, 255, 0.45);
+    border-color: #434343;
+  }
+
+  /* antd 预设彩色标签（写死浅色背景，暗色版采用 antd 4 dark 色调） */
+  .ant-tag-magenta { color: #d84a85; background: #2b0e14; border-color: #58181c; }
+  .ant-tag-red { color: #d32029; background: #2a1215; border-color: #58181c; }
+  .ant-tag-volcano { color: #d84a1b; background: #2b1a11; border-color: #58181c; }
+  .ant-tag-orange { color: #d87a16; background: #2b1d11; border-color: #594214; }
+  .ant-tag-gold { color: #d89614; background: #2b2111; border-color: #594214; }
+  .ant-tag-lime { color: #7cb305; background: #1f2611; border-color: #3e4b14; }
+  .ant-tag-green { color: #49aa19; background: #162312; border-color: #274916; }
+  .ant-tag-cyan { color: #08979c; background: #112123; border-color: #144444; }
+  .ant-tag-blue { color: #1d39c4; background: #111d2c; border-color: #15395b; }
+  .ant-tag-geekblue { color: #2f54eb; background: #131629; border-color: #1f2f57; }
+  .ant-tag-purple { color: #531dab; background: #1a1325; border-color: #341d52; }
 }

@@ -13,7 +13,20 @@ const entryFile = path.join(projectRoot, 'src/style/themes/dark.less')
 const outputFile = path.join(projectRoot, 'public/themes/dark.css')
 
 async function main() {
-  const source = fs.readFileSync(entryFile, 'utf8')
+  let source = fs.readFileSync(entryFile, 'utf8')
+
+  // Inline ../global.less so project styles are compiled with dark variables.
+  // Bare less does not understand webpack's `~` alias, and its relative import
+  // './static.less' would otherwise resolve from the wrong directory.
+  source = source.replace(/@import\s+['"]\.\.\/global\.less['"];\s*/, () => {
+    let globalLess = fs.readFileSync(path.join(projectRoot, 'src/style/global.less'), 'utf8')
+    // antd full less is already imported by dark.less via bare module path
+    globalLess = globalLess.replace(/@import\s+['"]~ant-design-vue\/dist\/antd\.less['"];\s*/g, '')
+    // inline static.less (variables + mixins) so it resolves correctly
+    const staticLess = fs.readFileSync(path.join(projectRoot, 'src/style/static.less'), 'utf8')
+    return globalLess.replace(/@import\s+['"]\.\/static\.less['"];\s*/g, () => staticLess + '\n')
+  })
+
   const result = await less.render(source, {
     filename: entryFile,
     paths: [path.join(projectRoot, 'node_modules')],
