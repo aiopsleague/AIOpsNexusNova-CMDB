@@ -125,3 +125,79 @@ html[data-theme='dark'] {
     background: #1a1f2e;
   }
 }
+
+/* ===== C. 第三方库（vxe-table 裸表格 / element-ui） ===== */
+html[data-theme='dark'] {
+  /* vxe-table：未使用 ops-stripe/ops-unstripe 包裹的裸表格（ops-* 用 !important 不受影响） */
+  .vxe-table {
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .vxe-table--render-default {
+    background: #1f1f1f;
+  }
+  .vxe-table--render-default .vxe-table--header-wrapper,
+  .vxe-table--render-default .vxe-table--footer-wrapper {
+    background-color: #1f1f1f;
+  }
+  .vxe-table--render-default .vxe-body--row.row--stripe {
+    background-color: #14181f;
+  }
+  .vxe-table--render-default .vxe-body--row.row--hover {
+    background-color: #262626;
+  }
+  .vxe-table--render-default .vxe-cell {
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .vxe-table--render-default .vxe-table--border-line {
+    border-color: #303030;
+  }
+  .vxe-select-option:not(.is--disabled).is--hover {
+    background-color: #171e2e;
+  }
+
+  /* element-ui（crontab 等使用） */
+  .el-input__inner,
+  .el-textarea__inner {
+    background-color: #1f1f1f;
+    border-color: #434343;
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .el-select-dropdown,
+  .el-dropdown-menu {
+    background-color: #1f1f1f;
+    border-color: #434343;
+  }
+  .el-select-dropdown__item {
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .el-select-dropdown__item.hover,
+  .el-select-dropdown__item:hover {
+    background-color: #171e2e;
+  }
+  .el-tabs__item {
+    color: rgba(255, 255, 255, 0.45);
+  }
+  .el-tabs__item.is-active {
+    color: #2f54eb;
+  }
+  .el-tabs__nav-wrap::after {
+    background-color: #303030;
+  }
+  .el-radio__inner {
+    background-color: #1f1f1f;
+    border-color: #434343;
+  }
+  .el-radio__label {
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .el-button {
+    background-color: #1f1f1f;
+    border-color: #434343;
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .el-button:hover,
+  .el-button:focus {
+    border-color: #2f54eb;
+    color: #2f54eb;
+  }
+}
