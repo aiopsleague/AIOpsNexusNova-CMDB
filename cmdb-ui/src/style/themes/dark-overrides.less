@@ -22,12 +22,14 @@ html[data-theme='dark'] {
     background: #1f1f1f;
   }
   /* 侧边栏菜单：暗色下 antd menu-dark 默认深蓝 #001529 与全局灰黑不统一，
-     改用项目暗色变量体系（与亮色侧边栏同源） */
+     改用项目暗色变量体系（与亮色侧边栏同源）。
+     覆盖 .ant-menu-item 本身（含纯文本项，非仅 > a），使文字/选中/hover 统一 */
   .ops-side-bar.ant-menu-dark {
     background-color: @layout-sidebar-color;
     .ant-menu-inline.ant-menu-sub {
       background-color: @layout-sidebar-sub-color;
     }
+    .ant-menu-item,
     .ant-menu-item > a,
     .ant-menu-submenu-title {
       color: @layout-sidebar-font-color;
@@ -35,9 +37,15 @@ html[data-theme='dark'] {
     .ant-menu-item-selected,
     .ant-menu-submenu-selected > .ant-menu-submenu-title {
       background-color: @layout-sidebar-selected-color;
+      color: @layout-sidebar-selected-font-color;
     }
     .ant-menu-item-selected > a,
     .ant-menu-submenu-selected > .ant-menu-submenu-title {
+      color: @layout-sidebar-selected-font-color;
+    }
+    .ant-menu-item:hover,
+    .ant-menu-item-active,
+    .ant-menu-item-active > a {
       color: @layout-sidebar-selected-font-color;
     }
   }
