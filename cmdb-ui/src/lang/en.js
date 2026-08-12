@@ -210,6 +210,7 @@ export default {
       themeSetting: 'Theme',
       themeLight: 'Light',
       themeDark: 'Dark',
+      themeLiquidGlass: 'Liquid',
       themeSystem: 'System',
       bindAccount: 'Bind Account',
       switchAccount: 'Switch Account',

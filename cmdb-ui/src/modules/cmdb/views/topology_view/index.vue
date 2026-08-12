@@ -337,18 +337,12 @@ import { getTopoGroups, postTopoGroup, putTopoGroupByGId, putTopoGroupsOrder, de
 import CMDBExprDrawer from '@/components/CMDBExprDrawer'
 import { v4 as uuidv4 } from 'uuid'
 import CMDBTypeSelectAntd from '@/modules/cmdb/components/cmdbTypeSelect/cmdbTypeSelectAntd'
+// relation-graph canvas background is drawn from options, css cannot cover it.
+// Use theme util which handles dark / liquid-glass / light.
+import { getTopoCanvasBg } from '@/utils/theme'
 
 const currentTopoKey = 'ops_cmdb_topo_currentId'
 
-// relation-graph canvas background is drawn from options, css cannot cover it.
-// Read the css variable set by dark-overrides.less (or fall back to theme attr).
-function getTopoCanvasBg() {
-  if (typeof window !== 'undefined' && window.getComputedStyle) {
-    const v = window.getComputedStyle(document.documentElement).getPropertyValue('--ops-topo-canvas-bg').trim()
-    if (v) return v
-  }
-  return document.documentElement.getAttribute('data-theme') === 'dark' ? '#141414' : '#FFFFFF'
-}
 export default {
   name: 'TopologyView',
   components: {

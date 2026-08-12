@@ -13,7 +13,7 @@
     <% } %>
     <script>
       // Anti-flash theme init: read persisted theme mode (vue-ls format {value,expire})
-      // and set data-theme + minimal dark css before first paint. The real dark.css
+      // and set data-theme + minimal dark css before first paint. The real theme CSS
       // is appended by src/utils/theme.js after head is parsed.
       /* eslint-disable */
       (function () {
@@ -28,12 +28,15 @@
           }
         }
         var mode = readLs('pro__THEME_MODE')
-        var dark = mode === 'dark' || (mode !== 'light' && !!window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
-        if (dark) {
-          document.documentElement.setAttribute('data-theme', 'dark')
+        var isDark = mode === 'dark' || (mode !== 'light' && mode !== 'liquid-glass' && !!window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        var isLiquid = mode === 'liquid-glass'
+        if (isDark || isLiquid) {
+          var theme = isLiquid ? 'liquid-glass' : 'dark'
+          var bg = isLiquid ? '#080a10' : '#141414'
+          document.documentElement.setAttribute('data-theme', theme)
           var style = document.createElement('style')
           style.id = 'theme-init'
-          style.textContent = 'body{background-color:#141414}#loading-mask{background-color:#141414}'
+          style.textContent = 'body{background-color:' + bg + '}#loading-mask{background-color:' + bg + '}'
           document.head.appendChild(style)
         }
       })()

@@ -210,6 +210,7 @@ export default {
       themeSetting: '主题设置',
       themeLight: '浅色',
       themeDark: '深色',
+      themeLiquidGlass: '流体',
       themeSystem: '跟随系统',
       bindAccount: '绑定账号',
       switchAccount: '切换账号',

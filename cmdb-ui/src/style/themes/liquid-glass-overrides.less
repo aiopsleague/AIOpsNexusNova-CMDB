@@ -1,0 +1,1698 @@
+/**
+ * Liquid Glass theme overrides.
+ *
+ * Two responsibilities:
+ * 1. Glass-specific effects (backdrop-filter, box-shadow, radius, transitions)
+ *    that dark theme doesn't have.
+ * 2. Color overrides for hardcoded light values in scoped component styles
+ *    and third-party libraries. Mirrors dark-overrides.less structure but
+ *    with semi-transparent rgba values and `html[data-theme='liquid-glass']` prefix.
+ *
+ * All rules scoped under `html[data-theme='liquid-glass']` (specificity 0,2,1).
+ *
+ * NOTE: This file re-compiles dark-overrides.less and dark-business.less with
+ * liquid-glass variables via liquid-glass.less. The Less variables in those
+ * files resolve to semi-transparent rgba values. However their selectors are
+ * `html[data-theme='dark']`. The critical non-antd overrides are duplicated
+ * here with `html[data-theme='liquid-glass']`.
+ */
+
+/* ================================================================
+   A. GLASS-SPECIFIC EFFECTS: backdrop-filter, highlights, radius
+   ================================================================ */
+
+html[data-theme='liquid-glass'] {
+
+  /* ---- A1. backdrop-filter on all major containers ---- */
+  .ant-layout,
+  .ant-layout-content,
+  .ant-layout-header,
+  .ant-layout-sider,
+  .ant-layout-footer,
+  .ant-card,
+  .ant-table,
+  .ant-table-wrapper,
+  .ant-menu,
+  .ant-menu-inline,
+  .ant-menu-vertical,
+  .ant-dropdown,
+  .ant-dropdown-menu,
+  .ant-select-dropdown,
+  .ant-select-dropdown-menu,
+  .ant-cascader-dropdown,
+  .ant-cascader-menu,
+  .ant-modal-content,
+  .ant-modal-header,
+  .ant-popover-inner,
+  .ant-popover-arrow,
+  .ant-drawer-content-wrapper,
+  .ant-drawer-content,
+  .ant-drawer-header,
+  .ant-drawer-body,
+  .ant-tooltip-inner,
+  .ant-message-notice-content,
+  .ant-notification-notice,
+  .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab,
+  .ant-collapse,
+  .ant-collapse > .ant-collapse-item > .ant-collapse-header,
+  .ant-collapse > .ant-collapse-item > .ant-collapse-content,
+  .ant-calendar,
+  .ant-calendar-panel,
+  .ant-time-picker-panel,
+  .ant-pagination-item,
+  .ant-pagination-prev,
+  .ant-pagination-next,
+  .ant-breadcrumb,
+  .ant-descriptions,
+  .ant-alert,
+  .ant-result,
+  .ant-comment,
+  .ant-tag,
+  .ant-badge,
+  .ant-avatar:not(.ant-avatar-image),
+  .ant-skeleton,
+  .ant-empty,
+  .ant-spin-container,
+  .ant-upload,
+  .ant-tree,
+  .ant-tree-list,
+  .sidebar,
+  .topbar,
+  .glass-panel,
+  .stat-item,
+  .ci-left,
+  .ci-detail-page,
+  .cmdb-ci,
+  .search-form-bar,
+  .custom-drawer-bottom-action,
+  .split-pane,
+  .two-column-layout,
+  .two-column-layout-sidebar,
+  .two-column-layout-main,
+  .tree-views-left,
+  .tree-views-right {
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+  }
+
+  /* ---- A2. Glass box-shadow: deep projection + dual inner highlight ---- */
+  .ant-layout-sider,
+  .ant-card,
+  .ant-modal-content,
+  .ant-popover-inner,
+  .ant-drawer-content-wrapper,
+  .sidebar,
+  .glass-panel {
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45),
+                0 8px 20px rgba(0, 0, 0, 0.25),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.35),
+                inset 0 -1px 1px 0 rgba(0, 0, 0, 0.2);
+  }
+
+  /* Stat item: lighter shadow */
+  .stat-item {
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.3);
+  }
+
+  /* Header / topbar: subtle shadow */
+  .ant-layout-header,
+  .topbar {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
+  }
+
+  /* Dropdowns / floating panels: strong shadow for depth */
+  .ant-dropdown,
+  .ant-select-dropdown,
+  .ant-cascader-dropdown,
+  .ant-popover-inner {
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.35);
+  }
+
+  /* ---- A3. Larger border radius ---- */
+  --glass-radius-md: 14px;
+  --glass-radius-lg: 24px;
+
+  .ant-card,
+  .ant-modal-content,
+  .sidebar,
+  .glass-panel {
+    border-radius: var(--glass-radius-lg);
+  }
+  .stat-item {
+    border-radius: var(--glass-radius-md);
+  }
+  .ant-btn {
+    border-radius: 12px;
+  }
+  .ant-input,
+  .ant-select-selection,
+  .glass-input {
+    border-radius: 12px;
+  }
+  .ant-table {
+    border-radius: var(--glass-radius-md);
+  }
+  .ant-tag {
+    border-radius: 14px;
+  }
+
+  /* ---- A4. Spring transitions ---- */
+  .ant-card,
+  .ant-btn,
+  .sidebar,
+  .topbar,
+  .glass-panel,
+  .stat-item,
+  .ant-modal-content,
+  .ant-layout-sider {
+    transition: all 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  /* ---- A5. Hover lift effect ---- */
+  .ant-card:hover,
+  .glass-panel:hover,
+  .stat-item:hover {
+    transform: translateY(-3px) scale(1.01);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5),
+                inset 0 1px 2px 0 rgba(255, 255, 255, 0.5);
+  }
+}
+
+/* ================================================================
+   B. LAYOUT & COMPONENT COLOR OVERRIDES
+   Mirror dark-overrides.less sections A/B/C/D with glass values.
+   Only the rules that target non-antd elements or hardcoded values.
+   Antd components are fully handled by liquid-glass-vars.less.
+   ================================================================ */
+
+html[data-theme='liquid-glass'] {
+
+  /* ---- B1. Layout backgrounds ---- */
+  .ant-layout,
+  .ant-layout-content {
+    background-color: #080a10;
+  }
+  .ant-layout-header {
+    background: rgba(20, 20, 30, 0.55);
+  }
+  .ant-layout-sider {
+    background: rgba(20, 20, 30, 0.55);
+  }
+
+  /* Sidebar menu (project custom: ops-side-bar) */
+  .ops-side-bar.ant-menu-dark {
+    background-color: @layout-sidebar-color;
+    .ant-menu-inline.ant-menu-sub {
+      background-color: @layout-sidebar-sub-color;
+    }
+    .ant-menu-item,
+    .ant-menu-item > a,
+    .ant-menu-submenu-title {
+      color: @layout-sidebar-font-color;
+    }
+    .ant-menu-item-selected,
+    .ant-menu-submenu-selected > .ant-menu-submenu-title {
+      background-color: @layout-sidebar-selected-color;
+      color: @layout-sidebar-selected-font-color;
+    }
+    .ant-menu-item-selected > a,
+    .ant-menu-submenu-selected > .ant-menu-submenu-title {
+      color: @layout-sidebar-selected-font-color;
+    }
+    .ant-menu-item:hover,
+    .ant-menu-item-active,
+    .ant-menu-item-active > a {
+      color: @layout-sidebar-selected-font-color;
+    }
+  }
+
+  /* Logo transparent */
+  .logo {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  /* Header user avatar */
+  .header .user-wrapper .action .avatar {
+    background-color: rgba(30, 30, 40, 0.6);
+  }
+
+  /* Drawer bottom action bar */
+  .custom-drawer-bottom-action {
+    background: rgba(30, 30, 40, 0.7);
+    border-top-color: rgba(255, 255, 255, 0.08);
+  }
+
+  /* global.less residual light colors */
+  .dag-history-filter-inner:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .ops-input.ant-input[disabled] {
+    background-color: rgba(255, 255, 255, 0.04);
+    color: #555562;
+  }
+
+  /* antd input icons */
+  .ant-input-password-icon:hover { color: #f0f0f3; }
+  .ant-input-clear-icon { color: #555562; }
+  .ant-input-clear-icon:hover { color: #9999a6; }
+
+  /* radio-button disabled-checked */
+  .ant-radio-button-wrapper-disabled.ant-radio-button-wrapper-checked {
+    background-color: rgba(255, 255, 255, 0.06);
+    color: #9999a6;
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  /* Preset colored tags (glass backgrounds) */
+  .ant-tag-magenta { color: #d84a85; background: rgba(216, 74, 133, 0.12); border-color: rgba(216, 74, 133, 0.25); }
+  .ant-tag-red { color: #d32029; background: rgba(211, 32, 41, 0.12); border-color: rgba(211, 32, 41, 0.25); }
+  .ant-tag-volcano { color: #d84a1b; background: rgba(216, 74, 27, 0.12); border-color: rgba(216, 74, 27, 0.25); }
+  .ant-tag-orange { color: #d87a16; background: rgba(216, 122, 22, 0.12); border-color: rgba(216, 122, 22, 0.25); }
+  .ant-tag-gold { color: #d89614; background: rgba(216, 150, 20, 0.12); border-color: rgba(216, 150, 20, 0.25); }
+  .ant-tag-lime { color: #7cb305; background: rgba(124, 179, 5, 0.12); border-color: rgba(124, 179, 5, 0.25); }
+  .ant-tag-green { color: #49aa19; background: rgba(73, 170, 25, 0.12); border-color: rgba(73, 170, 25, 0.25); }
+  .ant-tag-cyan { color: #08979c; background: rgba(8, 151, 156, 0.12); border-color: rgba(8, 151, 156, 0.25); }
+  .ant-tag-blue { color: #1d39c4; background: rgba(29, 57, 196, 0.12); border-color: rgba(29, 57, 196, 0.25); }
+  .ant-tag-geekblue { color: #6c5ce7; background: rgba(108, 92, 231, 0.12); border-color: rgba(108, 92, 231, 0.25); }
+  .ant-tag-purple { color: #531dab; background: rgba(83, 29, 171, 0.12); border-color: rgba(83, 29, 171, 0.25); }
+}
+
+/* ================================================================
+   C. SHARED COMPONENTS (mirrors dark-overrides section B)
+   ================================================================ */
+
+html[data-theme='liquid-glass'] {
+  /* CMDBFilterComp */
+  .table-filter .table-filter-extra-icon:hover {
+    background: rgba(108, 92, 231, 0.15);
+  }
+
+  /* Crontab */
+  .popup-title { background: rgba(30, 30, 40, 0.7); }
+  .popup-result .title { background: rgba(108, 92, 231, 0.15); }
+
+  /* EmployeeTransfer / RoleTransfer */
+  .employee-transfer .employee-transfer-left,
+  .employee-transfer .employee-transfer-right,
+  .role-transfer .role-transfer-left,
+  .role-transfer .role-transfer-right {
+    background-color: rgba(108, 92, 231, 0.06);
+  }
+  .employee-transfer .employee-transfer-right .employee-transfer-right-selected,
+  .role-transfer .role-transfer-right .role-transfer-right-selected {
+    background-color: rgba(108, 92, 231, 0.12);
+  }
+
+  /* MonacoCodeEditor */
+  .monaco-editor { background: #1e1e1e; }
+  .monaco-editor-toolbar { background: rgba(30, 30, 40, 0.7); }
+
+  /* Result */
+  .result .extra { background: rgba(30, 30, 40, 0.6); }
+
+  /* TwoColumnLayout */
+  .two-column-layout .two-column-layout-sidebar {
+    background: rgba(20, 20, 30, 0.5);
+  }
+
+  /* HeadInfo */
+  .head-info em { background: rgba(255, 255, 255, 0.08); }
+
+  /* UserMenu */
+  .user-wrapper .common-settings-btn,
+  .user-wrapper .lang-menu-item_active {
+    background: rgba(108, 92, 231, 0.15);
+  }
+
+  /* userPanel */
+  .user-panel-avatar {
+    background: rgba(108, 92, 231, 0.2);
+    color: #a29bfe;
+  }
+  .user-panel-nickname { color: #f0f0f3; }
+  .user-panel-info-text { color: #9999a6; }
+  .user-panel-btn-item { background: rgba(255, 255, 255, 0.05); }
+  .user-panel-btn-icon { color: #555562; }
+  .user-panel-btn-title { color: #9999a6; }
+  .user-panel-btn-item:hover {
+    background: rgba(108, 92, 231, 0.15);
+    .user-panel-btn-icon { color: #a29bfe; }
+    .user-panel-btn-title { color: #a29bfe; }
+  }
+  .user-panel-row-label { color: #9999a6; }
+  .user-panel-lang-item {
+    background: rgba(255, 255, 255, 0.04);
+    color: #9999a6;
+    &:hover { color: #a29bfe; }
+    &_active { background: rgba(108, 92, 231, 0.15); color: #a29bfe; }
+  }
+  .user-panel-theme-item {
+    background: rgba(255, 255, 255, 0.04);
+    color: #9999a6;
+    &:hover { color: #a29bfe; }
+    &_active { background: rgba(108, 92, 231, 0.15); color: #a29bfe; }
+  }
+  .user-panel-account { border-top-color: rgba(255, 255, 255, 0.08); }
+  .user-panel-account-icon { color: #555562; }
+  .user-panel-account-title { color: #9999a6; }
+  .user-panel-account-item:hover {
+    .user-panel-account-icon { color: #a29bfe; }
+    .user-panel-account-title { color: #a29bfe; }
+  }
+}
+
+/* ================================================================
+   D. THIRD-PARTY LIBS: vxe-table / element-ui
+   ================================================================ */
+
+html[data-theme='liquid-glass'] {
+  /* vxe-table */
+  .vxe-table { color: #f0f0f3; }
+  .vxe-table--render-default { background: rgba(255, 255, 255, 0.04); }
+  .vxe-table--render-default .vxe-table--body-wrapper table {
+    background: transparent;
+  }
+  .vxe-table--render-default.border--default .vxe-table--header-wrapper,
+  .vxe-table--render-default.border--inner .vxe-table--header-wrapper {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+  .vxe-table--render-default .vxe-table--header-wrapper,
+  .vxe-table--render-default .vxe-table--footer-wrapper {
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+  .vxe-grid.is--maximize { background: rgba(30, 30, 40, 0.7); }
+  .vxe-table--render-default .vxe-body--row.row--stripe {
+    background-color: rgba(108, 92, 231, 0.06);
+  }
+  .vxe-table--render-default .vxe-body--row.row--hover {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+  .vxe-table--render-default .vxe-cell { color: #f0f0f3; }
+  .vxe-table--render-default .vxe-table--border-line { border-color: rgba(255, 255, 255, 0.06); }
+  .vxe-select-option:not(.is--disabled).is--hover {
+    background-color: rgba(108, 92, 231, 0.12);
+  }
+
+  /* All body/header cells: transparent to match liquid glass background */
+  .vxe-body--column,
+  .vxe-header--column,
+  .vxe-footer--column {
+    background-color: transparent !important;
+  }
+  .vxe-body--column .vxe-cell {
+    background: transparent;
+  }
+  /* Tooltip cells: keep background consistent with liquid glass */
+  .vxe-cell.c--tooltip,
+  .vxe-cell.c--tooltip:hover {
+    background: transparent !important;
+  }
+
+  /* vxe fixed columns — default transparent (same as regular columns) */
+  .vxe-table--fixed-wrapper,
+  .vxe-table--fixed-left-wrapper,
+  .vxe-table--fixed-right-wrapper {
+    background-color: transparent !important;
+  }
+  .vxe-body--column.col--fixed,
+  .vxe-header--column.col--fixed,
+  .vxe-footer--column.col--fixed {
+    background-color: transparent !important;
+  }
+
+  /* When scrolling causes overlap (scrolling--middle): frosted glass */
+  .vxe-table--fixed-left-wrapper.scrolling--middle,
+  .vxe-table--fixed-right-wrapper.scrolling--middle {
+    background-color: rgba(30, 30, 40, 0.9) !important;
+  }
+  .vxe-table--fixed-left-wrapper.scrolling--middle .vxe-body--column.col--fixed,
+  .vxe-table--fixed-left-wrapper.scrolling--middle .vxe-header--column.col--fixed,
+  .vxe-table--fixed-left-wrapper.scrolling--middle .vxe-footer--column.col--fixed,
+  .vxe-table--fixed-right-wrapper.scrolling--middle .vxe-body--column.col--fixed,
+  .vxe-table--fixed-right-wrapper.scrolling--middle .vxe-header--column.col--fixed,
+  .vxe-table--fixed-right-wrapper.scrolling--middle .vxe-footer--column.col--fixed {
+    background-color: rgba(30, 30, 40, 0.9) !important;
+  }
+
+  /* ===== Cool glass: checkbox-hover-table (shared CI tables) ===== */
+  .checkbox-hover-table.vxe-table--render-default {
+    border: none;
+    background: transparent !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  /* Frosted glass header */
+  .checkbox-hover-table .vxe-table--header-wrapper {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .checkbox-hover-table .vxe-header--column {
+    background: transparent !important;
+    color: #f0f0f3 !important;
+    font-weight: 600;
+    border-right: 1px solid rgba(255, 255, 255, 0.04) !important;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .checkbox-hover-table .vxe-header--row .vxe-header--column:hover {
+    background: rgba(108, 92, 231, 0.1) !important;
+    color: #a29bfe !important;
+  }
+  /* Glass body rows */
+  .checkbox-hover-table .vxe-body--row {
+    background: transparent;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  }
+  .checkbox-hover-table .vxe-body--row:hover {
+    background: rgba(108, 92, 231, 0.08) !important;
+    box-shadow: 0 2px 16px rgba(108, 92, 231, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+  .checkbox-hover-table .vxe-body--column {
+    color: #f0f0f3;
+    background: transparent;
+  }
+  /* Glass checkbox */
+  .checkbox-hover-table .vxe-cell--checkbox {
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .checkbox-hover-table .vxe-cell--checkbox:hover {
+    background: rgba(108, 92, 231, 0.1);
+    border-radius: 4px;
+  }
+  .checkbox-hover-table .vxe-checkbox--label {
+    color: #9999a6 !important;
+  }
+  .checkbox-hover-table .vxe-cell--checkbox:hover .vxe-checkbox--label {
+    color: #f0f0f3 !important;
+  }
+  /* Glass border lines */
+  .checkbox-hover-table .vxe-table--border-line {
+    border-color: rgba(255, 255, 255, 0.04);
+  }
+  /* Row stripe variants (for ops-stripe-table checkbox tables) */
+  .checkbox-hover-table.ops-stripe-table .vxe-body--row.row--stripe {
+    background: rgba(108, 92, 231, 0.04) !important;
+    border-top-color: rgba(255, 255, 255, 0.04) !important;
+  }
+  .checkbox-hover-table.ops-stripe-table .vxe-body--row.row--stripe:hover {
+    background: rgba(108, 92, 231, 0.1) !important;
+  }
+
+  /* element-ui */
+  .el-input__inner,
+  .el-textarea__inner {
+    background-color: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.14);
+    color: #f0f0f3;
+  }
+  .el-select-dropdown,
+  .el-dropdown-menu {
+    background-color: rgba(30, 30, 40, 0.85);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  .el-select-dropdown__item { color: #f0f0f3; }
+  .el-select-dropdown__item.hover,
+  .el-select-dropdown__item:hover { background-color: rgba(108, 92, 231, 0.12); }
+  .el-tabs__item { color: #9999a6; }
+  .el-tabs__item.is-active { color: #a29bfe; }
+  .el-tabs__nav-wrap::after { background-color: rgba(255, 255, 255, 0.06); }
+  .el-radio__inner {
+    background-color: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+  .el-radio__label { color: #f0f0f3; }
+  .el-button {
+    background-color: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.16);
+    color: #f0f0f3;
+  }
+  .el-button:hover,
+  .el-button:focus { border-color: #a29bfe; color: #a29bfe; }
+}
+
+/* ================================================================
+   E. DROPDOWN / MENU / SELECT / CASCADER OVERRIDES
+   ================================================================ */
+
+html[data-theme='liquid-glass'] {
+  .ant-dropdown,
+  .ant-dropdown-menu,
+  .ant-select-dropdown,
+  .ant-cascader-dropdown,
+  .ant-cascader-menu,
+  .ant-select-dropdown-menu {
+    background-color: rgba(30, 30, 40, 0.85);
+  }
+  .ant-dropdown-menu-item,
+  .ant-select-dropdown-menu-item,
+  .ant-cascader-menu-item {
+    background-color: transparent;
+    color: #f0f0f3;
+  }
+  .ant-dropdown-menu-item:hover,
+  .ant-select-dropdown-menu-item:hover,
+  .ant-cascader-menu-item:hover {
+    background-color: rgba(108, 92, 231, 0.12);
+  }
+}
+
+/* ================================================================
+   F. BIZ MODULE OVERRIDES (mirrors dark-business.less / dark-overrides C-E)
+   Key business module panels that need liquid-glass colors.
+   ================================================================ */
+
+html[data-theme='liquid-glass'] {
+  /* CI detail gradient cards */
+  .ci-detail-title-card,
+  .prom-stat-card,
+  .ci-history-stat-card {
+    background: linear-gradient(135deg, rgba(30, 30, 40, 0.5) 0%, rgba(255, 255, 255, 0.06) 100%);
+  }
+  .ci-history-stat-card {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.12) !important;
+  }
+  .ci-history-stat-card .stat-value {
+    color: #f0f0f3 !important;
+    font-weight: 700;
+  }
+  .ci-history-stat-card .stat-label {
+    color: #9999a6 !important;
+  }
+  .ci-detail-title-card { border-color: rgba(255, 255, 255, 0.1); }
+  .ci-detail-card-header {
+    background: linear-gradient(135deg, rgba(30, 30, 40, 0.5) 0%, rgba(255, 255, 255, 0.06) 100%);
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+  }
+  .prom-filter-bar {
+    background: linear-gradient(135deg, rgba(108, 92, 231, 0.12) 0%, rgba(108, 92, 231, 0.2) 100%);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  .prom-stat-card.prom-stat-total.prom-stat-active,
+  .prom-stat-card.prom-stat-info.prom-stat-active {
+    background: linear-gradient(135deg, rgba(108, 92, 231, 0.12) 0%, rgba(108, 92, 231, 0.2) 100%);
+  }
+  .prom-stat-card.prom-stat-disaster.prom-stat-active,
+  .prom-stat-card.prom-stat-emergency.prom-stat-active,
+  .prom-stat-card.prom-stat-critical.prom-stat-active {
+    background: linear-gradient(135deg, rgba(253, 76, 106, 0.1) 0%, rgba(253, 76, 106, 0.18) 100%);
+  }
+  .prom-stat-card.prom-stat-important.prom-stat-active {
+    background: linear-gradient(135deg, rgba(255, 125, 0, 0.1) 0%, rgba(255, 125, 0, 0.18) 100%);
+  }
+  .prom-stat-card.prom-stat-warning.prom-stat-active {
+    background: linear-gradient(135deg, rgba(255, 125, 0, 0.08) 0%, rgba(255, 125, 0, 0.15) 100%);
+  }
+
+  /* CI detail relation topology nodes */
+  .ci-detail-relation-topo .ci-detail-relation-topo-node {
+    background: rgba(30, 30, 40, 0.6);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  .ci-detail-relation-topo .ci-detail-relation-topo-node .title { color: #f0f0f3; }
+
+  /* Relation topo: layout switch + node labels */
+  .ci-detail-relation-topo .topo-layout-switch {
+    background: rgba(20, 20, 30, 0.85);
+  }
+  .ci-detail-relation-topo .butterflies-label {
+    background: rgba(20, 20, 30, 0.8);
+    color: #f0f0f3;
+  }
+
+  /* Resource search history */
+  .history-list .history-recent .recent-list-item,
+  .history-list .history-favor .favor-list-item,
+  .history-list .history-favor .favor-list-item-selected {
+    background-color: rgba(30, 30, 40, 0.7);
+  }
+
+  /* Search form border */
+  .ci-searchform-expression > input { border-bottom-color: rgba(255, 255, 255, 0.1); }
+  .ci-searchform-expression .ant-input-suffix { color: #9999a6; }
+
+  /* CSS Module components: CSS variables */
+  --ops-side-menu-search-bg: rgba(20, 20, 30, 0.55);
+  --ops-topo-canvas-bg: #080a10;
+  --ops-pane-trigger-bg: rgba(20, 20, 30, 0.55);
+
+  /* Split pane */
+  .split-pane { background-color: #080a10; }
+  .split-pane.row .pane-trigger,
+  .split-pane.column .pane-trigger {
+    background-color: rgba(20, 20, 30, 0.6) !important;
+  }
+  .split-pane .collapse-btn {
+    background-color: rgba(20, 20, 30, 0.6);
+    border-color: transparent;
+  }
+  .split-pane .spliter-wrap { background-color: #080a10; }
+  .split-pane .pane-one,
+  .split-pane .pane-two { background-color: rgba(30, 30, 40, 0.5); }
+  .two-column-layout { background-color: rgba(30, 30, 40, 0.5); }
+  .two-column-layout-main { background-color: rgba(30, 30, 40, 0.5) !important; }
+  .two-column-layout-sidebar {
+    background-color: rgba(20, 20, 30, 0.5);
+    border-right-color: rgba(255, 255, 255, 0.06);
+  }
+  .tree-views-left,
+  .tree-views-right { background-color: rgba(30, 30, 40, 0.5); }
+
+  /* Active/selected text readability */
+  .ci-left-item_active .ci-left-item-name { color: #a29bfe; }
+  .ci-types-left-detail.selected .ci-types-left-detail-title { color: #a29bfe; }
+  .ci-detail-tab .ci-detail-attr-item-active .ci-detail-attr-label,
+  .ci-detail-tab .ci-detail-attr-item-active .ci-detail-attr-content { color: #a29bfe; }
+
+  /* TopMenu */
+  .top-menu {
+    > span { color: #f0f0f3; }
+    > span:hover { background-color: rgba(255, 255, 255, 0.08); }
+    .top-menu-selected { color: #a29bfe; }
+  }
+  .top-menu-dropdown {
+    .more {
+      background: linear-gradient(0deg, rgba(40, 40, 50, 0.7) 55%, rgba(20, 20, 30, 0.5));
+      color: #f0f0f3;
+      &:hover {
+        background: linear-gradient(0deg, rgba(108, 92, 231, 0.2) 0%, rgba(108, 92, 231, 0.08) 86.76%);
+        color: #a29bfe;
+      }
+    }
+    .more-selected {
+      background-color: rgba(108, 92, 231, 0.2);
+      color: #f0f0f3;
+    }
+  }
+
+  /* Company structure: employee tabs */
+  .ops-setting-structure-sidebar-group-category-item {
+    color: #f0f0f3;
+    &:hover {
+      color: #a29bfe;
+      background-color: rgba(255, 255, 255, 0.06);
+      &::before { background-color: #a29bfe; }
+    }
+    &::before { background-color: #555562; }
+    &:not(:last-child)::after { background-color: rgba(255, 255, 255, 0.06); }
+  }
+  .item-selected {
+    color: #a29bfe;
+    background-color: rgba(108, 92, 231, 0.15);
+    &::before { background-color: #a29bfe; }
+  }
+  .item-count-before { color: #9999a6; }
+  .item-count-after { color: #9999a6; }
+
+  /* BatchUpload steps */
+  .setting-structure-upload .setting-structure-upload-steps {
+    .setting-structure-upload-step {
+      .setting-structure-upload-step-icon > i { color: #555562; }
+      > span { color: #9999a6; }
+      &:not(:first-child)::before { background-color: rgba(255, 255, 255, 0.1); }
+    }
+    .setting-structure-upload-step.selected {
+      .setting-structure-upload-step-icon > i { color: #a29bfe; }
+      > span { color: #f0f0f3; }
+      &:not(:first-child)::before { background-color: #a29bfe; }
+    }
+  }
+
+  /* UserMenu icons */
+  .user-wrapper {
+    .common-settings-btn-icon { color: #a29bfe; }
+    .common-settings-btn-text { color: #9999a6; }
+    .lang-menu-item {
+      color: #9999a6;
+      &:hover { color: #a29bfe; }
+      &_active { color: #a29bfe; }
+    }
+    .user-info-wrap:hover .avatar { border-color: #a29bfe; }
+  }
+  .ant-avatar.ant-avatar-icon { background-color: rgba(108, 92, 231, 0.2); color: #a29bfe; }
+  .ant-avatar .anticon-user { color: #a29bfe; }
+  .custom-user .ant-popover-inner-content { color: #f0f0f3; }
+
+  /* Ghost primary button */
+  .ant-btn-background-ghost.ant-btn-primary {
+    color: #a29bfe;
+    border-color: #a29bfe;
+    &:hover, &:focus { color: #b4a7ff; border-color: #b4a7ff; }
+    &:active, &.active { color: #6c5ce7; border-color: #6c5ce7; }
+  }
+
+  /* Search form bar filter */
+  .search-form-bar-filter {
+    color: #9999a6 !important;
+    &:hover { color: #a29bfe !important; }
+    .search-form-bar-filter-icon { color: #a29bfe !important; }
+    .search-form-bar-filter-icon_selected { color: #b4a7ff !important; }
+  }
+
+  /* CI detail tab extra */
+  .tab-bar-extra {
+    color: #9999a6;
+    a { color: #9999a6; &:hover { color: #a29bfe; } }
+  }
+
+  /* Preference / Subscription */
+  .cmdb-preference-content {
+    .cmdb-preference-header .cmdb-preference-title { color: #f0f0f3 !important; }
+    .cmdb-preference-colleague { color: #9999a6; }
+    .cmdb-preference-colleague-name > span:not(.cmdb-preference-colleague-ellipsis) { color: #9999a6; }
+    .cmdb-preference-progress {
+      color: #f0f0f3;
+      .cmdb-preference-progress-info { color: #f0f0f3; }
+    }
+    .cmdb-preference-footor-unsubscribed-item:hover { color: #a29bfe; }
+    .cmdb-preference-footor-subscribed {
+      > span:first-child { color: #9999a6; }
+      > span:nth-child(2) { color: #a29bfe; }
+    }
+  }
+
+  /* Inline-style text color overrides */
+  [style*='color: #333'],
+  [style*='color:#333'],
+  [style*='color: #222'],
+  [style*='color:#222'] { color: #f0f0f3 !important; }
+  [style*='color: #666'],
+  [style*='color:#666'],
+  [style*='color: #555'],
+  [style*='color:#555'] { color: #9999a6 !important; }
+  [style*='color: #999'],
+  [style*='color:#999'] { color: #9999a6 !important; }
+}
+
+/* ================================================================
+   G. BUSINESS MODULE SCOPED BACKGROUNDS (mirrors dark-business.less)
+   Key business panel backgrounds. Glass variants use semi-transparent
+   values while keeping text colors same as dark.
+   ================================================================ */
+
+html[data-theme='liquid-glass'] {
+  /* CI list page */
+  .ci-types-left-header-input input { background-color: rgba(255, 255, 255, 0.06) !important; }
+  .ci-left { background-color: rgba(30, 30, 40, 0.5); }
+  .ci-left-item .ci-icon { background-color: rgba(255, 255, 255, 0.06); }
+  .ci-left-item_active { background-color: rgba(108, 92, 231, 0.15); }
+  .ci-left-item:hover { background-color: rgba(255, 255, 255, 0.06); }
+  .ci-types-left-header-input .ant-input-prefix { color: #9999a6 !important; }
+  .ci-left-group-name { color: #9999a6; }
+  .ci-left-item-name { color: #f0f0f3; }
+  .ci-left-item_active .ci-left-item-name { color: #a29bfe; }
+
+  /* CI detail page / instance list */
+  .ci-detail-page { background-color: #080a10 !important; }
+  .cmdb-ci { background-color: #080a10 !important; }
+
+  /* CI left panel (index.vue) */
+  .ci-left { background-color: rgba(20, 20, 30, 0.55) !important; }
+  .ci-left-item .ci-icon { background-color: rgba(30, 30, 40, 0.5) !important; }
+
+  /* CI history table wrapper (change history in ciDetailTab) */
+  .ci-history-table {
+    background: rgba(30, 30, 40, 0.5) !important;
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+  }
+
+  /* CI history vxe-table: enhanced liquid glass */
+  .ci-history-table.vxe-table--render-default {
+    border: none;
+    background: transparent !important;
+  }
+  .ci-history-table .vxe-table--header-wrapper {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(14px) saturate(180%);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .ci-history-table .vxe-header--column {
+    background: transparent !important;
+    color: #f0f0f3 !important;
+    font-weight: 600;
+    border-right: 1px solid rgba(255, 255, 255, 0.04) !important;
+  }
+  .ci-history-table .vxe-body--row {
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  }
+  .ci-history-table .vxe-body--row:hover {
+    background: rgba(108, 92, 231, 0.1) !important;
+    transform: scale(1.002);
+  }
+  .ci-history-table .vxe-body--column {
+    color: #f0f0f3 !important;
+    background: transparent;
+  }
+  /* Unstripe variant: make row separators subtle but distinct */
+  .ci-history-table.ops-unstripe-table .vxe-body--row {
+    background: transparent;
+  }
+  .ci-history-table.ops-unstripe-table .vxe-body--row:hover {
+    background: rgba(108, 92, 231, 0.12) !important;
+    box-shadow: 0 2px 12px rgba(108, 92, 231, 0.15);
+  }
+  .ci-history-table .vxe-table--empty-block {
+    background: transparent;
+  }
+  .ci-history-table .vxe-table--border-line {
+    border-color: rgba(255, 255, 255, 0.04);
+  }
+
+  /* Old/New value columns: tinted glass backgrounds */
+  /* "旧" (old) — warm amber glass: data being replaced */
+  .ci-history-table .vxe-body--column:nth-last-child(2) .vxe-cell,
+  .ci-history-table .vxe-header--column:nth-last-child(2) {
+    background: rgba(255, 180, 100, 0.06);
+    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
+    border-left: 1px solid rgba(255, 180, 100, 0.12);
+  }
+  /* "新" (new) — cool mint glass: current/new data */
+  .ci-history-table .vxe-body--column:last-child .vxe-cell,
+  .ci-history-table .vxe-header--column:last-child {
+    background: rgba(100, 220, 180, 0.06);
+    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
+    border-left: 1px solid rgba(100, 220, 180, 0.12);
+  }
+  /* Hover: deepen the tint */
+  .ci-history-table .vxe-body--row:hover .vxe-body--column:nth-last-child(2) .vxe-cell {
+    background: rgba(255, 180, 100, 0.1);
+  }
+  .ci-history-table .vxe-body--row:hover .vxe-body--column:last-child .vxe-cell {
+    background: rgba(100, 220, 180, 0.1);
+  }
+
+  /* CI history container (change history page wrapper) */
+  .ci-history-container {
+    background: #080a10 !important;
+  }
+  .ci-history-stats {
+    background: transparent;
+  }
+
+  /* CI history value cells: old/new tinted glass */
+  .ci-history-value {
+    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
+    border-radius: 8px;
+  }
+  .ci-history-value.ci-history-value-old {
+    background-color: rgba(255, 180, 100, 0.06) !important;
+    color: #a8938a !important;
+    border: 1px solid rgba(255, 180, 100, 0.15) !important;
+    box-shadow: inset 0 1px 1px 0 rgba(255, 180, 100, 0.08);
+  }
+  .ci-history-value.ci-history-value-new {
+    background-color: rgba(100, 220, 180, 0.06) !important;
+    color: #8cd4b8 !important;
+    border: 1px solid rgba(100, 220, 180, 0.15) !important;
+    box-shadow: inset 0 1px 1px 0 rgba(100, 220, 180, 0.08);
+  }
+
+  /* CI detail table title */
+  .ci-detail-table-title {
+    background-color: rgba(30, 30, 40, 0.5);
+    color: #f0f0f3;
+    &::before, &::after { background-color: rgba(30, 30, 40, 0.5); }
+  }
+
+  /* CI detail title */
+  .ci-detail-title-meta-item .meta-value { background-color: rgba(255, 255, 255, 0.06); }
+  .ci-detail-title-text { color: #f0f0f3; }
+  .ci-detail-title-meta-item .meta-label { color: #9999a6; }
+  .ci-detail-title-meta-item .meta-value { color: #9999a6; }
+
+  /* CI relation table */
+  .ci-relation-table { background-color: rgba(30, 30, 40, 0.5); }
+  .ci-relation-table-tab { background-color: rgba(30, 30, 40, 0.5); }
+  .ci-relation-table-tab .tab-item-active { background-color: rgba(108, 92, 231, 0.15); }
+  .ci-relation-table-tab .tab-item:hover { background-color: rgba(255, 255, 255, 0.06); }
+  .ci-relation-table-container { background-color: rgba(30, 30, 40, 0.5); }
+  .ci-relation-table-tab .tab-group-name { color: #9999a6; }
+  .ci-relation-table-tab .tab-item-name { color: #f0f0f3; }
+  .ci-relation-table-tab .tab-item-name-text { color: #9999a6; }
+  .ci-relation-table-tab .tab-item-name-count { color: #9999a6; }
+  .ci-relation-table-tab .tab-item-active .tab-item-name-text { color: #f0f0f3; }
+  .ci-relation-table-tab .tab-item:hover .tab-item-name-text { color: #f0f0f3; }
+  .ci-relation-table-item-name { color: #f0f0f3; }
+  .ci-relation-table-item-name-count { color: #9999a6; }
+
+  /* CI detail Grafana */
+  .ci-detail-grafana .grafana-alert-error-detail { color: #9999a6; }
+
+  /* CI detail Prometheus */
+  .prom-alert-table { background-color: rgba(30, 30, 40, 0.5); }
+  .prom-stat-card.prom-stat-total.prom-stat-active { color: #9999a6; }
+  .prom-stat-card.prom-stat-disaster.prom-stat-active { color: #f0f0f3; }
+  .prom-stat-card.prom-stat-emergency.prom-stat-active,
+  .prom-stat-card.prom-stat-critical.prom-stat-active,
+  .prom-stat-card.prom-stat-important.prom-stat-active,
+  .prom-stat-card.prom-stat-warning.prom-stat-active,
+  .prom-stat-card.prom-stat-info.prom-stat-active { color: #9999a6; }
+  .prom-stat-card .stat-content .stat-label { color: #9999a6; }
+  .prom-stat-card .stat-content .stat-value { color: #f0f0f3; }
+  .prom-refresh-area { color: #9999a6; }
+  .prom-filter-bar { color: #9999a6; }
+  .prom-filter-bar .prom-filter-count { color: #9999a6; }
+
+  /* Batch upload */
+  .cmdb-batch-upload { background-color: rgba(30, 30, 40, 0.5); }
+  .cmdb-batch-upload-steps { background-color: rgba(30, 30, 40, 0.5); }
+  .cmdb-batch-upload-card .ant-card-head { background-color: rgba(30, 30, 40, 0.5) !important; }
+  .cmdb-batch-upload-action { background-color: rgba(30, 30, 40, 0.5); }
+  .cmdb-batch-upload-label { color: #f0f0f3; }
+  .cmdb-batch-upload-header-title { color: #f0f0f3; }
+  .cmdb-batch-upload-card .ant-card-head .ant-card-head-title { color: #f0f0f3 !important; }
+  .ci-type-choice-label { color: #f0f0f3; }
+  .ci-type-choice-label .required-mark { color: #9999a6; }
+  .cmdb-batch-upload-table .upload-placeholder { background-color: rgba(30, 30, 40, 0.5); }
+  .cmdb-batch-upload-table .upload-placeholder-title { color: #f0f0f3; }
+  .cmdb-batch-upload-table .upload-placeholder-hint { color: #9999a6; }
+  .cmdb-batch-upload-dragger .cmdb-batch-upload-dragger-file { background-color: rgba(255, 255, 255, 0.06); }
+  .cmdb-batch-upload-dragger .cmdb-batch-upload-tips { color: #9999a6; }
+  .cmdb-batch-upload-dragger .cmdb-batch-upload-tips p:first-child { color: #f0f0f3; }
+  .cmdb-batch-upload-result .error-details .error-list { background-color: rgba(253, 76, 106, 0.08); }
+  .cmdb-batch-upload-result .upload-result-summary .success-text,
+  .cmdb-batch-upload-result .upload-result-summary .success-text strong { color: #9999a6; }
+  .cmdb-batch-upload-result .upload-result-summary .error-text,
+  .cmdb-batch-upload-result .upload-result-summary .error-text strong { color: #9999a6; }
+  .cmdb-batch-upload-result .error-details .error-list .error-item,
+  .cmdb-batch-upload-result .error-details .error-list .error-item .error-icon { color: #9999a6; }
+}
+
+/* ================================================================
+   H. TOPOLOGY VIEW OVERRIDES
+   Scoped styles with hardcoded white/light values in
+   modules/cmdb/views/topology_view/index.vue
+   ================================================================ */
+
+html[data-theme='liquid-glass'] {
+  /* Topology left sidebar */
+  .topo-left {
+    background-color: rgba(20, 20, 30, 0.5) !important;
+    border-right-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  .topo-left .topo-left-group {
+    color: #f0f0f3;
+  }
+  .topo-left .topo-left-group > div:first-child > span:last-child {
+    background: rgba(255, 255, 255, 0.08);
+    color: #9999a6;
+  }
+  .topo-left .topo-left-group:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+  .topo-left .topo-left-detail-icon {
+    background: rgba(30, 30, 40, 0.5);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+  .topo-left .topo-left-detail:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+  .topo-left .selected {
+    background-color: rgba(108, 92, 231, 0.12);
+  }
+
+  /* Topology right main area */
+  .topo-right {
+    background-color: #080a10 !important;
+  }
+
+  /* relation-graph canvas (the white box in the screenshot) */
+  .relation-graph {
+    background-color: #080a10 !important;
+  }
+
+  /* Node text */
+  .relation-graph-node-text {
+    color: #f0f0f3 !important;
+  }
+  .relation-graph-node-icon {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+
+  /* Node tips popover */
+  .node-tips {
+    background-color: rgba(30, 30, 40, 0.88) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+  }
+  .node-tips .ant-descriptions-bordered .ant-descriptions-item-label {
+    background-color: rgba(255, 255, 255, 0.04);
+    color: #9999a6;
+  }
+  .node-tips .ant-descriptions-bordered .ant-descriptions-item-content {
+    color: #f0f0f3;
+  }
+  .node-tips .ant-descriptions-bordered .ant-descriptions-row {
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+  }
+  .node-tips .ant-descriptions-title {
+    color: #f0f0f3;
+  }
+
+  /* Topology search input */
+  .cmdb-topo-left-input input {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: #f0f0f3 !important;
+  }
+  .cmdb-topo-left-input input:hover {
+    border-color: rgba(255, 255, 255, 0.2) !important;
+  }
+  .cmdb-topo-left-input .ant-input-prefix {
+    color: #9999a6 !important;
+  }
+
+  /* Preview area in drawer */
+  .chart-left-preview {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  .chart-left-preview .chart-left-preview-operation {
+    color: #9999a6;
+  }
+
+  /* SeeksRelationGraph in form */
+  .seeks-layout-center {
+    background-color: rgba(30, 30, 40, 0.3) !important;
+  }
+}
+
+/* ================================================================
+   I. ANT TABS — COMPREHENSIVE LIQUID GLASS
+   Every .ant-tabs-content and all nested content gets full glass
+   treatment. Covers CI detail tabs, ACL tabs, settings tabs, etc.
+   ================================================================ */
+
+html[data-theme='liquid-glass'] {
+
+  /* ---- I1. Tab content body: frosted glass panel ---- */
+  .ant-tabs-content {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: none;
+    border-radius: 0 0 16px 16px;
+    box-shadow:
+      0 16px 48px rgba(0, 0, 0, 0.35),
+      inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
+  }
+
+  /* ---- I2. Tab nav bar: frosted glass bar ---- */
+  .ant-tabs-nav {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: none;
+    border-radius: 16px 16px 0 0;
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.18);
+    margin-bottom: 0;
+  }
+  .ant-tabs-nav .ant-tabs-tab {
+    color: #9999a6;
+    transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    padding: 10px 18px;
+  }
+  .ant-tabs-nav .ant-tabs-tab:hover {
+    color: #f0f0f3;
+    background: rgba(255, 255, 255, 0.04);
+  }
+  .ant-tabs-nav .ant-tabs-tab-active {
+    color: #a29bfe;
+    font-weight: 600;
+  }
+  .ant-tabs-ink-bar {
+    background: linear-gradient(90deg, #6c5ce7, #a29bfe);
+    height: 3px;
+    border-radius: 2px;
+  }
+
+  /* ---- I3. Tab pane: glass inner surface ---- */
+  .ant-tabs-tabpane {
+    background: transparent;
+  }
+
+  /* ---- I4. Card-style tabs: stronger glass ---- */
+  .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+    border-radius: 14px 14px 0 0;
+    margin-right: 4px;
+  }
+  .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab-active {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.14);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
+  }
+  .ant-tabs-card > .ant-tabs-content {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* ---- I5. NESTED COMPONENTS inside tabs — all glass/transparent ---- */
+
+  /* Cards inside tabs */
+  .ant-tabs-content .ant-card,
+  .ant-tabs-tabpane .ant-card {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.2),
+      inset 0 1px 1px 0 rgba(255, 255, 255, 0.15);
+  }
+  .ant-tabs-content .ant-card-head,
+  .ant-tabs-tabpane .ant-card-head {
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+  }
+
+  /* Tables inside tabs */
+  .ant-tabs-content .ant-table,
+  .ant-tabs-tabpane .ant-table {
+    background: rgba(255, 255, 255, 0.03);
+  }
+  .ant-tabs-content .ant-table-thead > tr > th,
+  .ant-tabs-tabpane .ant-table-thead > tr > th {
+    background: rgba(255, 255, 255, 0.05);
+    color: #f0f0f3;
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+  }
+  .ant-tabs-content .ant-table-tbody > tr > td,
+  .ant-tabs-tabpane .ant-table-tbody > tr > td {
+    border-bottom-color: rgba(255, 255, 255, 0.04);
+    color: #f0f0f3;
+  }
+  .ant-tabs-content .ant-table-tbody > tr:hover > td,
+  .ant-tabs-tabpane .ant-table-tbody > tr:hover > td {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  /* Descriptions inside tabs */
+  .ant-tabs-content .ant-descriptions,
+  .ant-tabs-tabpane .ant-descriptions {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+  }
+  .ant-tabs-content .ant-descriptions-item-label,
+  .ant-tabs-tabpane .ant-descriptions-item-label {
+    background: rgba(255, 255, 255, 0.03);
+    color: #9999a6;
+  }
+  .ant-tabs-content .ant-descriptions-item-content,
+  .ant-tabs-tabpane .ant-descriptions-item-content {
+    color: #f0f0f3;
+  }
+
+  /* Collapse inside tabs */
+  .ant-tabs-content .ant-collapse,
+  .ant-tabs-tabpane .ant-collapse {
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+  .ant-tabs-content .ant-collapse > .ant-collapse-item > .ant-collapse-header,
+  .ant-tabs-tabpane .ant-collapse > .ant-collapse-item > .ant-collapse-header {
+    background: rgba(255, 255, 255, 0.03);
+    color: #f0f0f3;
+    border-bottom-color: rgba(255, 255, 255, 0.04);
+  }
+  .ant-tabs-content .ant-collapse-content,
+  .ant-tabs-tabpane .ant-collapse-content {
+    background: transparent;
+    border-top-color: rgba(255, 255, 255, 0.06);
+  }
+
+  /* Lists / Tree inside tabs */
+  .ant-tabs-content .ant-list,
+  .ant-tabs-tabpane .ant-list,
+  .ant-tabs-content .ant-tree,
+  .ant-tabs-tabpane .ant-tree {
+    background: transparent;
+  }
+
+  /* Forms inside tabs */
+  .ant-tabs-content .ant-form,
+  .ant-tabs-tabpane .ant-form {
+    background: transparent;
+  }
+
+  /* Alert / Result inside tabs */
+  .ant-tabs-content .ant-alert,
+  .ant-tabs-tabpane .ant-alert {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  /* Empty inside tabs */
+  .ant-tabs-content .ant-empty,
+  .ant-tabs-tabpane .ant-empty {
+    background: transparent;
+  }
+  .ant-tabs-content .ant-empty-description,
+  .ant-tabs-tabpane .ant-empty-description {
+    color: #9999a6;
+  }
+
+  /* Tabs inside tabs (nested tabs) */
+  .ant-tabs-content .ant-tabs,
+  .ant-tabs-tabpane .ant-tabs {
+    background: transparent;
+  }
+  .ant-tabs-content .ant-tabs-nav,
+  .ant-tabs-tabpane .ant-tabs-nav {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px 12px 0 0;
+  }
+  .ant-tabs-content .ant-tabs-content,
+  .ant-tabs-tabpane .ant-tabs-content {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 0 0 12px 12px;
+  }
+
+  /* ---- I6. CI detail tab specific glass ---- */
+  .ci-detail-tab .ci-detail-table-attr-wrap {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
+  }
+  .ci-detail-tab .ci-detail-table {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(14px) saturate(180%);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+  }
+  .ci-detail-tab .ci-detail-attr-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateX(2px);
+    transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .ci-detail-table-title {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px 12px 0 0;
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.15);
+    &::before, &::after { background: transparent !important; }
+  }
+
+  /* ---- I8. Operation history (变更历史) nested inside CI detail tabs ---- */
+  .operation-history {
+    background: transparent;
+  }
+
+  /* Search form wrapper: glass panel */
+  .operation-history .search-form-wrapper,
+  .search-form-wrapper {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 14px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.15);
+  }
+
+  /* Search form labels: light text on glass */
+  .search-form-wrapper .ant-form-item-label > label {
+    color: #f0f0f3 !important;
+  }
+
+  /* Search form action bar divider */
+  .operation-history .search-form-actions,
+  .search-form-actions {
+    border-top-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  /* Operation history card (the outer card wrapping the tabs) */
+  .operation-history .ant-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  /* Operation history inner tabs: glass nav */
+  .operation-history .ant-tabs-nav {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px 12px 0 0;
+  }
+  .operation-history .ant-tabs-content {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  /* ---- I9. Operation history vxe-table glass (scoped table.less overrides) ---- */
+
+  /* Table wrapper: glass panel */
+  .operation-history-table {
+    background: rgba(255, 255, 255, 0.03) !important;
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+  }
+
+  /* vxe header: glass + light text */
+  .operation-history-table .vxe-header--row,
+  .operation-history-table .vxe-header--column {
+    background: rgba(255, 255, 255, 0.04) !important;
+    color: #f0f0f3 !important;
+    border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  /* vxe body: transparent rows with light text */
+  .operation-history-table .vxe-body--column {
+    color: #f0f0f3 !important;
+  }
+  .operation-history-table .vxe-body--row:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  /* Stripe / unstripe table variants */
+  .operation-history-table .ops-stripe-table .vxe-body--row:nth-child(even) {
+    background: rgba(255, 255, 255, 0.03) !important;
+  }
+  .operation-history-table .ops-stripe-table .vxe-body--row:hover,
+  .operation-history-table .ops-unstripe-table .vxe-body--row:hover {
+    background: rgba(108, 92, 231, 0.1) !important;
+  }
+
+  /* Filter icons */
+  .operation-history-table .filter {
+    color: #555562 !important;
+    &:hover { color: #9999a6 !important; }
+    &.active { color: #a29bfe !important; }
+  }
+  .operation-history-table .filterResetButton {
+    color: #9999a6 !important;
+    &:hover { color: #f0f0f3 !important; }
+  }
+
+  /* Change text badges: glass colored backgrounds */
+  .change-text.update-text {
+    color: #ffa940;
+    background: rgba(250, 140, 22, 0.12);
+    border-left-color: #ffa940;
+  }
+  .change-text.new-text {
+    color: #73d13d;
+    background: rgba(82, 196, 26, 0.1);
+    border-left-color: #73d13d;
+  }
+  .change-text.delete-text {
+    color: #ff4d4f;
+    background: rgba(245, 34, 45, 0.1);
+    border-left-color: #ff4d4f;
+  }
+
+  /* ---- I10. Relation change description glass (relation.vue scoped styles) ---- */
+
+  /* CI info pills: glass instead of #f5f5f5 */
+  .relation-description .ci-info {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    .ci-type { color: #f0f0f3; }
+    .ci-detail { color: #9999a6; }
+  }
+
+  /* Relation arrow */
+  .relation-description .relation-arrow {
+    color: #555562;
+  }
+}
+
+/* ================================================================
+   J. JSON EDITOR (原始数据 / Raw data modal) — LIQUID GLASS
+   vue-json-editor / jsoneditor library inside ci-json-editor modal.
+   ================================================================ */
+
+html[data-theme='liquid-glass'] {
+
+  /* Modal body: transparent so jsoneditor glass shows through */
+  .ci-json-editor .ant-modal-body {
+    background: transparent;
+    padding: 16px;
+  }
+
+  /* Outer container: frosted glass panel (solid bg, no backdrop-filter) */
+  .ci-json-editor .jsoneditor-outer {
+    background: rgba(20, 20, 28, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 14px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.15);
+  }
+
+  /* Menu bar: solid semi-transparent (no backdrop-filter to avoid hit-test issues) */
+  .ci-json-editor .jsoneditor-menu {
+    background: rgba(40, 35, 70, 0.9) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    color: #f0f0f3;
+  }
+
+  /* Modes dropdown (ul.jsoneditor-menu): solid dropdown list */
+  .ci-json-editor ul.jsoneditor-menu {
+    background: rgba(30, 30, 40, 0.98) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    padding: 4px;
+  }
+  .ci-json-editor ul.jsoneditor-menu li {
+    color: #f0f0f3;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .ci-json-editor ul.jsoneditor-menu li:hover {
+    background: rgba(108, 92, 231, 0.15);
+    color: #a29bfe;
+  }
+  .ci-json-editor .jsoneditor-menu button,
+  .ci-json-editor .jsoneditor-menu a {
+    color: #9999a6;
+  }
+  .ci-json-editor .jsoneditor-menu button:hover,
+  .ci-json-editor .jsoneditor-menu a:hover {
+    color: #a29bfe;
+    background: rgba(108, 92, 231, 0.1);
+  }
+
+  /* Editor body: dark glass surface */
+  .ci-json-editor .jsoneditor {
+    background: rgba(10, 10, 16, 0.5) !important;
+    color: #f0f0f3;
+  }
+
+  /* Ace editor (code mode): dark glass */
+  .ci-json-editor .ace-jsoneditor.ace_editor,
+  .ci-json-editor .jsoneditor-code {
+    background: rgba(10, 10, 16, 0.55) !important;
+    color: #f0f0f3 !important;
+    border-radius: 0 0 12px 12px;
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.04);
+  }
+  .ci-json-editor .ace_content,
+  .ci-json-editor .ace_scroller {
+    background: transparent !important;
+    color: #f0f0f3 !important;
+  }
+  /* Force all ace text light by default (overrides dark theme tokens) */
+  .ci-json-editor .ace_content .ace_line,
+  .ci-json-editor .ace_content .ace_line * {
+    color: #f0f0f3 !important;
+  }
+  .ci-json-editor .ace_scrollbar {
+    background: rgba(255, 255, 255, 0.03) !important;
+  }
+  /* Ace internal layers: transparent to show glass background */
+  .ci-json-editor .ace_text-layer,
+  .ci-json-editor .ace_marker-layer,
+  .ci-json-editor .ace_cursor-layer.ace_hidden-cursors,
+  .ci-json-editor .ace_cursor-layer {
+    background: transparent !important;
+  }
+  /* Print margin: subtle glass line instead of white */
+  .ci-json-editor .ace_print-margin-layer {
+    background: transparent !important;
+  }
+  .ci-json-editor .ace_print-margin {
+    background: transparent !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.06) !important;
+  }
+  .ci-json-editor .ace-jsoneditor .ace_gutter {
+    background: rgba(255, 255, 255, 0.03) !important;
+    color: #555562 !important;
+  }
+  .ci-json-editor .ace-jsoneditor .ace_gutter-active-line {
+    background: rgba(108, 92, 231, 0.08) !important;
+  }
+  .ci-json-editor .ace-jsoneditor .ace_cursor {
+    color: #a29bfe !important;
+  }
+  .ci-json-editor .ace-jsoneditor .ace_selection {
+    background: rgba(108, 92, 231, 0.25) !important;
+  }
+
+  /* JSON syntax colors (code mode) */
+  .ci-json-editor .ace-jsoneditor .ace_key,
+  .ci-json-editor .ace-jsoneditor .ace_string {
+    color: #7dd8a9 !important;
+  }
+  .ci-json-editor .ace-jsoneditor .ace_constant,
+  .ci-json-editor .ace-jsoneditor .ace_numeric {
+    color: #f0b47f !important;
+  }
+  .ci-json-editor .ace-jsoneditor .ace_boolean,
+  .ci-json-editor .ace-jsoneditor .ace_null {
+    color: #b4a7ff !important;
+  }
+  .ci-json-editor .ace-jsoneditor .ace_punctuation {
+    color: #9999a6 !important;
+  }
+
+  /* Text mode: dark glass textarea */
+  .ci-json-editor .jsoneditor-text {
+    background: rgba(10, 10, 16, 0.55) !important;
+    color: #f0f0f3 !important;
+    border-radius: 0 0 12px 12px;
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.04);
+    caret-color: #a29bfe;
+  }
+  .ci-json-editor .jsoneditor-text::placeholder {
+    color: #555562;
+  }
+
+  /* Status bar: glass */
+  .ci-json-editor .jsoneditor-statusbar {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    color: #9999a6;
+  }
+
+  /* Tree mode (fallback if mode switches) */
+  .ci-json-editor .jsoneditor-tree {
+    background: rgba(10, 10, 16, 0.55) !important;
+    color: #f0f0f3;
+    border-radius: 0 0 12px 12px;
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.04);
+    padding: 8px;
+  }
+  .ci-json-editor .jsoneditor-tree .jsoneditor-field {
+    color: #b4a7ff;
+  }
+  .ci-json-editor .jsoneditor-tree .jsoneditor-value {
+    color: #7dd8a9;
+  }
+  .ci-json-editor .jsoneditor-tree .jsoneditor-value.jsoneditor-string {
+    color: #7dd8a9;
+  }
+  .ci-json-editor .jsoneditor-tree .jsoneditor-value.jsoneditor-number {
+    color: #f0b47f;
+  }
+  .ci-json-editor .jsoneditor-tree .jsoneditor-value.jsoneditor-boolean {
+    color: #b4a7ff;
+  }
+  .ci-json-editor .jsoneditor-tree .jsoneditor-value.jsoneditor-null {
+    color: #555562;
+  }
+  /* Tree rows: glass hover */
+  .ci-json-editor .jsoneditor-tree .jsoneditor-treepath,
+  .ci-json-editor .jsoneditor-tree .jsoneditor-field,
+  .ci-json-editor .jsoneditor-tree .jsoneditor-value {
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .ci-json-editor .jsoneditor-tree .jsoneditor-object:hover,
+  .ci-json-editor .jsoneditor-tree .jsoneditor-array:hover {
+    background: rgba(108, 92, 231, 0.08);
+    border-radius: 4px;
+  }
+  /* Expand/collapse icons */
+  .ci-json-editor .jsoneditor-tree .jsoneditor-expandable {
+    color: #9999a6;
+  }
+  .ci-json-editor .jsoneditor-tree .jsoneditor-expandable:hover {
+    color: #a29bfe;
+  }
+
+  /* Context menu (right-click): frosted glass dropdown */
+  .ci-json-editor .jsoneditor-contextmenu {
+    background: rgba(30, 30, 40, 0.92) !important;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.15);
+    padding: 4px;
+  }
+  .ci-json-editor .jsoneditor-contextmenu .jsoneditor-menu {
+    background: transparent !important;
+    border: none;
+  }
+  .ci-json-editor .jsoneditor-contextmenu button,
+  .ci-json-editor .jsoneditor-contextmenu .jsoneditor-menu-item {
+    color: #f0f0f3;
+    background: transparent;
+    border-radius: 6px;
+    padding: 6px 12px;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .ci-json-editor .jsoneditor-contextmenu button:hover,
+  .ci-json-editor .jsoneditor-contextmenu .jsoneditor-menu-item:hover {
+    background: rgba(108, 92, 231, 0.15);
+    color: #a29bfe;
+  }
+  .ci-json-editor .jsoneditor-contextmenu .jsoneditor-separator {
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+}

@@ -1,0 +1,159 @@
+/**
+ * Liquid Glass theme variables.
+ * Inherits all dark theme variables, overrides only glass-specific ones
+ * (panel backgrounds → semi-transparent, borders → brighter, shadows → deeper).
+ *
+ * Strategy: @import dark-vars.less first (get all 140 dark variables),
+ * then override ~25 variables with liquid-glass semi-transparent values.
+ *
+ * Color spec: dark base #080a10 with radial-gradient orbs visible through
+ * semi-transparent glass panels + backdrop-filter blur + saturation boost.
+ */
+
+/* ==================== Inherit dark variables ==================== */
+@import "./dark-vars.less";
+
+/* ==================== Override: glass-specific variables ==================== */
+
+/* body — deeper base for liquid glass background */
+@body-background: #080a10;
+
+/* panels & cards — semi-transparent for glass effect */
+@component-background: rgba(255, 255, 255, 0.06);
+@background-color-light: rgba(255, 255, 255, 0.12);
+@background-color-base: rgba(255, 255, 255, 0.08);
+
+/* borders — brighter for glass edge definition */
+@border-color-base: rgba(255, 255, 255, 0.14);
+@border-color-split: rgba(255, 255, 255, 0.08);
+@border-color-inverse: rgba(30, 30, 40, 0.8);
+
+/* disabled states */
+@disabled-color: #555562;
+@disabled-bg: rgba(255, 255, 255, 0.04);
+
+/* shadow */
+@shadow-color: rgba(0, 0, 0, 0.5);
+@outline-color: rgba(108, 92, 231, 0.5);
+
+/* layout — semi-transparent surfaces */
+@layout-body-background: #080a10;
+@layout-header-background: rgba(20, 20, 30, 0.55);
+@layout-sider-background: rgba(20, 20, 30, 0.55);
+@layout-trigger-background: rgba(20, 20, 30, 0.55);
+@layout-trigger-color: #f0f0f3;
+
+/* form / input */
+@input-bg: rgba(255, 255, 255, 0.07);
+@input-placeholder-color: #555562;
+@input-border-color: rgba(255, 255, 255, 0.14);
+@input-addon-bg: rgba(255, 255, 255, 0.06);
+@input-number-handler-bg: rgba(255, 255, 255, 0.06);
+@select-background: rgba(30, 30, 40, 0.65);
+@select-dropdown-bg: rgba(30, 30, 40, 0.88);
+@select-item-selected-bg: rgba(108, 92, 231, 0.25);
+@select-item-active-bg: rgba(108, 92, 231, 0.15);
+
+/* button / tag */
+@btn-default-color: #f0f0f3;
+@btn-default-bg: rgba(255, 255, 255, 0.06);
+@btn-default-border: rgba(255, 255, 255, 0.16);
+@btn-disable-color: #555562;
+@btn-disable-bg: rgba(255, 255, 255, 0.04);
+@btn-disable-border: rgba(255, 255, 255, 0.06);
+@tag-default-bg: rgba(255, 255, 255, 0.08);
+@tag-default-color: #f0f0f3;
+
+/* table */
+@table-header-bg: rgba(255, 255, 255, 0.05);
+@table-header-color: #f0f0f3;
+@table-header-sort-bg: rgba(255, 255, 255, 0.06);
+@table-body-sort-bg: rgba(255, 255, 255, 0.02);
+@table-row-hover-bg: rgba(255, 255, 255, 0.08);
+@table-selected-row-bg: rgba(108, 92, 231, 0.15);
+@table-expanded-row-bg: rgba(30, 30, 40, 0.5);
+@table-footer-bg: rgba(255, 255, 255, 0.05);
+
+/* menu */
+@menu-bg: rgba(20, 20, 30, 0.55);
+@menu-popup-bg: rgba(30, 30, 40, 0.88);
+@menu-item-color: #f0f0f3;
+@menu-highlight-color: @primary-color;
+@menu-dark-bg: rgba(20, 20, 30, 0.55);
+@menu-dark-submenu-bg: rgba(10, 10, 16, 0.75);
+@menu-dark-highlight-color: #a29bfe;
+
+/* popup / overlay — higher opacity for readability */
+@popover-bg: rgba(30, 30, 40, 0.85);
+@popover-arrow-color: rgba(30, 30, 40, 0.85);
+@modal-header-bg: rgba(30, 30, 40, 0.85);
+@modal-mask-bg: rgba(0, 0, 0, 0.7);
+@tooltip-bg: rgba(40, 40, 50, 0.92);
+@tooltip-arrow-color: rgba(40, 40, 50, 0.92);
+
+/* misc components */
+@card-background: rgba(255, 255, 255, 0.06);
+@card-actions-background: rgba(10, 10, 16, 0.7);
+@card-skeleton-bg: rgba(255, 255, 255, 0.06);
+@collapse-header-bg: rgba(255, 255, 255, 0.06);
+@collapse-content-bg: rgba(255, 255, 255, 0.04);
+@tabs-card-head-background: rgba(255, 255, 255, 0.05);
+@tabs-card-active-color: @primary-color;
+@tree-node-hover-bg: rgba(255, 255, 255, 0.1);
+@tree-node-selected-bg: rgba(108, 92, 231, 0.2);
+@descriptions-bg: rgba(10, 10, 16, 0.7);
+@breadcrumb-base-color: #9999a6;
+@breadcrumb-last-item-color: #f0f0f3;
+@progress-remaining-color: rgba(255, 255, 255, 0.1);
+@slider-rail-background-color: rgba(255, 255, 255, 0.08);
+@slider-handle-background-color: rgba(30, 30, 40, 0.7);
+@skeleton-color: rgba(255, 255, 255, 0.1);
+@time-picker-selected-bg: rgba(255, 255, 255, 0.06);
+@page-header-back-color: #f0f0f3;
+
+/* alert function-color backgrounds (semi-transparent for glass) */
+@alert-success-bg-color: rgba(0, 180, 42, 0.12);
+@alert-success-border-color: rgba(0, 180, 42, 0.3);
+@alert-info-bg-color: rgba(108, 92, 231, 0.12);
+@alert-info-border-color: rgba(108, 92, 231, 0.3);
+@alert-warning-bg-color: rgba(255, 125, 0, 0.12);
+@alert-warning-border-color: rgba(255, 125, 0, 0.3);
+@alert-error-bg-color: rgba(253, 76, 106, 0.12);
+@alert-error-border-color: rgba(253, 76, 106, 0.3);
+
+/* input-number / slider extras */
+@input-number-handler-active-bg: rgba(255, 255, 255, 0.08);
+@slider-rail-background-color-hover: rgba(255, 255, 255, 0.1);
+
+/* item active/hover */
+@item-active-bg: rgba(108, 92, 231, 0.15);
+@item-hover-bg: rgba(255, 255, 255, 0.06);
+@link-hover-color: #a29bfe;
+
+/* ==================== Project dark variables (override for glass) ==================== */
+/* Only override the "surface" colors; text/link/accent colors stay same as dark */
+
+@text-color_5: rgba(255, 255, 255, 0.06);
+@text-color_6: rgba(255, 255, 255, 0.08);
+@text-color_7: rgba(255, 255, 255, 0.04);
+
+@primary-color_3: rgba(108, 92, 231, 0.15);
+@primary-color_4: rgba(108, 92, 231, 0.22);
+@primary-color_5: rgba(108, 92, 231, 0.18);
+@primary-color_6: rgba(108, 92, 231, 0.25);
+@primary-color_7: rgba(255, 255, 255, 0.08);
+
+@scrollbar-color: rgba(108, 92, 231, 0.4);
+
+@layout-content-background: rgba(255, 255, 255, 0.03);
+@layout-header-height: 40px;
+@layout-header-font-color: #f0f0f3;
+
+@layout-sidebar-color: rgba(20, 20, 30, 0.55);
+@layout-sidebar-sub-color: rgba(10, 10, 16, 0.75);
+@layout-sidebar-selected-color: rgba(108, 92, 231, 0.2);
+@layout-sidebar-arrow-color: #555562;
+@layout-sidebar-font-color: #9999a6;
+@layout-sidebar-icon-color: #555562;
+@layout-sidebar-selected-font-color: #a29bfe;
+@layout-sidebar-disabled-font-color: #555562;

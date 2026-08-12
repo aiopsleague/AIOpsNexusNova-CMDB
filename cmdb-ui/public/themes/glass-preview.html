@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CMDB 毛玻璃主题预览 — Frosted Glass Theme</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      min-height: 100vh;
+      background-color: #0d0f17;
+      overflow-x: hidden;
+      position: relative;
+      transition: background-color 0.6s;
+    }
+
+    /* ===== Animated background orbs (霓虹光斑) ===== */
+    .bg-orbs { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.55;
+      animation: float 10s ease-in-out infinite alternate;
+    }
+    .orb-1 {
+      width: 380px; height: 380px;
+      background: #7928ca;
+      top: 8%; left: 10%;
+    }
+    .orb-2 {
+      width: 420px; height: 420px;
+      background: #00dfd8;
+      bottom: 5%; right: 8%;
+      animation-delay: -5s;
+    }
+    .orb-3 {
+      width: 260px; height: 260px;
+      background: #ff6bcb;
+      top: 55%; left: 55%;
+      animation-delay: -3s;
+      opacity: 0.35;
+    }
+    @keyframes float {
+      0%   { transform: translate(0, 0) scale(1); }
+      33%  { transform: translate(40px, -30px) scale(1.08); }
+      66%  { transform: translate(-20px, 20px) scale(0.95); }
+      100% { transform: translate(30px, 40px) scale(1.1); }
+    }
+
+    /* ===== Liquid Glass: stronger float rotation animation ===== */
+    @keyframes floatLiquid {
+      0%   { transform: translate(0, 0) scale(1) rotate(0deg); }
+      50%  { transform: translate(60px, 40px) scale(1.1) rotate(180deg); }
+      100% { transform: translate(-40px, 80px) scale(0.95) rotate(360deg); }
+    }
+
+    /* ===== Light theme orb overrides ===== */
+    body.light-bg .orb-1 { background: #a78bfa; opacity: 0.3; }
+    body.light-bg .orb-2 { background: #67e8f9; opacity: 0.3; }
+    body.light-bg .orb-3 { background: #f9a8d4; opacity: 0.2; }
+    body.light-bg { background-color: #f0f2f5; }
+
+    /* ===== Top theme switcher bar ===== */
+    .demo-toolbar {
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+      z-index: 100;
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 40px;
+      padding: 5px;
+      display: flex;
+      gap: 2px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    .demo-toolbar button {
+      padding: 10px 22px;
+      border: none;
+      border-radius: 36px;
+      background: transparent;
+      color: rgba(255,255,255,0.7);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.35s ease;
+      white-space: nowrap;
+      letter-spacing: 0.3px;
+    }
+    .demo-toolbar button:hover { color: #fff; }
+    .demo-toolbar button.active {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    /* ===== Main layout ===== */
+    .app-shell {
+      position: relative; z-index: 10;
+      display: flex;
+      min-height: 100vh;
+      padding: 100px 32px 40px 32px;
+      gap: 24px;
+    }
+
+    /* ===== Sidebar ===== */
+    .sidebar {
+      width: 220px; flex-shrink: 0;
+      border-radius: 18px;
+      padding: 24px 0;
+      display: flex; flex-direction: column;
+      transition: all 0.5s ease;
+      /* glass */
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+    .sidebar-logo {
+      padding: 0 20px 20px;
+      font-size: 17px; font-weight: 700;
+      color: #fff;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .sidebar-logo .icon { font-size: 22px; }
+    .sidebar-logo .ver { font-size: 10px; opacity: 0.4; font-weight: 400; margin-left: 4px; }
+    .nav-item {
+      padding: 10px 20px;
+      font-size: 13px; color: rgba(255,255,255,0.55);
+      cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; gap: 10px;
+      border-left: 3px solid transparent;
+    }
+    .nav-item:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.03); }
+    .nav-item.active {
+      color: #a78bfa;
+      background: rgba(121,40,202,0.12);
+      border-left-color: #a78bfa;
+    }
+    .nav-item .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0.5; flex-shrink: 0; }
+    .nav-item .badge {
+      margin-left: auto; font-size: 10px;
+      background: rgba(255,255,255,0.08); padding: 2px 7px; border-radius: 10px;
+    }
+    .nav-section {
+      padding: 16px 20px 6px;
+      font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+      color: rgba(255,255,255,0.25); font-weight: 600;
+    }
+
+    /* ===== Main content ===== */
+    .main-area { flex: 1; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+
+    /* Header bar */
+    .topbar {
+      height: 48px;
+      border-radius: 14px;
+      display: flex; align-items: center; padding: 0 20px; gap: 14px;
+      transition: all 0.5s ease;
+      /* glass */
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    .topbar .breadcrumb { color: rgba(255,255,255,0.4); font-size: 13px; }
+    .topbar .breadcrumb span { color: rgba(255,255,255,0.8); }
+    .topbar .spacer { flex: 1; }
+    .topbar .avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: rgba(121,40,202,0.3); color: #c4b5fd;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+
+    /* Glass card base */
+    .glass-panel {
+      border-radius: 16px;
+      padding: 20px 24px;
+      transition: all 0.5s ease;
+      /* glass */
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    .glass-panel .panel-title {
+      font-size: 14px; font-weight: 600; color: #fff;
+      margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .glass-panel .panel-title::before {
+      content: ''; width: 3px; height: 14px; border-radius: 2px;
+      background: linear-gradient(180deg, #a78bfa, #7c3aed);
+      flex-shrink: 0;
+    }
+
+    /* ===== Liquid Glass hover lift effect ===== */
+    .glass-panel.liquid-hover:hover,
+    .stat-item.liquid-hover:hover {
+      transform: translateY(-4px) scale(1.015);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 1px 2px 0 rgba(255,255,255,0.6);
+    }
+
+    /* Stats row */
+    .stats-row { display: flex; gap: 16px; }
+    .stat-item {
+      flex: 1; border-radius: 14px; padding: 18px 20px;
+      transition: all 0.5s ease;
+      /* glass */
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    .stat-value { font-size: 28px; font-weight: 700; color: #fff; }
+    .stat-label { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 4px; }
+    .stat-change { font-size: 11px; margin-top: 2px; }
+    .stat-change.up { color: #34d399; }
+    .stat-change.down { color: #f87171; }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      text-align: left; padding: 10px 14px;
+      color: rgba(255,255,255,0.5); font-weight: 500;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    td {
+      padding: 10px 14px;
+      color: rgba(255,255,255,0.8);
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+    tr:hover td { background: rgba(255,255,255,0.03); }
+
+    .tag {
+      display: inline-block; font-size: 11px; padding: 2px 10px; border-radius: 10px; font-weight: 500;
+    }
+    .tag-ok    { background: rgba(52,211,153,0.15); color: #34d399; }
+    .tag-warn  { background: rgba(251,191,36,0.15);  color: #fbbf24; }
+    .tag-error { background: rgba(248,113,113,0.15); color: #f87171; }
+    .tag-info  { background: rgba(167,139,250,0.15); color: #a78bfa; }
+
+    /* Buttons & Inputs */
+    .toolbar-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .glass-input {
+      padding: 8px 14px; border-radius: 10px; font-size: 13px; outline: none;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff; width: 240px;
+      transition: all 0.3s;
+    }
+    .glass-input::placeholder { color: rgba(255,255,255,0.3); }
+    .glass-input:focus {
+      border-color: rgba(167,139,250,0.5);
+      box-shadow: 0 0 0 3px rgba(121,40,202,0.12);
+    }
+    .btn {
+      padding: 8px 18px; border-radius: 10px; font-size: 13px; font-weight: 500;
+      cursor: pointer; border: none; transition: all 0.3s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #7928ca, #6366f1);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(121,40,202,0.3);
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(121,40,202,0.4); }
+    .btn-ghost {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #fff;
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); }
+
+    /* ===== Light mode overrides for glass panels ===== */
+    body.light-bg .demo-toolbar {
+      background: rgba(255,255,255,0.5);
+      border-color: rgba(0,0,0,0.06);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.6);
+    }
+    body.light-bg .demo-toolbar button { color: rgba(0,0,0,0.55); }
+    body.light-bg .demo-toolbar button:hover { color: #1d2129; }
+    body.light-bg .demo-toolbar button.active {
+      background: rgba(0,0,0,0.06);
+      color: #1d2129;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    body.light-bg .sidebar,
+    body.light-bg .topbar,
+    body.light-bg .glass-panel,
+    body.light-bg .stat-item {
+      background: rgba(255,255,255,0.45);
+      border-color: rgba(0,0,0,0.06);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+      color: #1d2129;
+    }
+    body.light-bg .sidebar-logo { color: #1d2129; }
+    body.light-bg .nav-item { color: rgba(0,0,0,0.5); }
+    body.light-bg .nav-item:hover { color: rgba(0,0,0,0.8); }
+    body.light-bg .nav-item.active { color: #6c5ce7; background: rgba(108,92,231,0.08); border-left-color: #6c5ce7; }
+    body.light-bg .nav-section { color: rgba(0,0,0,0.25); }
+    body.light-bg .topbar .breadcrumb { color: rgba(0,0,0,0.4); }
+    body.light-bg .topbar .breadcrumb span { color: rgba(0,0,0,0.75); }
+    body.light-bg .glass-panel .panel-title { color: #1d2129; }
+    body.light-bg .stat-value { color: #1d2129; }
+    body.light-bg .stat-label { color: rgba(0,0,0,0.45); }
+    body.light-bg th { color: rgba(0,0,0,0.5); border-bottom-color: rgba(0,0,0,0.06); }
+    body.light-bg td { color: rgba(0,0,0,0.75); border-bottom-color: rgba(0,0,0,0.03); }
+    body.light-bg tr:hover td { background: rgba(0,0,0,0.02); }
+    body.light-bg .glass-input {
+      background: rgba(255,255,255,0.6); border-color: rgba(0,0,0,0.1); color: #1d2129;
+    }
+    body.light-bg .glass-input::placeholder { color: rgba(0,0,0,0.3); }
+    body.light-bg .btn-ghost {
+      background: rgba(0,0,0,0.02); border-color: rgba(0,0,0,0.1); color: #1d2129;
+    }
+    body.light-bg .btn-ghost:hover { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.18); }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 1000px) {
+      .app-shell { flex-direction: column; }
+      .sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; padding: 12px; gap: 4px; }
+      .sidebar-logo, .nav-section { display: none; }
+      .nav-item { border-left: none; border-bottom: 2px solid transparent; padding: 8px 12px; }
+      .nav-item.active { border-left: none; border-bottom-color: #a78bfa; }
+      .stats-row { flex-wrap: wrap; }
+      .stat-item { min-width: 120px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Background animated orbs -->
+<div class="bg-orbs">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<!-- Theme switcher -->
+<div class="demo-toolbar" id="themeSwitcher">
+  <button data-theme="dark-frost" class="active">🌑 暗夜霜华</button>
+  <button data-theme="liquid">💧 流体玻璃</button>
+  <button data-theme="crystal">🧊 冰晶玻璃</button>
+  <button data-theme="aurora">🌈 极光玻璃</button>
+  <button data-theme="matte">🩻 磨砂雾面</button>
+</div>
+
+<!-- App shell -->
+<div class="app-shell">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="icon">🧊</span> CMDB <span class="ver">v2.0</span>
+    </div>
+    <div class="nav-section">导航</div>
+    <div class="nav-item active"><span class="dot"></span> 仪表盘 <span class="badge">5</span></div>
+    <div class="nav-item"><span class="dot"></span> CI 资源管理</div>
+    <div class="nav-item"><span class="dot"></span> CI 模型管理</div>
+    <div class="nav-item"><span class="dot"></span> 关系拓扑</div>
+    <div class="nav-item"><span class="dot"></span> 自动发现</div>
+    <div class="nav-section">基础设施</div>
+    <div class="nav-item"><span class="dot"></span> IPAM</div>
+    <div class="nav-item"><span class="dot"></span> DCIM</div>
+    <div class="nav-section">系统</div>
+    <div class="nav-item"><span class="dot"></span> 权限管理</div>
+    <div class="nav-item"><span class="dot"></span> 系统设置</div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main-area">
+    <!-- Top bar -->
+    <div class="topbar">
+      <span class="breadcrumb">首页 / <span>CI 资源管理</span></span>
+      <span class="spacer"></span>
+      <span style="color:rgba(255,255,255,0.5);font-size:12px;">管理员</span>
+      <div class="avatar">A</div>
+    </div>
+
+    <!-- Search & actions -->
+    <div class="glass-panel">
+      <div class="toolbar-row">
+        <input class="glass-input" placeholder="搜索资源名称、IP 地址、CI 类型...">
+        <button class="btn btn-primary">🔍 搜索</button>
+        <button class="btn btn-ghost">+ 新增 CI</button>
+        <button class="btn btn-ghost">📥 批量导出</button>
+        <span class="spacer"></span>
+        <span style="font-size:12px;color:rgba(255,255,255,0.4);">共 1,286 条记录</span>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-item">
+        <div class="stat-value">1,286</div>
+        <div class="stat-label">CI 总数</div>
+        <div class="stat-change up">▲ 12 本月新增</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">847</div>
+        <div class="stat-label">活跃资源</div>
+        <div class="stat-change up">▲ 3.2% 较上周</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">32</div>
+        <div class="stat-label">CI 类型</div>
+        <div class="stat-change" style="color:rgba(255,255,255,0.4);">● 无变化</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">99.7<span style="font-size:15px;opacity:0.5;">%</span></div>
+        <div class="stat-label">健康率</div>
+        <div class="stat-change down">▼ 0.1% 较昨日</div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="glass-panel">
+      <div class="panel-title">服务器资源列表</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>资源名称</th><th>IP 地址</th><th>CI 类型</th><th>所属机房</th><th>状态</th><th>负责人</th><th>更新时间</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>prod-web-01</strong></td><td>10.0.1.12</td>
+              <td><span class="tag tag-info">物理机</span></td><td>北京-昌平-A</td>
+              <td><span class="tag tag-ok">● 运行中</span></td><td>张三</td><td>2026-08-12 10:23</td>
+            </tr>
+            <tr>
+              <td><strong>prod-web-02</strong></td><td>10.0.1.13</td>
+              <td><span class="tag tag-info">虚拟机</span></td><td>北京-昌平-A</td>
+              <td><span class="tag tag-ok">● 运行中</span></td><td>张三</td><td>2026-08-12 09:45</td>
+            </tr>
+            <tr>
+              <td><strong>prod-db-master</strong></td><td>10.0.2.5</td>
+              <td><span class="tag tag-info">物理机</span></td><td>上海-浦东-B</td>
+              <td><span class="tag tag-warn">● 负载高</span></td><td>李四</td><td>2026-08-12 08:12</td>
+            </tr>
+            <tr>
+              <td><strong>dev-app-03</strong></td><td>10.0.3.20</td>
+              <td><span class="tag tag-info">容器</span></td><td>深圳-南山-C</td>
+              <td><span class="tag tag-error">● 异常</span></td><td>王五</td><td>2026-08-11 22:30</td>
+            </tr>
+            <tr>
+              <td><strong>staging-web-01</strong></td><td>10.0.4.8</td>
+              <td><span class="tag tag-info">虚拟机</span></td><td>广州-天河-D</td>
+              <td><span class="tag tag-ok">● 运行中</span></td><td>赵六</td><td>2026-08-10 15:17</td>
+            </tr>
+            <tr>
+              <td><strong>prod-cache-01</strong></td><td>10.0.1.50</td>
+              <td><span class="tag tag-info">物理机</span></td><td>北京-昌平-A</td>
+              <td><span class="tag tag-ok">● 运行中</span></td><td>张三</td><td>2026-08-12 07:55</td>
+            </tr>
+            <tr>
+              <td><strong>prod-mq-02</strong></td><td>10.0.2.18</td>
+              <td><span class="tag tag-info">虚拟机</span></td><td>上海-浦东-B</td>
+              <td><span class="tag tag-warn">● 磁盘 85%</span></td><td>李四</td><td>2026-08-12 06:40</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+(function() {
+  const body = document.body
+  const toolbar = document.getElementById('themeSwitcher')
+
+  // Pre-compute radial-gradient strings for liquid theme
+  var LG_ORB1 = 'radial-gradient(circle, #7000ff 0%, #300782 100%)'
+  var LG_ORB2 = 'radial-gradient(circle, #00d2ff 0%, #0040aa 100%)'
+  var LG_ORB3 = 'radial-gradient(circle, #ff007a 0%, #88003a 100%)'
+
+  var themeConfig = {
+    'dark-frost': {
+      label: '🌑 暗夜霜华',
+      bodyClass: '',
+      bg: '#0d0f17',
+      orbs: [
+        { bg: '#7928ca', opacity: 0.55 },
+        { bg: '#00dfd8', opacity: 0.55 },
+        { bg: '#ff6bcb', opacity: 0.35 }
+      ],
+      panels: {
+        sidebarBg:     'rgba(20,20,30,0.6)',
+        sidebarBorder: 'rgba(255,255,255,0.06)',
+        cardBg:        'rgba(30,30,40,0.45)',
+        cardBorder:    'rgba(255,255,255,0.07)',
+        inputBg:       'rgba(255,255,255,0.06)',
+        inputBorder:   'rgba(255,255,255,0.1)',
+        blur:          '20px',
+        saturate:      '',
+        boxShadow:     '0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05)',
+        statShadow:    '0 4px 16px rgba(0,0,0,0.15)',
+        radius:        '16px',
+        transition:    'all 0.5s ease',
+        liquidHover:   false
+      }
+    },
+    'liquid': {
+      label: '💧 流体玻璃',
+      bodyClass: '',
+      bg: '#080a10',
+      orbs: [
+        { bg: LG_ORB1, opacity: 0.75 },
+        { bg: LG_ORB2, opacity: 0.75 },
+        { bg: LG_ORB3, opacity: 0.75 }
+      ],
+      panels: {
+        sidebarBg:     'rgba(255,255,255,0.05)',
+        sidebarBorder: 'rgba(255,255,255,0.14)',
+        cardBg:        'rgba(255,255,255,0.06)',
+        cardBorder:    'rgba(255,255,255,0.16)',
+        inputBg:       'rgba(255,255,255,0.07)',
+        inputBorder:   'rgba(255,255,255,0.18)',
+        blur:          '24px',
+        saturate:      ' saturate(180%)',
+        boxShadow:     '0 30px 60px rgba(0,0,0,0.4), 0 10px 20px rgba(0,0,0,0.2), inset 0 1px 1px 0 rgba(255,255,255,0.35), inset 0 -1px 1px 0 rgba(0,0,0,0.2)',
+        statShadow:    '0 20px 40px rgba(0,0,0,0.35), inset 0 1px 1px 0 rgba(255,255,255,0.35)',
+        radius:        '24px',
+        transition:    'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+        liquidHover:   true
+      }
+    },
+    'crystal': {
+      label: '🧊 冰晶玻璃',
+      bodyClass: 'light-bg',
+      bg: '#f0f2f5',
+      orbs: [
+        { bg: '#a78bfa', opacity: 0.28 },
+        { bg: '#67e8f9', opacity: 0.28 },
+        { bg: '#f9a8d4', opacity: 0.18 }
+      ],
+      panels: {
+        sidebarBg:     'rgba(255,255,255,0.45)',
+        sidebarBorder: 'rgba(255,255,255,0.25)',
+        cardBg:        'rgba(255,255,255,0.4)',
+        cardBorder:    'rgba(255,255,255,0.3)',
+        inputBg:       'rgba(255,255,255,0.55)',
+        inputBorder:   'rgba(0,0,0,0.08)',
+        blur:          '14px',
+        saturate:      '',
+        boxShadow:     '0 8px 32px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.6)',
+        statShadow:    '0 4px 16px rgba(0,0,0,0.04)',
+        radius:        '16px',
+        transition:    'all 0.5s ease',
+        liquidHover:   false
+      }
+    },
+    'aurora': {
+      label: '🌈 极光玻璃',
+      bodyClass: '',
+      bg: '#0d0f17',
+      orbs: [
+        { bg: '#6366f1', opacity: 0.5 },
+        { bg: '#06b6d4', opacity: 0.45 },
+        { bg: '#d946ef', opacity: 0.4 }
+      ],
+      panels: {
+        sidebarBg:     'rgba(20,18,40,0.55)',
+        sidebarBorder: 'rgba(100,120,255,0.1)',
+        cardBg:        'rgba(22,20,45,0.45)',
+        cardBorder:    'rgba(100,120,255,0.1)',
+        inputBg:       'rgba(20,18,40,0.4)',
+        inputBorder:   'rgba(100,120,255,0.15)',
+        blur:          '18px',
+        saturate:      '',
+        boxShadow:     '0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06)',
+        statShadow:    '0 4px 16px rgba(0,0,0,0.15)',
+        radius:        '16px',
+        transition:    'all 0.5s ease',
+        liquidHover:   false
+      }
+    },
+    'matte': {
+      label: '🩻 磨砂雾面',
+      bodyClass: 'light-bg',
+      bg: '#f0f2f5',
+      orbs: [
+        { bg: '#c4b5fd', opacity: 0.2 },
+        { bg: '#a5f3fc', opacity: 0.2 },
+        { bg: '#fbcfe8', opacity: 0.15 }
+      ],
+      panels: {
+        sidebarBg:     'rgba(245,245,250,0.7)',
+        sidebarBorder: 'rgba(0,0,0,0.05)',
+        cardBg:        'rgba(250,250,252,0.7)',
+        cardBorder:    'rgba(0,0,0,0.05)',
+        inputBg:       'rgba(252,252,255,0.75)',
+        inputBorder:   'rgba(0,0,0,0.07)',
+        blur:          '8px',
+        saturate:      '',
+        boxShadow:     '0 8px 32px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+        statShadow:    '0 2px 12px rgba(0,0,0,0.04)',
+        radius:        '16px',
+        transition:    'all 0.5s ease',
+        liquidHover:   false
+      }
+    }
+  }
+
+  function applyTheme(key) {
+    var cfg = themeConfig[key]
+    if (!cfg) return
+
+    // Body
+    body.className = cfg.bodyClass
+    body.style.backgroundColor = cfg.bg
+
+    // Orbs — handle radial-gradient for liquid, solid color for others
+    var orbs = document.querySelectorAll('.orb')
+    cfg.orbs.forEach(function(o, i) {
+      if (orbs[i]) {
+        orbs[i].style.background = o.bg
+        orbs[i].style.opacity = o.opacity
+        // Liquid orbs use radial-gradient with their own blur envelope; keep the filter
+      }
+    })
+
+    // Build backdrop-filter value with optional saturation
+    var bf = 'blur(' + cfg.panels.blur + ')' + cfg.panels.saturate
+
+    // Apply to all glass elements
+    var glassEls = document.querySelectorAll('.sidebar, .topbar, .glass-panel, .stat-item')
+    for (var i = 0; i < glassEls.length; i++) {
+      var el = glassEls[i]
+      el.style.background = cfg.panels.cardBg
+      el.style.backdropFilter = bf
+      el.style.webkitBackdropFilter = bf
+      el.style.borderColor = cfg.panels.cardBorder
+      el.style.borderRadius = cfg.panels.radius
+      el.style.transition = cfg.panels.transition
+
+      // Toggle liquid-hover class
+      if (cfg.panels.liquidHover) {
+        el.classList.add('liquid-hover')
+      } else {
+        el.classList.remove('liquid-hover')
+      }
+    }
+
+    // Sidebar — slightly different bg/border
+    var sidebar = document.getElementById('sidebar')
+    if (sidebar) {
+      sidebar.style.background = cfg.panels.sidebarBg
+      sidebar.style.borderColor = cfg.panels.sidebarBorder
+    }
+
+    // Box shadows: glass-panel vs stat-item
+    var panels = document.querySelectorAll('.glass-panel')
+    for (var j = 0; j < panels.length; j++) {
+      panels[j].style.boxShadow = cfg.panels.boxShadow
+    }
+    var stats = document.querySelectorAll('.stat-item')
+    for (var k = 0; k < stats.length; k++) {
+      stats[k].style.boxShadow = cfg.panels.statShadow
+    }
+    // Topbar keeps its lighter shadow
+    var topbar = document.querySelector('.topbar')
+    if (topbar) {
+      topbar.style.boxShadow = cfg.panels.statShadow
+    }
+
+    // Inputs
+    var inputs = document.querySelectorAll('.glass-input')
+    for (var m = 0; m < inputs.length; m++) {
+      inputs[m].style.background = cfg.panels.inputBg
+      inputs[m].style.borderColor = cfg.panels.inputBorder
+    }
+
+    // Demo toolbar
+    if (cfg.bodyClass === 'light-bg') {
+      toolbar.style.background = cfg.panels.cardBg
+      toolbar.style.borderColor = cfg.panels.cardBorder
+    } else {
+      toolbar.style.background = key === 'liquid'
+        ? 'rgba(255,255,255,0.05)'
+        : 'rgba(255,255,255,0.06)'
+      toolbar.style.borderColor = key === 'liquid'
+        ? 'rgba(255,255,255,0.16)'
+        : 'rgba(255,255,255,0.1)'
+    }
+    if (key === 'liquid') {
+      toolbar.style.backdropFilter = 'blur(24px) saturate(180%)'
+      toolbar.style.webkitBackdropFilter = 'blur(24px) saturate(180%)'
+      toolbar.style.boxShadow = '0 20px 40px rgba(0,0,0,0.4), inset 0 1px 1px 0 rgba(255,255,255,0.35)'
+    } else {
+      toolbar.style.backdropFilter = ''
+      toolbar.style.webkitBackdropFilter = ''
+      toolbar.style.boxShadow = ''
+    }
+
+    // Active button
+    var buttons = toolbar.querySelectorAll('button')
+    for (var n = 0; n < buttons.length; n++) {
+      buttons[n].classList.toggle('active', buttons[n].dataset.theme === key)
+    }
+  }
+
+  // Click handlers
+  toolbar.addEventListener('click', function(e) {
+    var btn = e.target.closest('button')
+    if (!btn) return
+    applyTheme(btn.dataset.theme)
+  })
+
+  // Init with dark-frost
+  applyTheme('dark-frost')
+})()
+</script>
+</body>
+</html>

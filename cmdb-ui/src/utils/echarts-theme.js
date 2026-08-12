@@ -4,5 +4,6 @@
  * the echarts built-in 'dark' theme takes care of text/axis/legend colors.
  */
 export function getEchartsTheme () {
-  return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : undefined
+  const theme = document.documentElement.getAttribute('data-theme')
+  return (theme === 'dark' || theme === 'liquid-glass') ? 'dark' : undefined
 }

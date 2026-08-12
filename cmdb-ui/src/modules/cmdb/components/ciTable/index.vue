@@ -33,7 +33,7 @@
         align="center"
         type="checkbox"
         width="60"
-        :fixed="isCheckboxFixed ? 'left' : ''"
+        fixed="left"
         v-if="showCheckbox"
       >
         <template #default="{row}">
@@ -320,10 +320,6 @@ export default {
   },
 
   computed: {
-    isCheckboxFixed() {
-      const idx = this.columns.findIndex((item) => item.is_fixed)
-      return idx > -1
-    },
     tableDataWatch() {
       return {
         data: this.data,

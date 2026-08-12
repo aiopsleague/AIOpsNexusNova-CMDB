@@ -160,6 +160,10 @@ export default {
           key: 'dark'
         },
         {
+          title: 'userPanel.themeLiquidGlass',
+          key: 'liquid-glass'
+        },
+        {
           title: 'userPanel.themeSystem',
           key: 'system'
         },
