@@ -4,162 +4,167 @@
  * `@primary-1..@primary-10` must be explicit, otherwise colorPalette recomputes
  * too-bright tints from the (unchanged) brand primary color.
  * Project variables mirror static.less semantics with dark values.
+ *
+ * Color spec: user-provided purple-based dark scheme (2026-08-12).
+ * Primary palette derived from #6C5CE7 (purple brand color).
  */
 
 /* ==================== antd dark variables ==================== */
-/* base */
-@body-background: #141414;
-@component-background: #1f1f1f;
-@text-color: rgba(255, 255, 255, 0.85);
-@text-color-secondary: rgba(255, 255, 255, 0.45);
+/* base — deeper base bg per user scheme */
+@body-background: #121216;
+@component-background: #1e1e24;
+@text-color: #f0f0f3;
+@text-color-secondary: #9999a6;
 @text-color-inverse: #fff;
-@heading-color: rgba(255, 255, 255, 0.85);
-@icon-color-hover: rgba(255, 255, 255, 0.75);
-@disabled-color: rgba(255, 255, 255, 0.3);
+@heading-color: #f0f0f3;
+@icon-color-hover: #f0f0f3;
+@disabled-color: #555562;
 @disabled-bg: rgba(255, 255, 255, 0.04);
 @background-color-light: rgba(255, 255, 255, 0.08);
 @background-color-base: rgba(255, 255, 255, 0.04);
-@border-color-base: #434343;
-@border-color-split: #303030;
-@border-color-inverse: #1f1f1f;
+@border-color-base: #2e2e38;
+@border-color-split: #282830;
+@border-color-inverse: #1e1e24;
 @shadow-color: rgba(0, 0, 0, 0.45);
-@outline-color: rgba(47, 84, 235, 0.6);
+@outline-color: rgba(108, 92, 231, 0.6);
 
-/* primary palette (must be explicit) */
-@primary-color: #2f54eb;
-@primary-1: #131629;
-@primary-2: #1a2342;
-@primary-3: #1f2f57;
-@primary-4: #253a6b;
-@primary-5: #2f54eb;
-@primary-6: #2f54eb;
-@primary-7: #4158c9;
-@primary-8: #32408f;
-@primary-9: #2a3566;
-@primary-10: #20284a;
+/* primary palette (must be explicit — derived from #6C5CE7)
+   Tints progress from darkest (1) to lightest (10).
+   primary-1..4 must be visibly distinguishable from the card bg (#1e1e24). */
+@primary-color: #6c5ce7;
+@primary-1: #262442;
+@primary-2: #2a2748;
+@primary-3: #2e2b4e;
+@primary-4: #322e54;
+@primary-5: #6c5ce7;
+@primary-6: #6c5ce7;
+@primary-7: #8c7cff;
+@primary-8: #4e3ef1;
+@primary-9: #3d30b8;
+@primary-10: #2d2378;
 @item-active-bg: @primary-1;
 @item-hover-bg: @primary-1;
-@link-hover-color: @primary-5;
+@link-hover-color: @primary-7;
 
 /* layout */
-@layout-body-background: #141414;
-@layout-header-background: #1f1f1f;
-@layout-sider-background: #001529;
-@layout-trigger-background: #1f1f1f;
-@layout-trigger-color: rgba(255, 255, 255, 0.85);
+@layout-body-background: #121216;
+@layout-header-background: #1e1e24;
+@layout-sider-background: #1e1e24;
+@layout-trigger-background: #1e1e24;
+@layout-trigger-color: #f0f0f3;
 
 /* form / input */
-@input-bg: #1f1f1f;
-@input-placeholder-color: rgba(255, 255, 255, 0.3);
+@input-bg: #1e1e24;
+@input-placeholder-color: #555562;
 @input-border-color: @border-color-base;
-@input-addon-bg: #2a2a2a;
-@input-number-handler-bg: #1f1f1f;
-@select-background: #1f1f1f;
-@select-dropdown-bg: #1f1f1f;
-@select-item-selected-bg: rgba(255, 255, 255, 0.08);
+@input-addon-bg: #282830;
+@input-number-handler-bg: #1e1e24;
+@select-background: #1e1e24;
+@select-dropdown-bg: #1e1e24;
+@select-item-selected-bg: rgba(108, 92, 231, 0.2);
 @select-item-active-bg: @primary-1;
 
 /* button / tag */
-@btn-default-color: rgba(255, 255, 255, 0.85);
-@btn-default-bg: #1f1f1f;
-@btn-default-border: #434343;
-@btn-disable-color: rgba(255, 255, 255, 0.3);
+@btn-default-color: #f0f0f3;
+@btn-default-bg: #1e1e24;
+@btn-default-border: #2e2e38;
+@btn-disable-color: #555562;
 @btn-disable-bg: rgba(255, 255, 255, 0.04);
-@btn-disable-border: #303030;
-@tag-default-bg: rgba(255, 255, 255, 0.08);
-@tag-default-color: rgba(255, 255, 255, 0.85);
+@btn-disable-border: #282830;
+@tag-default-bg: rgba(255, 255, 255, 0.06);
+@tag-default-color: #f0f0f3;
 
 /* table */
-@table-header-bg: #1f1f1f;
-@table-header-color: rgba(255, 255, 255, 0.85);
+@table-header-bg: #1e1e24;
+@table-header-color: #f0f0f3;
 @table-header-sort-bg: rgba(255, 255, 255, 0.04);
 @table-body-sort-bg: rgba(255, 255, 255, 0.01);
-@table-row-hover-bg: #262626;
-@table-selected-row-bg: #262626;
-@table-expanded-row-bg: #1f1f1f;
-@table-footer-bg: #1f1f1f;
+@table-row-hover-bg: #282830;
+@table-selected-row-bg: #282830;
+@table-expanded-row-bg: #1e1e24;
+@table-footer-bg: #1e1e24;
 
 /* menu */
-@menu-bg: #1f1f1f;
-@menu-popup-bg: #1f1f1f;
-@menu-item-color: rgba(255, 255, 255, 0.85);
+@menu-bg: #1e1e24;
+@menu-popup-bg: #1e1e24;
+@menu-item-color: #f0f0f3;
 @menu-highlight-color: @primary-color;
-@menu-dark-bg: #001529;
-@menu-dark-submenu-bg: #000c17;
-@menu-dark-highlight-color: #fff;
+@menu-dark-bg: #1e1e24;
+@menu-dark-submenu-bg: #121216;
+@menu-dark-highlight-color: #8c7cff;
 
 /* popup / overlay */
-@popover-bg: #1f1f1f;
-@popover-arrow-color: #1f1f1f;
-@modal-header-bg: #1f1f1f;
+@popover-bg: #1e1e24;
+@popover-arrow-color: #1e1e24;
+@modal-header-bg: #1e1e24;
 @modal-mask-bg: rgba(0, 0, 0, 0.65);
-@tooltip-bg: #434343;
-@tooltip-arrow-color: #434343;
+@tooltip-bg: #2e2e38;
+@tooltip-arrow-color: #2e2e38;
 
 /* misc components */
-@card-background: #1f1f1f;
-@card-actions-background: #1a1a1a;
-@card-skeleton-bg: #303030;
+@card-background: #1e1e24;
+@card-actions-background: #121216;
+@card-skeleton-bg: #282830;
 @collapse-header-bg: rgba(255, 255, 255, 0.04);
-@collapse-content-bg: #1f1f1f;
-@tabs-card-head-background: #1f1f1f;
+@collapse-content-bg: #1e1e24;
+@tabs-card-head-background: #1e1e24;
 @tabs-card-active-color: @primary-color;
 @tree-node-hover-bg: rgba(255, 255, 255, 0.08);
 @tree-node-selected-bg: @primary-2;
-@descriptions-bg: #1a1a1a;
-@breadcrumb-base-color: rgba(255, 255, 255, 0.45);
-@breadcrumb-last-item-color: rgba(255, 255, 255, 0.85);
+@descriptions-bg: #121216;
+@breadcrumb-base-color: #9999a6;
+@breadcrumb-last-item-color: #f0f0f3;
 @progress-remaining-color: rgba(255, 255, 255, 0.12);
-@slider-rail-background-color: #262626;
-@slider-handle-background-color: #1f1f1f;
+@slider-rail-background-color: #282830;
+@slider-handle-background-color: #1e1e24;
 @skeleton-color: rgba(255, 255, 255, 0.12);
 @time-picker-selected-bg: rgba(255, 255, 255, 0.04);
-@page-header-back-color: rgba(255, 255, 255, 0.85);
+@page-header-back-color: #f0f0f3;
 
-/* alert (function-color backgrounds, dark values from antd 4 dark theme) */
-@alert-success-bg-color: #162312;
-@alert-success-border-color: #274916;
+/* alert (function-color backgrounds, dark values) */
+@alert-success-bg-color: #0a1f12;
+@alert-success-border-color: #144d24;
 @alert-info-bg-color: #111d2c;
 @alert-info-border-color: #15395b;
-@alert-warning-bg-color: #2b2111;
+@alert-warning-bg-color: #2b1e11;
 @alert-warning-border-color: #594214;
 @alert-error-bg-color: #2a1215;
 @alert-error-border-color: #58181c;
 
 /* input-number / slider extras */
-@input-number-handler-active-bg: #1a1a1a;
-@slider-rail-background-color-hover: #303030;
+@input-number-handler-active-bg: #121216;
+@slider-rail-background-color-hover: #282830;
 
 /* ==================== project dark variables ==================== */
 /* mirror static.less semantics with dark values (consumed by dark-overrides.less) */
-@text-color_1: #e5e6eb;
-@text-color_2: #a9aeb8;
+@text-color_1: #f0f0f3;
+@text-color_2: #9999a6;
 @text-color_3: #8f959e;
-@text-color_4: #5d606e;
-@text-color_5: #3c3f4e;
-@text-color_6: #2a2d39;
-@text-color_7: #16181a;
+@text-color_4: #555562;
+@text-color_5: #2e2e38;
+@text-color_6: #282830;
+@text-color_7: #1e1e24;
 
-@primary-color_2: #7f97fa;
-@primary-color_3: #1a1f2e;
-@primary-color_4: #1f2738;
-@primary-color_5: #171e2e;
-@primary-color_6: #14181f;
-@primary-color_7: #141414;
-@primary-color_8: #b1c9ff;
-@primary-color_9: #3f75ff;
+@primary-color_2: #8c7cff;
+@primary-color_3: rgba(108, 92, 231, 0.08);
+@primary-color_4: rgba(108, 92, 231, 0.18);
+@primary-color_5: rgba(108, 92, 231, 0.12);
+@primary-color_6: rgba(108, 92, 231, 0.2);
+@primary-color_7: rgba(255, 255, 255, 0.06);
+@primary-color_8: #a29bfe;
+@primary-color_9: #4e3ef1;
 
-@scrollbar-color: rgba(47, 122, 235, 0.5);
+@scrollbar-color: rgba(108, 92, 231, 0.4);
 
 @layout-content-background: @primary-color_7;
 @layout-header-height: 40px;
-@layout-header-font-color: rgba(255, 255, 255, 0.85);
+@layout-header-font-color: #f0f0f3;
 
-@layout-sidebar-color: #1f1f1f;
-@layout-sidebar-sub-color: #16181a;
-@layout-sidebar-selected-color: #1a1f2e;
-@layout-sidebar-arrow-color: #5d606e;
-@layout-sidebar-font-color: #a9aeb8;
-@layout-sidebar-icon-color: #5d606e;
-@layout-sidebar-selected-font-color: #7f97fa;
-@layout-sidebar-disabled-font-color: #5d606e;
+@layout-sidebar-color: #1e1e24;
+@layout-sidebar-sub-color: #121216;
+@layout-sidebar-selected-color: #262442;
+@layout-sidebar-arrow-color: #555562;
+@layout-sidebar-font-color: #9999a6;
+@layout-sidebar-icon-color: #555562;
+@layout-sidebar-selected-font-color: #8c7cff;
+@layout-sidebar-disabled-font-color: #555562;

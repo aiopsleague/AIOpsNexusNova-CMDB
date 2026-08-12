@@ -6,24 +6,24 @@
  * All rules are scoped under `html[data-theme='dark']` so they win over scoped
  * styles (specificity 0,2,1 > scoped 0,2,0) regardless of css load order,
  * without relying on !important.
+ *
+ * Color spec: purple-based dark scheme — #121216 / #1E1E24 / #282830 / #2E2E38.
  */
+
+/* ===== A. layout & component hardcoded colors ===== */
 html[data-theme='dark'] {
-  /* 内容区/布局背景：global.less 被 use.js / App.vue / BasicLayout.vue 多处引入，
-     可能随布局 chunk 在 dark.css 之后加载（同特异性依赖顺序），
-     用 html[data-theme='dark'] 高特异性确保暗色，不依赖 css 加载顺序 */
+  /* layout backgrounds */
   .ant-layout,
   .ant-layout-content {
-    background-color: #141414;
+    background-color: #121216;
   }
   .ant-layout-header {
-    background: #1f1f1f;
+    background: #1e1e24;
   }
   .ant-layout-sider {
-    background: #1f1f1f;
+    background: #1e1e24;
   }
-  /* 侧边栏菜单：暗色下 antd menu-dark 默认深蓝 #001529 与全局灰黑不统一，
-     改用项目暗色变量体系（与亮色侧边栏同源）。
-     覆盖 .ant-menu-item 本身（含纯文本项，非仅 > a），使文字/选中/hover 统一 */
+  /* sidebar menu — use project dark palette (consistent with light sidebar variable source) */
   .ops-side-bar.ant-menu-dark {
     background-color: @layout-sidebar-color;
     .ant-menu-inline.ant-menu-sub {
@@ -50,65 +50,77 @@ html[data-theme='dark'] {
     }
   }
 
-  /* logo 背景透明，由 sider/header 背景提供（暗色下避免白色方块） */
+  /* logo transparent, inherits sider/header bg (avoids white block in dark) */
   .logo {
     background: transparent;
     box-shadow: none;
   }
 
-  /* 顶栏用户头像白底兜底 -> 深灰 */
+  /* header user avatar white fallback → dark surface */
   .header .user-wrapper .action .avatar {
-    background-color: #1f1f1f;
+    background-color: #1e1e24;
   }
 
-  /* 抽屉底部操作栏（global.less 写死白底 #fff / 边框 #e9e9e9） */
+  /* drawer bottom action bar (global.less hardcodes #fff / #e9e9e9) */
   .custom-drawer-bottom-action {
-    background: #1f1f1f;
-    border-top-color: #303030;
+    background: #1e1e24;
+    border-top-color: #282830;
   }
 
-  /* global.less 字面色残留 */
+  /* global.less residual light colors */
   .dag-history-filter-inner:hover {
-    background: #262626;
+    background: #282830;
   }
   .ops-input.ant-input[disabled] {
-    background-color: #1f1f1f;
+    background-color: #1e1e24;
+    color: #555562;
   }
 
-  /* radio-button 禁用选中态（antd 写死 tint(@black, 90%)） */
+  /* antd input password icon: light theme default #333 → dark text */
+  .ant-input-password-icon:hover {
+    color: #f0f0f3;
+  }
+  .ant-input-clear-icon {
+    color: #555562;
+  }
+  .ant-input-clear-icon:hover {
+    color: #9999a6;
+  }
+
+  /* radio-button disabled-checked state (antd hardcodes tint(@black, 90%)) */
   .ant-radio-button-wrapper-disabled.ant-radio-button-wrapper-checked {
-    background-color: #262626;
-    color: rgba(255, 255, 255, 0.45);
-    border-color: #434343;
+    background-color: #282830;
+    color: #9999a6;
+    border-color: #2e2e38;
   }
 
-  /* antd 预设彩色标签（写死浅色背景，暗色版采用 antd 4 dark 色调） */
+  /* antd preset colored tags (dark backgrounds, adjusted for new palette) */
   .ant-tag-magenta { color: #d84a85; background: #2b0e14; border-color: #58181c; }
   .ant-tag-red { color: #d32029; background: #2a1215; border-color: #58181c; }
   .ant-tag-volcano { color: #d84a1b; background: #2b1a11; border-color: #58181c; }
   .ant-tag-orange { color: #d87a16; background: #2b1d11; border-color: #594214; }
   .ant-tag-gold { color: #d89614; background: #2b2111; border-color: #594214; }
   .ant-tag-lime { color: #7cb305; background: #1f2611; border-color: #3e4b14; }
-  .ant-tag-green { color: #49aa19; background: #162312; border-color: #274916; }
+  .ant-tag-green { color: #49aa19; background: #0a1f12; border-color: #144d24; }
   .ant-tag-cyan { color: #08979c; background: #112123; border-color: #144444; }
   .ant-tag-blue { color: #1d39c4; background: #111d2c; border-color: #15395b; }
-  .ant-tag-geekblue { color: #2f54eb; background: #131629; border-color: #1f2f57; }
+  .ant-tag-geekblue { color: #6c5ce7; background: #18152e; border-color: #272255; }
   .ant-tag-purple { color: #531dab; background: #1a1325; border-color: #341d52; }
 }
 
-/* ===== B. 共享组件 scoped 浅色 ===== */
+/* ===== B. shared-component scoped light colors ===== */
 html[data-theme='dark'] {
   /* CMDBFilterComp */
   .table-filter .table-filter-extra-icon:hover {
-    background: #1a1f2e;
+    background: #1f1b3d;
   }
 
   /* Crontab */
   .popup-title {
-    background: #1f1f1f;
+    background: #1e1e24;
   }
   .popup-result .title {
-    background: #171e2e;
+    background: #1e1a38;
   }
 
   /* EmployeeTransfer / RoleTransfer */
@@ -116,11 +128,11 @@ html[data-theme='dark'] {
   .employee-transfer .employee-transfer-right,
   .role-transfer .role-transfer-left,
   .role-transfer .role-transfer-right {
-    background-color: #14181f;
+    background-color: #18152e;
   }
   .employee-transfer .employee-transfer-right .employee-transfer-right-selected,
   .role-transfer .role-transfer-right .role-transfer-right-selected {
-    background-color: #171e2e;
+    background-color: #1e1a38;
   }
 
   /* MonacoCodeEditor */
@@ -128,134 +140,216 @@ html[data-theme='dark'] {
     background: #1e1e1e;
   }
   .monaco-editor-toolbar {
-    background: #1f1f1f;
+    background: #1e1e24;
   }
 
   /* Result */
   .result .extra {
-    background: #1f1f1f;
+    background: #1e1e24;
   }
 
   /* TwoColumnLayout */
   .two-column-layout .two-column-layout-sidebar {
-    background: #1f1f1f;
+    background: #1e1e24;
   }
 
   /* HeadInfo */
   .head-info em {
-    background: #262626;
+    background: #282830;
   }
 
   /* UserMenu */
   .user-wrapper .common-settings-btn,
   .user-wrapper .lang-menu-item_active {
-    background: #171e2e;
+    background: #262442;
   }
 
-  /* userPanel */
+  /* userPanel — avatar, icons, text, interactive states */
   .user-panel-avatar {
-    background: #1f1f1f;
+    width: 62px;
+    height: 62px;
+    background: #262442;
+    color: #8c7cff;
   }
-  .user-panel-btn-item,
-  .user-panel-lang-item,
+  .user-panel-nickname {
+    color: #f0f0f3;
+  }
+  .user-panel-info-text {
+    color: #9999a6;
+  }
+  .user-panel-btn-item {
+    background: #1e1e24;
+  }
+  .user-panel-btn-icon {
+    color: #555562;
+  }
+  .user-panel-btn-title {
+    color: #9999a6;
+  }
+  .user-panel-btn-item:hover {
+    background: #262442;
+    .user-panel-btn-icon {
+      color: #8c7cff;
+    }
+    .user-panel-btn-title {
+      color: #a29bfe;
+    }
+  }
+  .user-panel-row-label {
+    color: #9999a6;
+  }
+  .user-panel-lang-item {
+    background: #1e1e24;
+    color: #9999a6;
+    &:hover {
+      color: #8c7cff;
+    }
+    &_active {
+      background: #262442;
+      color: #8c7cff;
+    }
+  }
   .user-panel-theme-item {
-    background: #1f1f1f;
+    background: #1e1e24;
+    color: #9999a6;
+    &:hover {
+      color: #8c7cff;
+    }
+    &_active {
+      background: #262442;
+      color: #8c7cff;
+    }
   }
-  .user-panel-btn-item:hover,
-  .user-panel-lang-item_active,
-  .user-panel-theme-item_active {
-    background: #1a1f2e;
+  .user-panel-account {
+    border-top-color: #2e2e38;
+  }
+  .user-panel-account-icon {
+    color: #555562;
+  }
+  .user-panel-account-title {
+    color: #9999a6;
+  }
+  .user-panel-account-item:hover {
+    .user-panel-account-icon {
+      color: #8c7cff;
+    }
+    .user-panel-account-title {
+      color: #a29bfe;
+    }
   }
 }
 
-/* ===== C. 第三方库（vxe-table 裸表格 / element-ui） ===== */
+/* ===== C. third-party libs (vxe-table / element-ui) ===== */
 html[data-theme='dark'] {
-  /* vxe-table：未使用 ops-stripe/ops-unstripe 包裹的裸表格（ops-* 用 !important 不受影响） */
+  /* vxe-table: bare tables not wrapped in ops-stripe/ops-unstripe */
   .vxe-table {
-    color: rgba(255, 255, 255, 0.85);
+    color: #f0f0f3;
   }
   .vxe-table--render-default {
-    background: #1f1f1f;
+    background: #1e1e24;
   }
-  /* vxe 库把主体 table 设为白底（#fff），覆盖外层深色 */
+  /* vxe sets body table bg to #fff, overrides outer dark */
   .vxe-table--render-default .vxe-table--body-wrapper table {
     background: transparent;
   }
   .vxe-table--render-default.border--default .vxe-table--header-wrapper,
   .vxe-table--render-default.border--inner .vxe-table--header-wrapper {
-    background-color: #1f1f1f;
+    background-color: #1e1e24;
   }
   .vxe-table--render-default .vxe-table--header-wrapper,
   .vxe-table--render-default .vxe-table--footer-wrapper {
-    background-color: #1f1f1f;
+    background-color: #1e1e24;
   }
   .vxe-grid.is--maximize {
-    background: #1f1f1f;
+    background: #1e1e24;
   }
   .vxe-table--render-default .vxe-body--row.row--stripe {
-    background-color: #14181f;
+    background-color: #18152e;
   }
   .vxe-table--render-default .vxe-body--row.row--hover {
-    background-color: #262626;
+    background-color: #282830;
   }
   .vxe-table--render-default .vxe-cell {
-    color: rgba(255, 255, 255, 0.85);
+    color: #f0f0f3;
   }
   .vxe-table--render-default .vxe-table--border-line {
-    border-color: #303030;
+    border-color: #282830;
   }
   .vxe-select-option:not(.is--disabled).is--hover {
-    background-color: #171e2e;
+    background-color: #1e1a38;
   }
 
-  /* element-ui（crontab 等使用） */
+  /* vxe-table fixed columns: need opaque dark bg to prevent content overlap */
+  .vxe-table--fixed-wrapper {
+    background-color: #1e1e24;
+  }
+  .vxe-body--column.col--fixed,
+  .vxe-header--column.col--fixed,
+  .vxe-footer--column.col--fixed {
+    background-color: #1e1e24;
+  }
+  .vxe-body--column.col--fixed.row--hover {
+    background-color: #282830;
+  }
+  .vxe-body--column.col--fixed.row--stripe {
+    background-color: #18152e;
+  }
+  /* fixed column shadow (vxe uses box-shadow for fixed column edge) */
+  .vxe-table--fixed-left-wrapper {
+    background-color: #1e1e24;
+  }
+  .vxe-table--fixed-right-wrapper {
+    background-color: #1e1e24;
+  }
+
+  /* element-ui (used by crontab etc.) */
   .el-input__inner,
   .el-textarea__inner {
-    background-color: #1f1f1f;
-    border-color: #434343;
-    color: rgba(255, 255, 255, 0.85);
+    background-color: #1e1e24;
+    border-color: #2e2e38;
+    color: #f0f0f3;
   }
   .el-select-dropdown,
   .el-dropdown-menu {
-    background-color: #1f1f1f;
-    border-color: #434343;
+    background-color: #1e1e24;
+    border-color: #2e2e38;
   }
   .el-select-dropdown__item {
-    color: rgba(255, 255, 255, 0.85);
+    color: #f0f0f3;
   }
   .el-select-dropdown__item.hover,
   .el-select-dropdown__item:hover {
-    background-color: #171e2e;
+    background-color: #1e1a38;
   }
   .el-tabs__item {
-    color: rgba(255, 255, 255, 0.45);
+    color: #9999a6;
   }
   .el-tabs__item.is-active {
-    color: #2f54eb;
+    color: #6c5ce7;
   }
   .el-tabs__nav-wrap::after {
-    background-color: #303030;
+    background-color: #282830;
   }
   .el-radio__inner {
-    background-color: #1f1f1f;
-    border-color: #434343;
+    background-color: #1e1e24;
+    border-color: #2e2e38;
   }
   .el-radio__label {
-    color: rgba(255, 255, 255, 0.85);
+    color: #f0f0f3;
   }
   .el-button {
-    background-color: #1f1f1f;
-    border-color: #434343;
-    color: rgba(255, 255, 255, 0.85);
+    background-color: #1e1e24;
+    border-color: #2e2e38;
+    color: #f0f0f3;
   }
   .el-button:hover,
   .el-button:focus {
-    border-color: #2f54eb;
-    color: #2f54eb;
+    border-color: #6c5ce7;
+    color: #6c5ce7;
   }
 }
 
-/* ===== role=menuitem 相关（Menu / Dropdown / Select / Cascader / TreeSelect） ===== */
+/* ===== role=menuitem overrides (Menu / Dropdown / Select / Cascader / TreeSelect) ===== */
 html[data-theme='dark'] {
   .ant-dropdown,
   .ant-dropdown-menu,
@@ -263,44 +357,44 @@ html[data-theme='dark'] {
   .ant-cascader-dropdown,
   .ant-cascader-menu,
   .ant-select-dropdown-menu {
-    background-color: #1f1f1f;
+    background-color: #1e1e24;
   }
   .ant-dropdown-menu-item,
   .ant-select-dropdown-menu-item,
   .ant-cascader-menu-item {
     background-color: transparent;
-    color: rgba(255, 255, 255, 0.85);
+    color: #f0f0f3;
   }
   .ant-dropdown-menu-item:hover,
   .ant-select-dropdown-menu-item:hover,
   .ant-cascader-menu-item:hover {
-    background-color: #131629;
+    background-color: #18152e;
   }
 }
 
-/* ===== CI 详情渐变卡片（linear-gradient 浅色背景，生成脚本不匹配渐变） ===== */
+/* ===== CI detail gradient cards (linear-gradient light bg, generator can't match gradient) ===== */
 html[data-theme='dark'] {
-  /* 白色系卡片渐变 -> 深灰 */
+  /* white card gradients → dark surface */
   .ci-detail-title-card,
   .prom-stat-card,
   .ci-history-stat-card {
-    background: linear-gradient(135deg, #1f1f1f 0%, #262626 100%);
+    background: linear-gradient(135deg, #1e1e24 0%, #282830 100%);
   }
   .ci-detail-title-card {
-    border-color: #303030;
+    border-color: #282830;
   }
   .ci-detail-card-header {
-    background: linear-gradient(135deg, #1f1f1f 0%, #262626 100%);
-    border-bottom-color: #303030;
+    background: linear-gradient(135deg, #1e1e24 0%, #282830 100%);
+    border-bottom-color: #282830;
   }
   .prom-filter-bar {
-    background: linear-gradient(135deg, #1a1f2e 0%, #1f2738 100%);
-    border-color: #15395b;
+    background: linear-gradient(135deg, #1f1b3d 0%, #272255 100%);
+    border-color: #2e2e38;
   }
-  /* 功能色 active 渐变 -> 深色调保留色相 */
+  /* status active gradients → dark tints preserving hue */
   .prom-stat-card.prom-stat-total.prom-stat-active,
   .prom-stat-card.prom-stat-info.prom-stat-active {
-    background: linear-gradient(135deg, #1a1f2e 0%, #1f2738 100%);
+    background: linear-gradient(135deg, #1f1b3d 0%, #272255 100%);
   }
   .prom-stat-card.prom-stat-disaster.prom-stat-active,
   .prom-stat-card.prom-stat-emergency.prom-stat-active,
@@ -308,97 +402,358 @@ html[data-theme='dark'] {
     background: linear-gradient(135deg, #2a1215 0%, #331619 100%);
   }
   .prom-stat-card.prom-stat-important.prom-stat-active {
-    background: linear-gradient(135deg, #2b2111 0%, #362814 100%);
+    background: linear-gradient(135deg, #2b1e11 0%, #362814 100%);
   }
   .prom-stat-card.prom-stat-warning.prom-stat-active {
-    background: linear-gradient(135deg, #2b2111 0%, #3a2f1a 100%);
+    background: linear-gradient(135deg, #2b1e11 0%, #3a2f1a 100%);
   }
 }
 
-/* ===== CI 详情关系拓扑节点（独立 less 文件，生成脚本只扫 .vue style 块） ===== */
+/* ===== CI detail relation topology nodes (standalone less file, generator only scans .vue style blocks) ===== */
 html[data-theme='dark'] {
   .ci-detail-relation-topo .ci-detail-relation-topo-node {
-    background: #1f1f1f;
-    border-color: #434343;
+    background: #1e1e24;
+    border-color: #2e2e38;
   }
   .ci-detail-relation-topo .ci-detail-relation-topo-node .title {
-    color: rgba(255, 255, 255, 0.85);
+    color: #f0f0f3;
   }
 }
 
-/* ===== rgba 白色半透明背景（生成脚本只匹配 #hex，rgba() 被漏） ===== */
+/* ===== rgba white translucent backgrounds (generator only matches #hex, rgba() is missed) ===== */
 html[data-theme='dark'] {
-  /* CI 详情关系拓扑：布局切换按钮 + 节点标签 */
+  /* CI detail relation topo: layout switch + node labels */
   .ci-detail-relation-topo .topo-layout-switch {
-    background: rgba(31, 31, 31, 0.92);
+    background: rgba(30, 30, 36, 0.92);
   }
   .ci-detail-relation-topo .butterflies-label {
-    background: rgba(31, 31, 31, 0.9);
-    color: rgba(255, 255, 255, 0.85);
+    background: rgba(30, 30, 36, 0.9);
+    color: #f0f0f3;
   }
-  /* 资源搜索历史列表：recent/favor 标签项 */
+  /* resource search history: recent/favor tag items */
   .history-list .history-recent .recent-list-item,
   .history-list .history-favor .favor-list-item,
   .history-list .history-favor .favor-list-item-selected {
-    background-color: rgba(31, 31, 31, 0.9);
+    background-color: rgba(30, 30, 36, 0.9);
   }
 }
 
-/* ===== 搜索表单外框（SearchForm 非 scoped 字面色 #d9d9d9） ===== */
+/* ===== search form border (SearchForm non-scoped border color #d9d9d9) ===== */
 html[data-theme='dark'] {
   .ci-searchform-expression > input {
-    border-bottom-color: #434343;
+    border-bottom-color: #2e2e38;
   }
   .ci-searchform-expression .ant-input-suffix {
-    color: rgba(255, 255, 255, 0.45);
+    color: #9999a6;
   }
 }
 
-/* ===== CSS Module 组件：通过 CSS 变量驱动（hash 类名无法直接匹配） ===== */
+/* ===== CSS Module components: driven by CSS variables (hash class names can't be matched directly) ===== */
 html[data-theme='dark'] {
-  /* 侧边菜单搜索框（Menu/index.module.less 的 --ops-side-menu-search-bg） */
-  --ops-side-menu-search-bg: #1f1f1f;
-  /* 拓扑图画布背景（relation-graph canvas，由 topology_view 读取并重绘） */
-  --ops-topo-canvas-bg: #141414;
-  /* 分栏分隔条（SplitPane 内联样式 var(--ops-pane-trigger-bg)） */
-  --ops-pane-trigger-bg: #1f1f1f;
+  /* sidebar menu search box (Menu/index.module.less var --ops-side-menu-search-bg) */
+  --ops-side-menu-search-bg: #1e1e24;
+  /* topology canvas background (relation-graph canvas, read by topology_view on repaint) */
+  --ops-topo-canvas-bg: #121216;
+  /* split pane trigger (SplitPane inline style var(--ops-pane-trigger-bg)) */
+  --ops-pane-trigger-bg: #1e1e24;
 }
 
-/* ===== 分栏组件（SplitPane / TwoColumnLayout） ===== */
+/* ===== split pane components (SplitPane / TwoColumnLayout) ===== */
 html[data-theme='dark'] {
   .split-pane {
-    background-color: #141414;
+    background-color: #121216;
   }
   .split-pane.row .pane-trigger,
   .split-pane.column .pane-trigger {
-    /* 内联样式 triggerColor 优先，需 !important 压过（含 var() fallback 情形） */
-    background-color: #1f1f1f !important;
+    /* inline style triggerColor takes priority, need !important (handles var() fallback case) */
+    background-color: #1e1e24 !important;
   }
   .split-pane .collapse-btn {
-    background-color: #1f1f1f;
+    background-color: #1e1e24;
     border-color: transparent;
   }
   .split-pane .spliter-wrap {
-    background-color: #141414;
+    background-color: #121216;
   }
-  /* pane 面板本身兜底（内容透明时保证 pane 区域暗色） */
+  /* pane panels fallback (ensures pane area is dark when content is transparent) */
   .split-pane .pane-one,
   .split-pane .pane-two {
-    background-color: #1f1f1f;
+    background-color: #1e1e24;
   }
   .two-column-layout {
-    background-color: #1f1f1f;
+    background-color: #1e1e24;
   }
   .two-column-layout-main {
-    background-color: #1f1f1f !important;
+    background-color: #1e1e24 !important;
   }
   .two-column-layout-sidebar {
-    background-color: #1f1f1f;
-    border-right-color: #303030;
+    background-color: #1e1e24;
+    border-right-color: #282830;
   }
-  /* 资源层级视图（tree_views）pane 根容器：dark-business 生成遗漏 */
+  /* resource tree view pane containers: missed by dark-business generator */
   .tree-views-left,
   .tree-views-right {
-    background-color: #1f1f1f;
+    background-color: #1e1e24;
+  }
+}
+
+/* ===== Active/selected text readability: @primary-color (#6c5ce7) has poor contrast
+       on dark selected backgrounds (#18152e / #121216). Override with lighter accent
+       (#a29bfe / #8c7cff) matching the sidebar menu selected-text pattern. ===== */
+html[data-theme='dark'] {
+  /* CI left panel — selected item name */
+  .ci-left-item_active .ci-left-item-name {
+    color: #a29bfe;
+  }
+  /* CI types left panel — selected detail title */
+  .ci-types-left-detail.selected .ci-types-left-detail-title {
+    color: #a29bfe;
+  }
+  /* CI detail tab — active tab title text */
+  .ci-detail-tab .ci-detail-attr-item-active .ci-detail-attr-label,
+  .ci-detail-tab .ci-detail-attr-item-active .ci-detail-attr-content {
+    color: #a29bfe;
+  }
+}
+
+/* ===== TopMenu — global non-scoped styles use light static.less vars; dark.css misses them ===== */
+html[data-theme='dark'] {
+  .top-menu {
+    > span {
+      color: #f0f0f3;
+    }
+    > span:hover {
+      background-color: rgba(255, 255, 255, 0.06);
+    }
+    .top-menu-selected {
+      color: #8c7cff;
+    }
+  }
+  .top-menu-dropdown {
+    .more {
+      background: linear-gradient(0deg, #2c2c31 55%, #1e1e24);
+      color: #f0f0f3;
+      &:hover {
+        background: linear-gradient(0deg, rgba(108, 92, 231, 0.2) 0%, rgba(108, 92, 231, 0.06) 86.76%);
+        color: #a29bfe;
+      }
+    }
+    .more-selected {
+      background-color: #262442;
+      color: #f0f0f3;
+    }
+  }
+}
+
+/* ===== Company structure: employee tabs — consistent with CI left / sidebar menu ===== */
+html[data-theme='dark'] {
+  .ops-setting-structure-sidebar-group-category-item {
+    color: #f0f0f3;
+    &:hover {
+      color: #a29bfe;
+      background-color: #2c2c31;
+      &::before {
+        background-color: #8c7cff;
+      }
+    }
+    /* dot before each item */
+    &::before {
+      background-color: #555562;
+    }
+    /* divider after items */
+    &:not(:last-child)::after {
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+  }
+  /* selected item */
+  .item-selected {
+    color: #a29bfe;
+    background-color: #2e2a4b;
+    &::before {
+      background-color: #8c7cff;
+    }
+  }
+  /* employee count badge */
+  .item-count-before {
+    color: #9999a6;
+  }
+  .item-count-after {
+    color: #9999a6;
+  }
+}
+
+/* ===== BatchUpload step: icon/text/connector line colors ===== */
+html[data-theme='dark'] {
+  .setting-structure-upload .setting-structure-upload-steps {
+    .setting-structure-upload-step {
+      /* icon: dimmed for unselected steps */
+      .setting-structure-upload-step-icon > i {
+        color: #555562;
+      }
+      /* label text */
+      > span {
+        color: #9999a6;
+      }
+      /* connector line between steps */
+      &:not(:first-child)::before {
+        background-color: #2e2e38;
+      }
+    }
+    .setting-structure-upload-step.selected {
+      /* icon: purple accent for selected/completed step */
+      .setting-structure-upload-step-icon > i {
+        color: #a29bfe;
+      }
+      /* label text: primary */
+      > span {
+        color: #f0f0f3;
+      }
+      /* connector line: primary hover */
+      &:not(:first-child)::before {
+        background-color: #8c7cff;
+      }
+    }
+  }
+}
+
+/* ===== UserMenu: icons, text, hover/active states ===== */
+html[data-theme='dark'] {
+  .user-wrapper {
+    /* settings button icon: old blue #2F54EB → accent */
+    .common-settings-btn-icon {
+      color: #a29bfe;
+    }
+    /* settings button text */
+    .common-settings-btn-text {
+      color: #9999a6;
+    }
+    /* lang menu items */
+    .lang-menu-item {
+      color: #9999a6;
+      &:hover {
+        color: #a29bfe;
+      }
+      &_active {
+        color: #a29bfe;
+      }
+    }
+    /* user info wrap: hover avatar border */
+    .user-info-wrap:hover .avatar {
+      border-color: #8c7cff;
+    }
+  }
+  /* default avatar: use primary tint bg + menu-highlight icon color, keep antd sizing */
+  .ant-avatar.ant-avatar-icon {
+    background-color: #262442;
+    color: #8c7cff;
+  }
+  .ant-avatar .anticon-user {
+    color: #8c7cff;
+  }
+  /* custom user popover text */
+  .custom-user .ant-popover-inner-content {
+    color: #f0f0f3;
+  }
+}
+
+/* ===== Ghost primary button: lighter accent for dark backgrounds ===== */
+html[data-theme='dark'] {
+  .ant-btn-background-ghost.ant-btn-primary {
+    color: #a29bfe;
+    border-color: #a29bfe;
+    &:hover,
+    &:focus {
+      color: #8c7cff;
+      border-color: #8c7cff;
+    }
+    &:active,
+    &.active {
+      color: #6c5ce7;
+      border-color: #6c5ce7;
+    }
+  }
+}
+
+/* ===== Search form bar filter ===== */
+html[data-theme='dark'] {
+  .search-form-bar-filter {
+    color: #9999a6 !important;
+    &:hover {
+      color: #a29bfe !important;
+    }
+    .search-form-bar-filter-icon {
+      color: #8c7cff !important;
+    }
+    .search-form-bar-filter-icon_selected {
+      color: #a29bfe !important;
+    }
+  }
+}
+
+/* ===== CI detail tab extra content ===== */
+html[data-theme='dark'] {
+  .tab-bar-extra {
+    color: #9999a6;
+    a {
+      color: #9999a6;
+      &:hover {
+        color: #a29bfe;
+      }
+    }
+  }
+}
+
+/* ===== Preference / Subscription: rgba text colors on dark bg ===== */
+html[data-theme='dark'] {
+  .cmdb-preference-content {
+    .cmdb-preference-header .cmdb-preference-title {
+      color: #f0f0f3 !important;
+    }
+    .cmdb-preference-colleague {
+      color: #9999a6;
+    }
+    .cmdb-preference-colleague-name > span:not(.cmdb-preference-colleague-ellipsis) {
+      color: #9999a6;
+    }
+    .cmdb-preference-progress {
+      color: #f0f0f3;
+      .cmdb-preference-progress-info {
+        color: #f0f0f3;
+      }
+    }
+    .cmdb-preference-footor-unsubscribed-item:hover {
+      color: #a29bfe;
+    }
+    .cmdb-preference-footor-subscribed {
+      > span:first-child {
+        color: #9999a6;
+      }
+      > span:nth-child(2) {
+        color: #a29bfe;
+      }
+    }
+  }
+}
+
+/* ===== Inline-style text color overrides (must use !important to beat inline style specificity) ===== */
+html[data-theme='dark'] {
+  /* Override inline dark text colors that become invisible on dark backgrounds */
+  [style*='color: #333'],
+  [style*='color:#333'],
+  [style*='color: #222'],
+  [style*='color:#222'] {
+    color: #f0f0f3 !important;
+  }
+
+  [style*='color: #666'],
+  [style*='color:#666'],
+  [style*='color: #555'],
+  [style*='color:#555'] {
+    color: #9999a6 !important;
+  }
+
+  [style*='color: #999'],
+  [style*='color:#999'] {
+    color: #9999a6 !important;
   }
 }

@@ -64,6 +64,13 @@ export default {
   },
   mounted() {
     this.load()
+    this._onThemeChange = () => { this.load() }
+    window.addEventListener('ops:theme-change', this._onThemeChange)
+  },
+  beforeDestroy() {
+    if (this._onThemeChange) {
+      window.removeEventListener('ops:theme-change', this._onThemeChange)
+    }
   },
   methods: {
     async load() {
@@ -85,6 +92,17 @@ export default {
               url += `&${prefix}${v.name}=${encodeURIComponent(v.value)}`
             }
           })
+          // If no theme parameter is configured in var_mapping, use system theme
+          const hasThemeVar = (r.vars || []).some((v) => v.name === 'theme')
+          if (!hasThemeVar) {
+            const theme = this.$store.state.app.themeMode || 'system'
+            if (theme === 'system') {
+              const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+              url += `&theme=${prefersDark ? 'dark' : 'light'}`
+            } else {
+              url += `&theme=${theme}`
+            }
+          }
           this.iframeUrl = url
         }
       } catch (e) {

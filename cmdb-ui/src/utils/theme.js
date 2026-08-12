@@ -43,7 +43,7 @@ export function applyTheme (resolved) {
   syncDarkCss(dark)
   // keep body background in sync to avoid white flash between route transitions
   if (document.body) {
-    document.body.style.backgroundColor = dark ? '#141414' : ''
+    document.body.style.backgroundColor = dark ? '#121216' : ''
   }
   // notify charts/components that need to re-render on theme change
   if (typeof window !== 'undefined' && typeof window.CustomEvent === 'function') {

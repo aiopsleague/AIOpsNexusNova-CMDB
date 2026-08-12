@@ -34,7 +34,7 @@ export default {
     }),
     tabBarStyle () {
       return {
-        background: this.navTheme === 'dark' ? '#1f1f1f' : '#FFF',
+        background: this.navTheme === 'dark' ? '#1e1e24' : '#FFF',
         margin: 0,
         paddingLeft: '16px',
         paddingTop: '1px'
