@@ -1,26 +1,27 @@
 /**
- * Liquid Glass theme overrides.
+ * Dark theme overrides (liquid-glass visual — the glass look is the project's
+ * dark theme).
  *
  * Two responsibilities:
  * 1. Glass-specific effects (backdrop-filter, box-shadow, radius, transitions)
  *    that the base dark palette doesn't have.
  * 2. Color overrides for hardcoded light values in scoped component styles
- *    and third-party libraries. Mirrors base-dark-overrides.less structure but
+ *    and third-party libraries. Mirrors base-overrides.less structure but
  *    with semi-transparent rgba values.
  *
- * All rules scoped under `html[data-theme='liquid-glass']` (specificity 0,2,1).
+ * All rules scoped under `html[data-theme='dark']` (specificity 0,2,1).
  *
- * NOTE: base-dark-overrides.less / base-dark-business.less are re-compiled with
- * liquid-glass variables via liquid-glass.less and are scoped under
- * `html[data-theme='liquid-glass']` too. This file is imported after them, so
- * its tuned rgba values and glass effects win on equal-specificity ties.
+ * NOTE: base-overrides.less / base-business.less are re-compiled with
+ * dark variables via dark.less and are scoped under `html[data-theme='dark']`
+ * too. This file is imported after them, so its tuned rgba values and glass
+ * effects win on equal-specificity ties.
  */
 
 /* ================================================================
    A. GLASS-SPECIFIC EFFECTS: backdrop-filter, highlights, radius
    ================================================================ */
 
-html[data-theme='liquid-glass'] {
+html[data-theme='dark'] {
 
   /* ---- A1. backdrop-filter on all major containers ---- */
   .ant-layout,
@@ -202,12 +203,12 @@ html[data-theme='liquid-glass'] {
 
 /* ================================================================
    B. LAYOUT & COMPONENT COLOR OVERRIDES
-   Mirror base-dark-overrides.less sections A/B/C/D with glass values.
+   Mirror base-overrides.less sections A/B/C/D with glass values.
    Only the rules that target non-antd elements or hardcoded values.
-   Antd components are fully handled by liquid-glass-vars.less.
+   Antd components are fully handled by dark-vars.less.
    ================================================================ */
 
-html[data-theme='liquid-glass'] {
+html[data-theme='dark'] {
 
   /* ---- B1. Layout backgrounds ---- */
   .ant-layout,
@@ -327,10 +328,10 @@ html[data-theme='liquid-glass'] {
 }
 
 /* ================================================================
-   C. SHARED COMPONENTS (mirrors base-dark-overrides section B)
+   C. SHARED COMPONENTS (mirrors base-overrides section B)
    ================================================================ */
 
-html[data-theme='liquid-glass'] {
+html[data-theme='dark'] {
   /* CMDBFilterComp */
   .table-filter .table-filter-extra-icon:hover {
     background: rgba(108, 92, 231, 0.15);
@@ -417,7 +418,7 @@ html[data-theme='liquid-glass'] {
    D. THIRD-PARTY LIBS: vxe-table / element-ui
    ================================================================ */
 
-html[data-theme='liquid-glass'] {
+html[data-theme='dark'] {
   /* vxe-table */
   .vxe-table { color: #f0f0f3; }
   .vxe-table--render-default { background: rgba(255, 255, 255, 0.04); }
@@ -628,7 +629,7 @@ html[data-theme='liquid-glass'] {
    E. DROPDOWN / MENU / SELECT / CASCADER OVERRIDES
    ================================================================ */
 
-html[data-theme='liquid-glass'] {
+html[data-theme='dark'] {
   .ant-dropdown,
   .ant-dropdown-menu,
   .ant-select-dropdown,
@@ -651,11 +652,11 @@ html[data-theme='liquid-glass'] {
 }
 
 /* ================================================================
-   F. BIZ MODULE OVERRIDES (mirrors base-dark-business.less / base-dark-overrides C-E)
+   F. BIZ MODULE OVERRIDES (mirrors base-business.less / base-overrides C-E)
    Key business module panels that need liquid-glass colors.
    ================================================================ */
 
-html[data-theme='liquid-glass'] {
+html[data-theme='dark'] {
   /* CI detail gradient cards */
   .ci-detail-title-card,
   .prom-stat-card,
@@ -1135,12 +1136,12 @@ html[data-theme='liquid-glass'] {
 }
 
 /* ================================================================
-   G. BUSINESS MODULE SCOPED BACKGROUNDS (mirrors base-dark-business.less)
+   G. BUSINESS MODULE SCOPED BACKGROUNDS (mirrors base-business.less)
    Key business panel backgrounds. Glass variants use semi-transparent
    values while keeping text colors same as dark.
    ================================================================ */
 
-html[data-theme='liquid-glass'] {
+html[data-theme='dark'] {
   /* CI list page — left panel (pane-one > ci-left) */
   .ci-types-left-header-input input { background-color: rgba(255, 255, 255, 0.06) !important; }
   .ci-types-left-header-input .ant-input-prefix { color: #9999a6 !important; }
@@ -1981,7 +1982,7 @@ html[data-theme='liquid-glass'] {
    modules/cmdb/views/topology_view/index.vue
    ================================================================ */
 
-html[data-theme='liquid-glass'] {
+html[data-theme='dark'] {
   /* Topology left sidebar */
   .topo-left {
     background-color: rgba(20, 20, 30, 0.5) !important;
@@ -2136,7 +2137,7 @@ html[data-theme='liquid-glass'] {
    treatment. Covers CI detail tabs, ACL tabs, settings tabs, etc.
    ================================================================ */
 
-html[data-theme='liquid-glass'] {
+html[data-theme='dark'] {
 
   /* ---- I1. Tab content body: frosted glass panel ---- */
   .ant-tabs-content {
@@ -2510,7 +2511,7 @@ html[data-theme='liquid-glass'] {
    vue-json-editor / jsoneditor library inside ci-json-editor modal.
    ================================================================ */
 
-html[data-theme='liquid-glass'] {
+html[data-theme='dark'] {
 
   /* Modal body: transparent so jsoneditor glass shows through */
   .ci-json-editor .ant-modal-body {

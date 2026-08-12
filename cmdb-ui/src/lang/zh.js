@@ -209,7 +209,7 @@ export default {
       switchLanguage: '切换语言',
       themeSetting: '主题设置',
       themeLight: '浅色',
-      themeLiquidGlass: '流体',
+      themeDark: '深色',
       themeSystem: '跟随系统',
       bindAccount: '绑定账号',
       switchAccount: '切换账号',

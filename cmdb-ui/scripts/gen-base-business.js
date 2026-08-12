@@ -1,17 +1,17 @@
 /**
- * Generate the liquid-glass base business overrides for cmdb/acl business module
+ * Generate the dark theme base business overrides for cmdb/acl business module
  * scoped light backgrounds AND dark text colors.
  * Scans src/modules/{cmdb,acl}/views/*.vue and standalone .less scoped styles,
  * expands less nesting, maps common light bg colors to the dark palette and
  * dark text colors to light equivalents, and writes
- * src/style/themes/base-dark-business.less (consumed by liquid-glass.less).
- * Usage: node scripts/gen-base-dark-business.js
+ * src/style/themes/base-business.less (consumed by dark.less).
+ * Usage: node scripts/gen-base-business.js
  */
 const fs = require('fs')
 const path = require('path')
 
 const CWD = path.resolve(__dirname, '..')
-const OUT = path.join(CWD, 'src/style/themes/base-dark-business.less')
+const OUT = path.join(CWD, 'src/style/themes/base-business.less')
 
 // Light backgrounds → dark surface equivalents
 const COLOR_MAP = {
@@ -257,11 +257,11 @@ for (const f of files) {
 
 const out = `/**
  * Business module scoped light-background and dark-text overrides (auto-generated),
- * forming the liquid-glass base layer.
- * Scoped under html[data-theme='liquid-glass'] to beat scoped [data-v] specificity.
- * Regenerate: node scripts/gen-base-dark-business.js
+ * forming the dark theme base layer.
+ * Scoped under html[data-theme='dark'] to beat scoped [data-v] specificity.
+ * Regenerate: node scripts/gen-base-business.js
  */
-html[data-theme='liquid-glass'] {
+html[data-theme='dark'] {
 ${groups.join('\n')}
 }
 `

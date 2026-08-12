@@ -1,33 +1,34 @@
 /**
- * Liquid Glass theme compilation entry.
- * Compiles antd full less + project styles (global.less) + glass variables +
+ * Dark theme compilation entry (liquid-glass visual, formerly the "liquid-glass"
+ * theme — the glass look is now the project's dark theme).
+ * Compiles antd full less + project styles (global.less) + dark variables +
  * project overrides into a standalone css via scripts/build-theme.js.
  *
- * All rules are nested under `html[data-theme='liquid-glass']` so they carry a
+ * All rules are nested under `html[data-theme='dark']` so they carry a
  * high-specificity prefix (0,2,1) that wins over duplicated light rules in
  * lazy-loaded chunk css regardless of load order.
  *
  * Structure:
  * - antd import must come BEFORE variable overrides (last definition wins).
- * - liquid-glass-vars is imported at root (for overrides/business) and re-imported
+ * - dark-vars is imported at root (for overrides/business) and re-imported
  *   inside the block via `@import (multiple)` to shadow antd's light variables.
- * - base-dark-overrides.less and base-dark-business.less are re-compiled with glass
+ * - base-overrides.less and base-business.less are re-compiled with dark theme
  *   variables → the Less variables inside them resolve to semi-transparent rgba values.
  */
 
-/* Inherit base dark variables, then override with glass values */
-@import "./liquid-glass-vars.less";
+/* Inherit base variables, then override with dark/glass values */
+@import "./dark-vars.less";
 
-html[data-theme='liquid-glass'] {
+html[data-theme='dark'] {
   @import "ant-design-vue/lib/style/index.less";
   @import "ant-design-vue/lib/style/components.less";
   @import "../global.less";
-  @import (multiple) "./liquid-glass-vars.less";
+  @import (multiple) "./dark-vars.less";
 }
 
-/* Re-compile base business overrides with glass variables */
-@import "./base-dark-business.less";
-/* Re-compile base project overrides with glass variables */
-@import "./base-dark-overrides.less";
-/* Glass-specific overrides: backdrop-filter, highlights, radius, transitions */
-@import "./liquid-glass-overrides.less";
+/* Re-compile base business overrides with dark theme variables */
+@import "./base-business.less";
+/* Re-compile base project overrides with dark theme variables */
+@import "./base-overrides.less";
+/* Dark-specific overrides: backdrop-filter, highlights, radius, transitions */
+@import "./dark-overrides.less";

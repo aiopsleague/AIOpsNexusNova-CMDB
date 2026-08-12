@@ -9,11 +9,7 @@ const mixin = {
   computed: {
     ...mapState({
       layoutMode: state => state.app.layout,
-      navTheme: state => {
-        const t = state.app.theme
-        // liquid-glass is dark-based → antd menu/layout expects 'dark' or 'light'
-        return t === 'liquid-glass' ? 'dark' : t
-      },
+      navTheme: state => state.app.theme,
       primaryColor: state => state.app.color,
       colorWeak: state => state.app.weak,
       fixedHeader: state => state.app.fixedHeader,

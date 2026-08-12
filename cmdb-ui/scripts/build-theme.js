@@ -4,8 +4,8 @@
  * directly.
  *
  * Usage:
- *   node scripts/build-theme.js                  # builds all themes
- *   node scripts/build-theme.js liquid-glass     # builds liquid-glass.css only
+ *   node scripts/build-theme.js             # builds all themes
+ *   node scripts/build-theme.js dark        # builds dark.css only
  *
  * ant-design-vue 1.x has no built-in dark theme, so we compile each separately.
  */
@@ -17,7 +17,7 @@ const projectRoot = path.resolve(__dirname, '..')
 const themesDir = path.join(projectRoot, 'src/style/themes')
 
 // All known theme entry files
-const ALL_THEMES = ['liquid-glass']
+const ALL_THEMES = ['dark']
 
 function buildTargets() {
   const arg = process.argv[2]

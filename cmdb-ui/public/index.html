@@ -29,11 +29,10 @@
         }
         var mode = readLs('pro__THEME_MODE')
         var prefersDark = !!window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-        // The standalone 'dark' theme was removed — legacy persisted values map
-        // to the dark-based liquid-glass theme.
-        var isDark = mode === 'liquid-glass' || mode === 'dark' || ((!mode || mode === 'system') && prefersDark)
+        // 'liquid-glass' is a legacy value — the glass look is now the dark theme.
+        var isDark = mode === 'dark' || mode === 'liquid-glass' || ((!mode || mode === 'system') && prefersDark)
         if (isDark) {
-          document.documentElement.setAttribute('data-theme', 'liquid-glass')
+          document.documentElement.setAttribute('data-theme', 'dark')
           var style = document.createElement('style')
           style.id = 'theme-init'
           style.textContent = 'body{background-color:#080a10}#loading-mask{background-color:#080a10}'

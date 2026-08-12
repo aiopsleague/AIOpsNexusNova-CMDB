@@ -93,12 +93,11 @@ export default {
             }
           })
           // If no theme parameter is configured in var_mapping, pass the resolved
-          // app theme. Grafana has no glass theme, so the dark-based liquid-glass
-          // maps to Grafana's built-in 'dark'.
+          // app theme ('light' | 'dark') to Grafana.
           const hasThemeVar = (r.vars || []).some((v) => v.name === 'theme')
           if (!hasThemeVar) {
             const resolved = this.$store.state.app.theme || 'light'
-            url += `&theme=${resolved === 'liquid-glass' ? 'dark' : 'light'}`
+            url += `&theme=${resolved}`
           }
           this.iframeUrl = url
         }
