@@ -1,0 +1,165 @@
+/**
+ * Dark theme variables.
+ * antd variables: override AFTER importing antd full less (last definition wins).
+ * `@primary-1..@primary-10` must be explicit, otherwise colorPalette recomputes
+ * too-bright tints from the (unchanged) brand primary color.
+ * Project variables mirror static.less semantics with dark values.
+ */
+
+/* ==================== antd dark variables ==================== */
+/* base */
+@body-background: #141414;
+@component-background: #1f1f1f;
+@text-color: rgba(255, 255, 255, 0.85);
+@text-color-secondary: rgba(255, 255, 255, 0.45);
+@text-color-inverse: #fff;
+@heading-color: rgba(255, 255, 255, 0.85);
+@icon-color-hover: rgba(255, 255, 255, 0.75);
+@disabled-color: rgba(255, 255, 255, 0.3);
+@disabled-bg: rgba(255, 255, 255, 0.04);
+@background-color-light: rgba(255, 255, 255, 0.08);
+@background-color-base: rgba(255, 255, 255, 0.04);
+@border-color-base: #434343;
+@border-color-split: #303030;
+@border-color-inverse: #1f1f1f;
+@shadow-color: rgba(0, 0, 0, 0.45);
+@outline-color: rgba(47, 84, 235, 0.6);
+
+/* primary palette (must be explicit) */
+@primary-color: #2f54eb;
+@primary-1: #131629;
+@primary-2: #1a2342;
+@primary-3: #1f2f57;
+@primary-4: #253a6b;
+@primary-5: #2f54eb;
+@primary-6: #2f54eb;
+@primary-7: #4158c9;
+@primary-8: #32408f;
+@primary-9: #2a3566;
+@primary-10: #20284a;
+@item-active-bg: @primary-1;
+@item-hover-bg: @primary-1;
+@link-hover-color: @primary-5;
+
+/* layout */
+@layout-body-background: #141414;
+@layout-header-background: #1f1f1f;
+@layout-sider-background: #001529;
+@layout-trigger-background: #1f1f1f;
+@layout-trigger-color: rgba(255, 255, 255, 0.85);
+
+/* form / input */
+@input-bg: #1f1f1f;
+@input-placeholder-color: rgba(255, 255, 255, 0.3);
+@input-border-color: @border-color-base;
+@input-addon-bg: #2a2a2a;
+@input-number-handler-bg: #1f1f1f;
+@select-background: #1f1f1f;
+@select-dropdown-bg: #1f1f1f;
+@select-item-selected-bg: rgba(255, 255, 255, 0.08);
+@select-item-active-bg: @primary-1;
+
+/* button / tag */
+@btn-default-color: rgba(255, 255, 255, 0.85);
+@btn-default-bg: #1f1f1f;
+@btn-default-border: #434343;
+@btn-disable-color: rgba(255, 255, 255, 0.3);
+@btn-disable-bg: rgba(255, 255, 255, 0.04);
+@btn-disable-border: #303030;
+@tag-default-bg: rgba(255, 255, 255, 0.08);
+@tag-default-color: rgba(255, 255, 255, 0.85);
+
+/* table */
+@table-header-bg: #1f1f1f;
+@table-header-color: rgba(255, 255, 255, 0.85);
+@table-header-sort-bg: rgba(255, 255, 255, 0.04);
+@table-body-sort-bg: rgba(255, 255, 255, 0.01);
+@table-row-hover-bg: #262626;
+@table-selected-row-bg: #262626;
+@table-expanded-row-bg: #1f1f1f;
+@table-footer-bg: #1f1f1f;
+
+/* menu */
+@menu-bg: #1f1f1f;
+@menu-popup-bg: #1f1f1f;
+@menu-item-color: rgba(255, 255, 255, 0.85);
+@menu-highlight-color: @primary-color;
+@menu-dark-bg: #001529;
+@menu-dark-submenu-bg: #000c17;
+@menu-dark-highlight-color: #fff;
+
+/* popup / overlay */
+@popover-bg: #1f1f1f;
+@popover-arrow-color: #1f1f1f;
+@modal-header-bg: #1f1f1f;
+@modal-mask-bg: rgba(0, 0, 0, 0.65);
+@tooltip-bg: #434343;
+@tooltip-arrow-color: #434343;
+
+/* misc components */
+@card-background: #1f1f1f;
+@card-actions-background: #1a1a1a;
+@card-skeleton-bg: #303030;
+@collapse-header-bg: rgba(255, 255, 255, 0.04);
+@collapse-content-bg: #1f1f1f;
+@tabs-card-head-background: #1f1f1f;
+@tabs-card-active-color: @primary-color;
+@tree-node-hover-bg: rgba(255, 255, 255, 0.08);
+@tree-node-selected-bg: @primary-2;
+@descriptions-bg: #1a1a1a;
+@breadcrumb-base-color: rgba(255, 255, 255, 0.45);
+@breadcrumb-last-item-color: rgba(255, 255, 255, 0.85);
+@progress-remaining-color: rgba(255, 255, 255, 0.12);
+@slider-rail-background-color: #262626;
+@slider-handle-background-color: #1f1f1f;
+@skeleton-color: rgba(255, 255, 255, 0.12);
+@time-picker-selected-bg: rgba(255, 255, 255, 0.04);
+@page-header-back-color: rgba(255, 255, 255, 0.85);
+
+/* alert (function-color backgrounds, dark values from antd 4 dark theme) */
+@alert-success-bg-color: #162312;
+@alert-success-border-color: #274916;
+@alert-info-bg-color: #111d2c;
+@alert-info-border-color: #15395b;
+@alert-warning-bg-color: #2b2111;
+@alert-warning-border-color: #594214;
+@alert-error-bg-color: #2a1215;
+@alert-error-border-color: #58181c;
+
+/* input-number / slider extras */
+@input-number-handler-active-bg: #1a1a1a;
+@slider-rail-background-color-hover: #303030;
+
+/* ==================== project dark variables ==================== */
+/* mirror static.less semantics with dark values (consumed by dark-overrides.less) */
+@text-color_1: #e5e6eb;
+@text-color_2: #a9aeb8;
+@text-color_3: #8f959e;
+@text-color_4: #5d606e;
+@text-color_5: #3c3f4e;
+@text-color_6: #2a2d39;
+@text-color_7: #16181a;
+
+@primary-color_2: #7f97fa;
+@primary-color_3: #1a1f2e;
+@primary-color_4: #1f2738;
+@primary-color_5: #171e2e;
+@primary-color_6: #14181f;
+@primary-color_7: #141414;
+@primary-color_8: #b1c9ff;
+@primary-color_9: #3f75ff;
+
+@scrollbar-color: rgba(47, 122, 235, 0.5);
+
+@layout-content-background: @primary-color_7;
+@layout-header-height: 40px;
+@layout-header-font-color: rgba(255, 255, 255, 0.85);
+
+@layout-sidebar-color: #1f1f1f;
+@layout-sidebar-sub-color: #16181a;
+@layout-sidebar-selected-color: #1a1f2e;
+@layout-sidebar-arrow-color: #5d606e;
+@layout-sidebar-font-color: #a9aeb8;
+@layout-sidebar-icon-color: #5d606e;
+@layout-sidebar-selected-font-color: #7f97fa;
+@layout-sidebar-disabled-font-color: #5d606e;

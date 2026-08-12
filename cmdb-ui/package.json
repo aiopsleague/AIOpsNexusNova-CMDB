@@ -8,7 +8,11 @@
     "build:preview": "vue-cli-service build --mode preview",
     "lint": "vue-cli-service lint",
     "lint:nofix": "vue-cli-service lint --no-fix",
-    "test:unit": "vue-cli-service test:unit"
+    "test:unit": "vue-cli-service test:unit",
+    "theme:build": "node scripts/build-theme.js",
+    "preserve": "node scripts/build-theme.js",
+    "prebuild": "node scripts/build-theme.js",
+    "prebuild:preview": "node scripts/build-theme.js"
   },
   "dependencies": {
     "@antv/data-set": "^0.11.8",

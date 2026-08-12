@@ -1,0 +1,11 @@
+/**
+ * Dark theme compilation entry.
+ * Compiles antd full less + dark variables + project overrides into a standalone css
+ * via scripts/build-theme.js.
+ * NOTE: antd import must come BEFORE variable overrides (last definition wins).
+ * The `~` alias is not supported by bare less, so use the node_modules path style.
+ */
+@import "ant-design-vue/lib/style/index.less";
+@import "ant-design-vue/lib/style/components.less";
+@import "./dark-vars.less";
+@import "./dark-overrides.less";
