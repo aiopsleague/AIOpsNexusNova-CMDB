@@ -331,7 +331,9 @@ html[data-theme='dark'] {
   .ant-tag-lime { color: #7cb305; background: rgba(124, 179, 5, 0.12); border-color: rgba(124, 179, 5, 0.25); }
   .ant-tag-green { color: #49aa19; background: rgba(73, 170, 25, 0.12); border-color: rgba(73, 170, 25, 0.25); }
   .ant-tag-cyan { color: #08979c; background: rgba(8, 151, 156, 0.12); border-color: rgba(8, 151, 156, 0.25); }
-  .ant-tag-blue { color: #1d39c4; background: rgba(29, 57, 196, 0.12); border-color: rgba(29, 57, 196, 0.25); }
+  /* #1d39c4 (dark navy) was unreadable on the dark glass surface (~1.7:1).
+     #40a9ff (ant blue-5) keeps the hue with ~6:1 contrast. */
+  .ant-tag-blue { color: #40a9ff; background: rgba(29, 57, 196, 0.12); border-color: rgba(29, 57, 196, 0.25); }
   .ant-tag-geekblue { color: #6c5ce7; background: rgba(108, 92, 231, 0.12); border-color: rgba(108, 92, 231, 0.25); }
   .ant-tag-purple { color: #531dab; background: rgba(83, 29, 171, 0.12); border-color: rgba(83, 29, 171, 0.25); }
 }
@@ -2469,10 +2471,11 @@ html[data-theme='dark'] {
     }
   }
 
-  /* vxe header: glass + light text */
+  /* vxe header: glass + light text — bg matches the resource-data tables'
+     header (rgba(255,255,255,0.05), e.g. relation/history tables) */
   .operation-history-table .vxe-header--row,
   .operation-history-table .vxe-header--column {
-    background: rgba(255, 255, 255, 0.04) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
     color: #f0f0f3 !important;
     border-bottom-color: rgba(255, 255, 255, 0.08) !important;
   }
@@ -2855,5 +2858,65 @@ html[data-theme='dark'] {
     backdrop-filter: blur(24px) saturate(180%);
     -webkit-backdrop-filter: blur(24px) saturate(180%);
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+}
+
+/* ================================================================
+   M. ANT TABLE EXPANDED ROW — LIQUID GLASS
+   ================================================================
+   Frosted-glass surface for <a-table> expandable rows in dark mode
+   (e.g. prometheus alert detail in ciDetailPrometheus.vue). Covers all
+   nesting levels (ant-table-expanded-row-level-0/1/...). The row gets a
+   translucent blur; the content card gets the liquid-glass panel look.
+   ================================================================ */
+html[data-theme='dark'] {
+
+  /* Row surface: frosted translucent panel (beats the flat @table-expanded-row-bg) */
+  .ant-table-tbody > tr.ant-table-expanded-row,
+  .ant-table-tbody > tr.ant-table-expanded-row:hover {
+    background: rgba(30, 30, 40, 0.55);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+  }
+
+  /* Expanded cell: clear bg, comfortable padding, soft divider */
+  .ant-table-expanded-row > td {
+    background: transparent !important;
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  /* Expanded content card (prometheus alert detail): liquid-glass panel */
+  .ant-table-expanded-row > td > .prom-alert-detail {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 16px;
+    color: #f0f0f3;
+  }
+
+  /* Nested table inside an expanded row: blend into the glass */
+  .ant-table-expanded-row td > .ant-table-wrapper .ant-table {
+    background: transparent;
+    border-radius: 12px;
+  }
+
+  /* Prometheus alert detail section text: match the title color (#f0f0f3)
+     so section values/labels read identically to the section titles. Tags and
+     annotations keep their own semantic colors. */
+  .prom-alert-detail .prom-alert-detail-section {
+    color: #f0f0f3 !important;
+  }
+  .prom-alert-detail .prom-alert-detail-section > * {
+    color: #f0f0f3 !important;
+  }
+  /* Labels tags: white text matching the title color (blue pill bg/border kept) */
+  .prom-alert-detail .prom-alert-detail-tags .ant-tag {
+    color: #f0f0f3 !important;
+  }
+  .prom-alert-detail .prom-alert-annotation {
+    color: #b3b3c0 !important;
   }
 }
