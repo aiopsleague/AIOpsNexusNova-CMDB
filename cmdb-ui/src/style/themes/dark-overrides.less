@@ -674,6 +674,16 @@ html[data-theme='dark'] {
   .ci-history-stat-card {
     background: linear-gradient(135deg, rgba(30, 30, 40, 0.5) 0%, rgba(255, 255, 255, 0.06) 100%);
   }
+  /* Prometheus stat cards: liquid-glass surface (frosted + glass border/radius).
+     Active-state colored gradients below inherit the backdrop-filter. */
+  .prom-stat-card {
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
+  }
   .ci-history-stat-card {
     border-color: rgba(255, 255, 255, 0.08) !important;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25),
@@ -718,9 +728,82 @@ html[data-theme='dark'] {
   }
   .ci-detail-relation-topo .ci-detail-relation-topo-node .title { color: #f0f0f3; }
 
-  /* Relation topo: layout switch + node labels */
+  /* Relation topo: layout switch + node labels — liquid glass */
   .ci-detail-relation-topo .topo-layout-switch {
-    background: rgba(20, 20, 30, 0.85);
+    background: rgba(20, 20, 30, 0.6);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
+  }
+  /* Relation style label: readable on glass (overrides inline #666) */
+  .ci-detail-relation-topo .topo-layout-switch > span {
+    color: #f0f0f3 !important;
+  }
+  /* Radio layout buttons: cool liquid-glass segmented switch.
+     Inactive = frosted glass pills; active = glowing purple gradient capsule
+     with a gentle glow pulse; switching animates smoothly. */
+  .ci-detail-relation-topo .topo-layout-switch .ant-radio-button-wrapper {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #9999a6;
+    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
+    transition: color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                background 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .ci-detail-relation-topo .topo-layout-switch .ant-radio-button-wrapper:hover {
+    color: #f0f0f3;
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-1px);
+  }
+  .ci-detail-relation-topo .topo-layout-switch .ant-radio-button-wrapper-checked,
+  .ci-detail-relation-topo .topo-layout-switch .ant-radio-button-wrapper-checked:hover {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.7) 0%, rgba(99, 102, 241, 0.5) 100%);
+    border-color: rgba(167, 139, 250, 0.6);
+    color: #ffffff;
+    box-shadow: 0 0 16px rgba(124, 58, 237, 0.45),
+                0 4px 14px rgba(0, 0, 0, 0.3),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.35);
+    animation: topo-radio-glow 2.6s ease-in-out infinite;
+  }
+  @keyframes topo-radio-glow {
+    0%, 100% {
+      box-shadow: 0 0 14px rgba(124, 58, 237, 0.4),
+                  0 4px 14px rgba(0, 0, 0, 0.3),
+                  inset 0 1px 1px 0 rgba(255, 255, 255, 0.35);
+    }
+    50% {
+      box-shadow: 0 0 26px rgba(124, 58, 237, 0.65),
+                  0 6px 18px rgba(0, 0, 0, 0.32),
+                  inset 0 1px 1px 0 rgba(255, 255, 255, 0.45);
+    }
+  }
+  /* Respect OS-level reduced-motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    .ci-detail-relation-topo .topo-layout-switch .ant-radio-button-wrapper-checked {
+      animation: none;
+    }
+  }
+  /* Relation style switch (a-switch): glass track + solid knob */
+  .ci-detail-relation-topo .topo-layout-switch .ant-switch {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
+  }
+  .ci-detail-relation-topo .topo-layout-switch .ant-switch::after {
+    background: #f0f0f3;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  }
+  .ci-detail-relation-topo .topo-layout-switch .ant-switch-checked {
+    background: rgba(108, 92, 231, 0.55);
+    border-color: rgba(108, 92, 231, 0.6);
   }
   .ci-detail-relation-topo .butterflies-label {
     background: rgba(20, 20, 30, 0.8);
