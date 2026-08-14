@@ -2137,7 +2137,11 @@ html[data-theme='dark'] {
 
   /* CI detail page / instance list */
   .ci-detail-page { background-color: #080a10 !important; }
-  .cmdb-ci { background-color: #080a10 !important; }
+  .cmdb-ci {
+    background: linear-gradient(160deg, rgba(30, 30, 40, 0.5) 0%, rgba(30, 30, 40, 0.32) 50%, rgba(108, 92, 231, 0.05) 100%) !important;
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+  }
 
   /* CI history table wrapper (change history in ciDetailTab) */
   .ci-history-table {
