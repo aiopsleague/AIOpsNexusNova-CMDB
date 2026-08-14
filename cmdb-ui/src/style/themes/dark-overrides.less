@@ -749,6 +749,8 @@ html[data-theme='dark'] {
     background: rgba(255, 255, 255, 0.06);
     border-color: rgba(255, 255, 255, 0.08);
     color: #9999a6;
+    border-radius: 10px;
+    margin-right: 6px;
     backdrop-filter: blur(8px) saturate(150%);
     -webkit-backdrop-filter: blur(8px) saturate(150%);
     transition: color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
@@ -756,6 +758,18 @@ html[data-theme='dark'] {
                 border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
                 box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1),
                 transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  /* Keep antd's shared-border seam off the middle (border-left stays 0 on the
+     second pill) so the gap reads clean between the two rounded capsules.
+     Only the last button loses its trailing margin. */
+  .ci-detail-relation-topo .topo-layout-switch .ant-radio-button-wrapper:last-child {
+    margin-right: 0;
+  }
+  /* Hide antd's segmented divider line (a 1px ::before on every non-first
+     button) — the standalone rounded pills don't want a vertical seam between
+     them, which was the "line" showing in the gap. */
+  .ci-detail-relation-topo .topo-layout-switch .ant-radio-button-wrapper:not(:first-child)::before {
+    display: none;
   }
   .ci-detail-relation-topo .topo-layout-switch .ant-radio-button-wrapper:hover {
     color: #f0f0f3;
@@ -834,9 +848,29 @@ html[data-theme='dark'] {
   .split-pane.column .pane-trigger {
     background-color: rgba(20, 20, 30, 0.6) !important;
   }
+  /* Collapse toggle: restrained liquid glass — translucent frosted surface,
+     faint glass edge, purple arrow. No heavy shadow/glow (keeps it quiet).
+     !important beats the component-scoped #f0f2f5 background injected at
+     runtime (same reason pane-trigger/pane-one use !important). */
   .split-pane .collapse-btn {
-    background-color: rgba(20, 20, 30, 0.6);
-    border-color: transparent;
+    background: rgba(255, 255, 255, 0.07) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px 0 0 8px;
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.08);
+    transition: all 0.25s ease;
+  }
+  .split-pane .collapse-btn:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+    border-color: rgba(167, 139, 250, 0.35) !important;
+  }
+  .split-pane .collapse-btn .anticon {
+    color: #a29bfe !important;
+    transition: color 0.25s ease;
+  }
+  .split-pane .collapse-btn:hover .anticon {
+    color: #f0f0f3 !important;
   }
   .split-pane .spliter-wrap { background-color: #080a10; }
   .split-pane .pane-one,
@@ -2066,12 +2100,59 @@ html[data-theme='dark'] {
   .cmdb-batch-upload-card .ant-card-head .ant-card-head-title { color: #f0f0f3 !important; }
   .ci-type-choice-label { color: #f0f0f3; }
   .ci-type-choice-label .required-mark { color: #9999a6; }
+  /* Steps: wait-state title/icon + description are hardcoded dim in the scoped
+     component style (wait title #9999a6, wait icon rgba(0,0,0,0.25), desc #9999a6)
+     → unreadable on dark. Lift them to readable light tones. */
+  .cmdb-batch-upload-steps .ant-steps-item-title {
+    color: #f0f0f3 !important;
+  }
+  .cmdb-batch-upload-steps .ant-steps-item-description {
+    color: #b3b3c0 !important;
+  }
+  .cmdb-batch-upload-steps .ant-steps-item-wait .ant-steps-item-icon {
+    border-color: rgba(255, 255, 255, 0.2) !important;
+  }
+  .cmdb-batch-upload-steps .ant-steps-item-wait .ant-steps-item-icon .ant-steps-icon {
+    color: #9999a6 !important;
+  }
   .cmdb-batch-upload-table .upload-placeholder { background-color: rgba(30, 30, 40, 0.5); }
   .cmdb-batch-upload-table .upload-placeholder-title { color: #f0f0f3; }
   .cmdb-batch-upload-table .upload-placeholder-hint { color: #9999a6; }
   .cmdb-batch-upload-dragger .cmdb-batch-upload-dragger-file { background-color: rgba(255, 255, 255, 0.06); }
   .cmdb-batch-upload-dragger .cmdb-batch-upload-tips { color: #9999a6; }
   .cmdb-batch-upload-dragger .cmdb-batch-upload-tips p:first-child { color: #f0f0f3; }
+  /* Dragger: liquid glass — frosted translucent surface + purple dashed accent
+     on hover. The component's light-mode fill (@primary-color_7 = #f7f8fa)
+     leaks white on hover; re-draw the dashed border translucent and swap the
+     fill to a frosted glass surface. The component's &:hover does NOT exclude
+     .ant-upload-disabled, so the disabled state also needs its hover pinned to
+     the resting dark glass (no white, no purple).
+     NOTE: the background value is escaped (~"...") so Less does NOT treat the
+     `/` in `0 0 / 15px 1px` as division (which corrupted background-size). */
+  .cmdb-batch-upload-dragger .ant-upload.ant-upload-drag,
+  .cmdb-batch-upload-dragger .ant-upload.ant-upload-drag.ant-upload-disabled:hover {
+    background: ~"linear-gradient(90deg, rgba(255, 255, 255, 0.14) 50%, transparent 0) repeat-x 0 0 / 15px 1px, linear-gradient(90deg, rgba(255, 255, 255, 0.14) 50%, transparent 0) repeat-x 0 100% / 15px 1px, linear-gradient(0deg, rgba(255, 255, 255, 0.14) 50%, transparent 0) repeat-y 0 0 / 1px 15px, linear-gradient(0deg, rgba(255, 255, 255, 0.14) 50%, transparent 0) repeat-y 100% 0 / 1px 15px, rgba(255, 255, 255, 0.03) !important";
+    border-radius: 8px;
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  /* Hover: lift + purple glow + gradient glass fill + springy icon — a livelier
+     liquid-glass affordance. transform/box-shadow animate on the spring curve. */
+  .cmdb-batch-upload-dragger .ant-upload.ant-upload-drag:not(.ant-upload-disabled):hover {
+    background: ~"linear-gradient(90deg, rgba(124, 58, 237, 0.7) 50%, transparent 0) repeat-x 0 0 / 15px 1px, linear-gradient(90deg, rgba(124, 58, 237, 0.7) 50%, transparent 0) repeat-x 0 100% / 15px 1px, linear-gradient(0deg, rgba(124, 58, 237, 0.7) 50%, transparent 0) repeat-y 0 0 / 1px 15px, linear-gradient(0deg, rgba(124, 58, 237, 0.7) 50%, transparent 0) repeat-y 100% 0 / 1px 15px, linear-gradient(135deg, rgba(124, 58, 237, 0.22) 0%, rgba(99, 102, 241, 0.14) 100%) !important";
+    transform: translateY(-2px) scale(1.005);
+    box-shadow: 0 0 24px rgba(124, 58, 237, 0.35),
+                0 10px 28px rgba(0, 0, 0, 0.3),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
+  }
+  /* Upload icon bounces up slightly on hover for extra life */
+  .cmdb-batch-upload-dragger .ant-upload.ant-upload-drag .ant-upload-drag-container > i {
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .cmdb-batch-upload-dragger .ant-upload.ant-upload-drag:not(.ant-upload-disabled):hover .ant-upload-drag-container > i {
+    transform: translateY(-4px) scale(1.08);
+  }
   .cmdb-batch-upload-result .error-details .error-list { background-color: rgba(253, 76, 106, 0.08); }
   .cmdb-batch-upload-result .upload-result-summary .success-text,
   .cmdb-batch-upload-result .upload-result-summary .success-text strong { color: #9999a6; }
