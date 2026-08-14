@@ -7,7 +7,7 @@
         }
       }
     "
-    :class="{ 'attribute-card': true, 'attribute-card-add': isAdd, 'attribute-card-inherited': inherited }"
+    :class="['attribute-card', { 'attribute-card-add': isAdd, 'attribute-card-inherited': inherited }, typeClass]"
   >
     <div class="attribute-card-uniqueKey" v-if="isUnique">{{ $t('cmdb.ciType.uniqueKey') }}</div>
     <div class="attribute-card-uniqueKey" v-if="isShowId">{{ $t('cmdb.ciType.show') }}</div>
@@ -191,6 +191,11 @@ export default {
     },
     inherited() {
       return this.property?.inherited || false
+    },
+    typeClass() {
+      if (this.isAdd) return ''
+      const type = getPropertyType(this.property)
+      return type ? `attribute-card-type-${type}` : ''
     },
   },
   methods: {

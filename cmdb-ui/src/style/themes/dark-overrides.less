@@ -1443,9 +1443,95 @@ html[data-theme='dark'] {
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 10px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                box-shadow 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                background-color 0.35s ease;
   }
   .attribute-card:hover {
-    box-shadow: 0 8px 24px rgba(108, 92, 231, 0.25) !important;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.4),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.15) !important;
+    transform: translateY(-3px);
+  }
+  /* Per-type accent color — color-codes each attribute value type with a
+     distinct liquid-glass tint. `--card-accent` drives the left accent bar +
+     hover glow; `--card-accent-rgb` drives the translucent tinted background.
+     Types: 0 int · 1 float · 2 short-text · 3 datetime · 4 date · 5 time ·
+     6 JSON · 7 password · 8 link · 9 long-text · 10 bool · 11 reference ·
+     12 file */
+  .attribute-card-type-0  { --card-accent: #ff4d4f; --card-accent-rgb: 255, 77, 79; }
+  .attribute-card-type-1  { --card-accent: #faad14; --card-accent-rgb: 250, 173, 20; }
+  .attribute-card-type-2  { --card-accent: #fa8c16; --card-accent-rgb: 250, 140, 22; }
+  .attribute-card-type-3  { --card-accent: #b37feb; --card-accent-rgb: 179, 127, 235; }
+  .attribute-card-type-4  { --card-accent: #52c41a; --card-accent-rgb: 82, 196, 26; }
+  .attribute-card-type-5  { --card-accent: #13c2c2; --card-accent-rgb: 19, 194, 194; }
+  .attribute-card-type-6  { --card-accent: #eb2f96; --card-accent-rgb: 235, 47, 150; }
+  .attribute-card-type-7  { --card-accent: #36cfc9; --card-accent-rgb: 54, 207, 201; }
+  .attribute-card-type-8  { --card-accent: #2f54eb; --card-accent-rgb: 47, 84, 235; }
+  .attribute-card-type-9  { --card-accent: #8c8c8c; --card-accent-rgb: 140, 140, 140; }
+  .attribute-card-type-10 { --card-accent: #a0d911; --card-accent-rgb: 160, 217, 17; }
+  .attribute-card-type-11 { --card-accent: #597ef7; --card-accent-rgb: 89, 126, 247; }
+  .attribute-card-type-12 { --card-accent: #9254de; --card-accent-rgb: 146, 84, 222; }
+
+  /* Tinted glass surface + accent-tinted border */
+  .attribute-card-type-0,
+  .attribute-card-type-1,
+  .attribute-card-type-2,
+  .attribute-card-type-3,
+  .attribute-card-type-4,
+  .attribute-card-type-5,
+  .attribute-card-type-6,
+  .attribute-card-type-7,
+  .attribute-card-type-8,
+  .attribute-card-type-9,
+  .attribute-card-type-10,
+  .attribute-card-type-11,
+  .attribute-card-type-12 {
+    background-color: rgba(var(--card-accent-rgb), 0.10) !important;
+    border-color: rgba(var(--card-accent-rgb), 0.18) !important;
+  }
+
+  /* Left accent bar: the type's signature color strip + soft glow */
+  .attribute-card-type-0::before,
+  .attribute-card-type-1::before,
+  .attribute-card-type-2::before,
+  .attribute-card-type-3::before,
+  .attribute-card-type-4::before,
+  .attribute-card-type-5::before,
+  .attribute-card-type-6::before,
+  .attribute-card-type-7::before,
+  .attribute-card-type-8::before,
+  .attribute-card-type-9::before,
+  .attribute-card-type-10::before,
+  .attribute-card-type-11::before,
+  .attribute-card-type-12::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--card-accent);
+    border-radius: 10px 0 0 10px;
+    box-shadow: 0 0 10px rgba(var(--card-accent-rgb), 0.55);
+  }
+
+  /* Hover: brighter tint + accent-colored glow */
+  .attribute-card-type-0:hover,
+  .attribute-card-type-1:hover,
+  .attribute-card-type-2:hover,
+  .attribute-card-type-3:hover,
+  .attribute-card-type-4:hover,
+  .attribute-card-type-5:hover,
+  .attribute-card-type-6:hover,
+  .attribute-card-type-7:hover,
+  .attribute-card-type-8:hover,
+  .attribute-card-type-9:hover,
+  .attribute-card-type-10:hover,
+  .attribute-card-type-11:hover,
+  .attribute-card-type-12:hover {
+    background-color: rgba(var(--card-accent-rgb), 0.16) !important;
+    box-shadow: 0 10px 26px rgba(var(--card-accent-rgb), 0.35),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.15) !important;
   }
   /* Add-attribute card (新增属性): the scoped .attribute-card-add:hover hardcodes
      a near-white #f9fbff background that leaks into dark mode — swap it to a
@@ -1490,14 +1576,15 @@ html[data-theme='dark'] {
     background: var(--ops-value-type-icon-bg) !important;
     backdrop-filter: blur(8px) saturate(150%);
     -webkit-backdrop-filter: blur(8px) saturate(150%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(var(--card-accent-rgb), 0.22) !important;
     border-radius: 6px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18), 0 1px 2px rgba(108, 92, 231, 0.25) !important;
-    color: #a29bfe !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18), 0 1px 2px rgba(var(--card-accent-rgb), 0.35) !important;
+    color: var(--card-accent) !important;
   }
+  .attribute-card-value-type-icon .value-type-icon,
   .attribute-card-value-type-icon .ops-icon,
   .attribute-card-value-type-icon i {
-    color: #a29bfe !important;
+    color: var(--card-accent) !important;
   }
   .value-type-icon {
     // single-color value-type icons inherit currentColor — match liquid-glass accent in dark mode
