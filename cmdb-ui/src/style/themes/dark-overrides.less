@@ -176,7 +176,26 @@ html[data-theme='dark'] {
                 inset 0 1px 2px 0 rgba(255, 255, 255, 0.6);
   }
 
-  /* ---- A6. Modal body: subtle glass surface ---- */
+  /* ---- A6. Modal: liquid-glass shell (frosted header + glass body) ---- */
+  /* .ant-modal-content gets border-radius in A3, but without clipping the
+     header's square background bleeds past the top corners — clip the shell
+     so the glass radius reads through. */
+  .ant-modal-content {
+    overflow: hidden;
+  }
+  /* Header: dark-vars sets @modal-header-bg to an opaque rgba(30,30,40,0.85)
+     which reads as a solid panel — swap to a frosted-glass surface (matches
+     the card head in A7) so the whole modal reads as one liquid-glass sheet. */
+  .ant-modal-header {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--glass-radius-lg) var(--glass-radius-lg) 0 0;
+  }
+  .ant-modal-title {
+    color: #f0f0f3;
+  }
   .ant-modal-body {
     background: rgba(255, 255, 255, 0.02);
     border-radius: 0 0 14px 14px;
@@ -3196,5 +3215,149 @@ html[data-theme='dark'] {
   }
   .prom-alert-detail .prom-alert-annotation {
     color: #b3b3c0 !important;
+  }
+}
+
+/* ================================================================
+   N. FILE MANAGEMENT DIALOG — LIQUID GLASS
+   ================================================================
+   CiFileField.vue opens a "file management" modal (a-modal) whose scoped
+   styles hardcode light-mode colors. Adapt the upload dragger, file list,
+   storage badges, action buttons, footer and trigger to the liquid-glass
+   visual. The modal shell (.ant-modal-content) already inherits the glass
+   treatment from section A.
+   ================================================================ */
+html[data-theme='dark'] {
+
+  /* Trigger button (preview/edit): glass dashed outline + purple accent */
+  .ci-file-field-trigger {
+    border-color: rgba(255, 255, 255, 0.18);
+    color: #a29bfe;
+    background: rgba(255, 255, 255, 0.02);
+
+    &:hover {
+      border-color: #a29bfe;
+      background: rgba(108, 92, 231, 0.12);
+    }
+
+    &-editable {
+      background: rgba(255, 255, 255, 0.04);
+    }
+  }
+
+  /* Upload dragger: frosted translucent surface + dashed glass edges, purple
+     glow on hover (mirrors the batch-upload dragger). `border: none` removes
+     the hardcoded dashed border — the gradient dashed edges replace it. The
+     background is escaped (~"...") so Less does not treat the `/` in
+     `0 0 / 15px 1px` as division. */
+  .file-dialog-uploader.ant-upload.ant-upload-drag,
+  .file-dialog-uploader.ant-upload.ant-upload-drag.ant-upload-disabled:hover {
+    border: none;
+    background: ~"linear-gradient(90deg, rgba(255, 255, 255, 0.14) 50%, transparent 0) repeat-x 0 0 / 15px 1px, linear-gradient(90deg, rgba(255, 255, 255, 0.14) 50%, transparent 0) repeat-x 0 100% / 15px 1px, linear-gradient(0deg, rgba(255, 255, 255, 0.14) 50%, transparent 0) repeat-y 0 0 / 1px 15px, linear-gradient(0deg, rgba(255, 255, 255, 0.14) 50%, transparent 0) repeat-y 100% 0 / 1px 15px, rgba(255, 255, 255, 0.03) !important";
+    border-radius: 12px;
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Hover: lift + purple glow + gradient glass fill */
+  .file-dialog-uploader.ant-upload.ant-upload-drag:not(.ant-upload-disabled):hover {
+    background: ~"linear-gradient(90deg, rgba(124, 58, 237, 0.7) 50%, transparent 0) repeat-x 0 0 / 15px 1px, linear-gradient(90deg, rgba(124, 58, 237, 0.7) 50%, transparent 0) repeat-x 0 100% / 15px 1px, linear-gradient(0deg, rgba(124, 58, 237, 0.7) 50%, transparent 0) repeat-y 0 0 / 1px 15px, linear-gradient(0deg, rgba(124, 58, 237, 0.7) 50%, transparent 0) repeat-y 100% 0 / 1px 15px, linear-gradient(135deg, rgba(124, 58, 237, 0.22) 0%, rgba(99, 102, 241, 0.14) 100%) !important";
+    transform: translateY(-2px) scale(1.005);
+    box-shadow: 0 0 24px rgba(124, 58, 237, 0.35),
+                0 10px 28px rgba(0, 0, 0, 0.3),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
+  }
+
+  /* Upload icon: the inline `color: #2f54eb` leaks the light blue — swap to
+     purple accent and bounce up on hover for life */
+  .file-dialog-uploader .upload-drag-icon .anticon {
+    color: #a29bfe !important;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .file-dialog-uploader.ant-upload.ant-upload-drag:not(.ant-upload-disabled):hover .upload-drag-icon .anticon {
+    transform: translateY(-4px) scale(1.08);
+  }
+
+  .file-dialog-uploader .upload-drag-text {
+    color: #f0f0f3;
+  }
+  .file-dialog-uploader .upload-drag-hint {
+    color: #9999a6;
+  }
+
+  /* Uploading indicator: glass purple instead of light blue */
+  .file-dialog-uploading {
+    background: rgba(108, 92, 231, 0.12);
+    border-color: rgba(108, 92, 231, 0.35);
+    color: #d9d6ff;
+  }
+
+  /* File list container */
+  .file-dialog-list {
+    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .file-dialog-item {
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+  }
+
+  .file-dialog-item-icon .file-dialog-icon {
+    color: #9999a6;
+  }
+
+  .file-dialog-item-name {
+    color: #f0f0f3;
+  }
+
+  /* Storage backend badges (local / s3 / unknown) */
+  .file-dialog-item-storage {
+    &.storage-local {
+      color: #a29bfe;
+      background: rgba(108, 92, 231, 0.15);
+      border-color: rgba(108, 92, 231, 0.3);
+    }
+    &.storage-s3 {
+      color: #d87a16;
+      background: rgba(216, 122, 22, 0.14);
+      border-color: rgba(216, 122, 22, 0.3);
+    }
+    &.storage-unknown {
+      color: #9999a6;
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+  }
+
+  .file-dialog-item-meta {
+    color: #9999a6;
+  }
+
+  /* Action buttons */
+  .file-dialog-item-actions .file-action-btn {
+    color: #b3b3c0;
+
+    &:hover {
+      color: #a29bfe;
+      background: rgba(108, 92, 231, 0.12);
+    }
+
+    &.file-action-delete:hover {
+      color: #ff6b72;
+      background: rgba(255, 77, 79, 0.12);
+    }
+  }
+
+  /* Footer */
+  .file-dialog-footer {
+    border-top-color: rgba(255, 255, 255, 0.08);
+  }
+  .file-dialog-count {
+    color: #9999a6;
   }
 }
