@@ -1,6 +1,6 @@
 <template>
   <div class="preference-relation-wrapper">
-    <div class="ci-type-relation">
+    <div class="ci-type-relation" :style="{ height: `${windowHeight - 64}px` }">
       <div class="ci-type-relation-header">
         <a-space>
           <a-button
@@ -133,6 +133,11 @@ export default {
       isPullConfig: false,
       loading: false,
     }
+  },
+  computed: {
+    windowHeight() {
+      return this.$store.state.windowHeight
+    },
   },
   async created() {
     await getSystemConfig({ name: 'ci_type_relation_layout' }).then((res) => {
