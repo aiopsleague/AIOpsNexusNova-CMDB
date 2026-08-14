@@ -1447,6 +1447,26 @@ html[data-theme='dark'] {
   .attribute-card:hover {
     box-shadow: 0 8px 24px rgba(108, 92, 231, 0.25) !important;
   }
+  /* Add-attribute card (新增属性): the scoped .attribute-card-add:hover hardcodes
+     a near-white #f9fbff background that leaks into dark mode — swap it to a
+     liquid-glass purple tint, and re-draw its dashed outline + label in glass
+     tones so the whole placeholder reads as liquid glass. */
+  .attribute-card-add:hover {
+    box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.35),
+                0 6px 18px rgba(124, 58, 237, 0.32) !important;
+    background-color: rgba(124, 58, 237, 0.22) !important;
+  }
+  .attribute-card-add::after {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.14) 50%, transparent 0) repeat-x,
+                linear-gradient(90deg, rgba(255, 255, 255, 0.14) 50%, transparent 0) repeat-x,
+                linear-gradient(0deg, rgba(255, 255, 255, 0.14) 50%, transparent 0) repeat-y,
+                linear-gradient(0deg, rgba(255, 255, 255, 0.14) 50%, transparent 0) repeat-y !important;
+    background-size: 15px 1px, 15px 1px, 1px 15px, 1px 15px;
+    background-position: 0 0, 0 100%, 0 0, 100% 0;
+  }
+  .attribute-card-add div {
+    color: #9999a6 !important;
+  }
   .attribute-card .attribute-card-name {
     color: #f0f0f3 !important;
   }
