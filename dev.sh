@@ -16,13 +16,18 @@
 #   ./dev.sh status                     # 查看各服务状态
 #   ./dev.sh logs [api|worker|ui]       # 跟踪某个服务的日志（默认 api）
 #   ./dev.sh init [fastapi|flask]       # 数据库初始化（建表/缓存/ACL/部门等）
+#   ./dev.sh start core [--init]        # 启动核心服务 db+api+worker+ui（可选 --init）
+#   ./dev.sh clear-logs                 # 删除 .dev/ 下的所有日志文件
 #
-# 服务名：db、fastapi、flask、ui、worker、init、kkfileview、minio、all（all 与留空等价，= db+fastapi+worker+ui+kkfileview+minio）
+# 服务名：db、fastapi、flask、ui、worker、init、kkfileview、minio、core、all
+#         all 与留空等价，= db+fastapi+worker+ui+kkfileview+minio
+#         core = db+api+worker+ui（不含可选的 kkfileview/minio）
 # 选项：
 #   --flask / --fastapi  指定后端实现（同直接写 flask/fastapi 服务名；
 #                        flask 需要先在 cmdb-api 里 pipenv install）
-#   --init               start 全部时在启动后端前跑一遍初始化命令（首次建库时用）
+#   --init               start 全部/core 时在启动后端前跑一遍初始化命令（首次建库时用）
 #   --keep-db            stop 全部时保留 MySQL/Redis 容器
+#   --clear-logs         执行命令前删除 .dev/ 下的所有日志文件（可搭配任意命令）
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -33,6 +38,7 @@ BACKEND=fastapi
 WITH_WORKER=0
 DO_INIT=0
 KEEP_DB=0
+CLEAR_LOGS=0
 
 # 颜色输出
 c_green() { printf '\033[32m%s\033[0m\n' "$*"; }
@@ -55,6 +61,17 @@ UI_PORT=8000
 
 pid_file() { echo "$RUN_DIR/$1.pid"; }
 log_file() { echo "$RUN_DIR/$1.log"; }
+
+# 删除 .dev/ 下的所有日志文件
+clear_logs() {
+    local n=0 f
+    for f in "$RUN_DIR"/*.log; do
+        [[ -e "$f" ]] || continue
+        rm -f "$f"
+        n=$((n + 1))
+    done
+    c_yellow "已删除 $n 个日志文件（.dev/*.log）"
+}
 
 # 进程识别用命令行模式而不是 pid 文件：uvicorn --reload / celery 会 fork 子
 # 进程，pid 文件容易漂移；模式匹配对 stop/status 都可靠。
@@ -283,6 +300,7 @@ start_one() {  # $1=服务名
         init)          run_init ;;
         kkfileview)    kkfileview_start ;;
         minio)         minio_start ;;
+        core)          do_start_core ;;
         all)           do_start_all ;;
         *) c_red "未知服务：$1"; return 2 ;;
     esac
@@ -297,6 +315,7 @@ stop_one() {  # $1=服务名
         init)          c_yellow "init 不是常驻进程，无需停止" ;;
         kkfileview)    kkfileview_stop ;;
         minio)         minio_stop ;;
+        core)          do_stop_core ;;
         all)           do_stop_all ;;
         *) c_red "未知服务：$1"; return 2 ;;
     esac
@@ -327,6 +346,27 @@ do_stop_all() {
     minio_stop
     [[ "$KEEP_DB" == 1 ]] || db_stop
     c_green "停止完成"
+}
+
+do_start_core() {
+    db_start
+    [[ "$DO_INIT" == 1 ]] && run_init
+    api_start
+    worker_start
+    ui_start
+    echo
+    c_green "核心服务启动完成："
+    echo "  前端 http://127.0.0.1:$UI_PORT  (demo / 123456)"
+    echo "  后端 http://127.0.0.1:$API_PORT  ($BACKEND)"
+    do_status
+}
+
+do_stop_core() {
+    ui_stop
+    worker_stop
+    api_stop
+    [[ "$KEEP_DB" == 1 ]] || db_stop
+    c_green "核心服务停止完成"
 }
 
 do_start() {
@@ -384,7 +424,8 @@ while [[ $# -gt 0 ]]; do
         --worker)  WITH_WORKER=1 ;;
         --init)    DO_INIT=1 ;;
         --keep-db) KEEP_DB=1 ;;
-        db|fastapi|flask|api|ui|worker|init|kkfileview|minio|all)
+        --clear-logs) CLEAR_LOGS=1 ;;
+        db|fastapi|flask|api|ui|worker|init|kkfileview|minio|core|all)
             if [[ "$CMD" == start || "$CMD" == stop || "$CMD" == restart ]]; then
                 SERVICES+=("$1")
                 # 服务名里明确写了后端实现的，以此为准
@@ -403,6 +444,8 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
+[[ "$CLEAR_LOGS" == 1 ]] && clear_logs
+
 case "$CMD" in
     start)   do_start ;;
     stop)    do_stop ;;
@@ -410,8 +453,9 @@ case "$CMD" in
     status)  do_status ;;
     logs)    name="${LOGS_NAME:-api}"; tail -f "$RUN_DIR/$name.log" ;;
     init)    run_init ;;
+    clear-logs) clear_logs ;;
     *)
-        sed -n '2,29p' "$0"
+        sed -n '2,30p' "$0"
         exit 2
         ;;
 esac
