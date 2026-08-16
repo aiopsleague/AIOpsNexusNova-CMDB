@@ -156,7 +156,7 @@ onMounted(() => {
   }
 })
 
-defineExpose({ fuzzySearch, expression, handleSubmit })
+defineExpose({ fuzzySearch, expression, currenCiType, ciTypeGroup, handleSubmit })
 </script>
 
 <template>

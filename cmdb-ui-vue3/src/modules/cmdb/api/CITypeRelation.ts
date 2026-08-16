@@ -12,6 +12,16 @@ export function getCITypeParent(CITypeID: string | number): Promise<any> {
   return request.get(`${urlPrefix}/ci_type_relations/${CITypeID}/parents`)
 }
 
+/** Fetch the recursively-expanded second-level children of a CI type. */
+export function getRecursive_level2children(type_id: string | number): Promise<any> {
+  return request.get(`${urlPrefix}/ci_type_relations/${type_id}/recursive_level2children`)
+}
+
+/** Fetch the relation paths between a source CI type and target CI types. */
+export function getCITypeRelationPath(params: Record<string, unknown>): Promise<any> {
+  return request.get(`${urlPrefix}/ci_type_relations/path`, { params })
+}
+
 /** Check whether a role can edit relations between two CI types. */
 export function getCanEditByParentIdChildId(parent_id: string | number, child_id: string | number): Promise<any> {
   return request.get(`${urlPrefix}/ci_type_relations/${parent_id}/${child_id}/can_edit`)
