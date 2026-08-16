@@ -81,3 +81,8 @@ export function getSnmpAttributes(type: string, name: string): Promise<any> {
 export function getHttpAttrMapping(name: string, resource: string): Promise<any> {
   return request.get(`${urlPrefix}/adr/http/${name}/mapping`, { params: { resource } })
 }
+
+/** Fetch the HTTP accounts configured for an auto-discovery rule. */
+export function getHTTPAccounts(params?: Record<string, unknown>): Promise<any> {
+  return request.get(`${urlPrefix}/adr/accounts`, { params })
+}
