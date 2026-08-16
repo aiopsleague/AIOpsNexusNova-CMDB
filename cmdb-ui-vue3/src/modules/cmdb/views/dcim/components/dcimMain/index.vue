@@ -5,9 +5,12 @@ import { useI18n } from 'vue-i18n'
 import { AppstoreOutlined, PlusCircleOutlined, TableOutlined } from '@ant-design/icons-vue'
 import { DCIM_TYPE } from '../../constants'
 import { getDCIMRacks } from '@/modules/cmdb/api/dcim'
-import { getCITableColumns } from '@/modules/cmdb/utils/helper'
+import { cloneDeep, getCITableColumns } from '@/modules/cmdb/utils/helper'
 import dcimNullImg from '@/assets/dcim_null.png'
 import DCIMStats from './dcimStats.vue'
+import RackGrid from './rackGrid.vue'
+import RackTable from './rackTable.vue'
+import RackDetail from '../rackDetail/index.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -31,6 +34,7 @@ const emit = defineEmits<{
 const { t } = useI18n()
 
 const rackMainRef = ref<HTMLElement | null>(null)
+const rackDetailRef = ref<InstanceType<typeof RackDetail>>()
 
 const searchValue = ref('')
 const currentRackType = ref('all')
@@ -75,6 +79,24 @@ const rackTypeSelectOption = computed(() => {
   })
 
   return selectOption
+})
+
+const filterRackList = computed(() => {
+  let list = cloneDeep(rackList.value)
+
+  if (searchValue.value) {
+    list = list.filter((item) => item.name.indexOf(searchValue.value) !== -1)
+  }
+
+  if (currentRackType.value !== 'all') {
+    if (currentRackType.value === 'unitAbnormal') {
+      list = list.filter((item) => item.u_slot_abnormal)
+    } else {
+      list = list.filter((item) => item.rack_type === currentRackType.value)
+    }
+  }
+
+  return list
 })
 
 async function initData() {
@@ -130,6 +152,10 @@ function addRack() {
     dcimType: DCIM_TYPE.RACK,
     parentId: props.roomId,
   })
+}
+
+function openRackDetail(data: any) {
+  rackDetailRef.value?.open(data._id)
 }
 
 watch(
@@ -204,10 +230,25 @@ defineExpose({ getRackList })
       </div>
 
       <div class="rack-wrap">
-        <!-- TODO: wire up RackGrid (grid layout) / RackTable (table layout) using `filterRackList` and `columns` -->
+        <RackGrid v-if="currentLayout === 'grid'" :rack-list="filterRackList" @open-rack-detail="openRackDetail" />
+
+        <RackTable
+          v-if="currentLayout === 'table'"
+          :rack-list="filterRackList"
+          :columns="columns"
+          :preference-attr-list="preferenceAttrList"
+          :c-i-type-id="rackCITYpe.id"
+        />
       </div>
 
-      <!-- TODO: wire up RackDetail (:room-id="roomId" :rack-c-i-type="rackCITYpe" :rack-list="rackList" @open-form @refresh-rack-list) -->
+      <RackDetail
+        ref="rackDetailRef"
+        :room-id="roomId"
+        :rack-c-i-type="rackCITYpe"
+        :rack-list="rackList"
+        @open-form="(data: any) => emit('openForm', data)"
+        @refresh-rack-list="getRackList"
+      />
     </template>
   </div>
 </template>
