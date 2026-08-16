@@ -86,3 +86,63 @@ export function getHttpAttrMapping(name: string, resource: string): Promise<any>
 export function getHTTPAccounts(params?: Record<string, unknown>): Promise<any> {
   return request.get(`${urlPrefix}/adr/accounts`, { params })
 }
+
+/** Save the HTTP accounts configured for an auto-discovery rule. */
+export function postHTTPAccounts(data: Record<string, unknown>): Promise<any> {
+  return request.post(`${urlPrefix}/adr/accounts`, data)
+}
+
+/** Create an auto-discovery rule. */
+export function postDiscovery(data: Record<string, unknown>): Promise<any> {
+  return request.post(`${urlPrefix}/adr`, data)
+}
+
+/** Update an auto-discovery rule. */
+export function putDiscovery(id: string | number, data: Record<string, unknown>): Promise<any> {
+  return request.put(`${urlPrefix}/adr/${id}`, data)
+}
+
+/** Fetch the CI type groups (with nested ci_types) of the discovery pool. */
+export function getADCCiTypes(params?: Record<string, unknown>): Promise<any> {
+  return request.get(`${urlPrefix}/adc/ci_types`, { params })
+}
+
+/** Fetch the attributes of a discovery-pool CI type. */
+export function getADCCiTypesAttrs(typeId: string | number): Promise<any> {
+  return request.get(`${urlPrefix}/adc/ci_types/${typeId}/attributes`)
+}
+
+/** Accept a discovery-pool record into the CMDB. */
+export function updateADCAccept(adcId: string | number): Promise<any> {
+  return request.put(`${urlPrefix}/adc/${adcId}/accept`)
+}
+
+/** Fetch discovery-pool records. */
+export function getAdc(params?: Record<string, unknown>): Promise<any> {
+  return request.get(`${urlPrefix}/adc`, { params })
+}
+
+/** Fetch a single discovery-pool record. */
+export function getAdcById(id: string | number): Promise<any> {
+  return request.get(`${urlPrefix}/adc/${id}`)
+}
+
+/** Delete a discovery-pool record. */
+export function deleteAdc(adcId: string | number): Promise<any> {
+  return request.delete(`${urlPrefix}/adc/${adcId}`)
+}
+
+/** Fetch discovery-pool statistics. */
+export function getAdcCounter(params?: Record<string, unknown>): Promise<any> {
+  return request.get(`${urlPrefix}/adc/counter`, { params })
+}
+
+/** Fetch discovery execution histories. */
+export function getAdcExecHistories(params?: Record<string, unknown>): Promise<any> {
+  return request.get(`${urlPrefix}/adc/exec/histories`, { params })
+}
+
+/** Delete the discovery execution histories of a CI type. */
+export function deleteAdcExecHistories(typeId: string | number): Promise<any> {
+  return request.delete(`${urlPrefix}/adc/exec/histories/${typeId}`)
+}

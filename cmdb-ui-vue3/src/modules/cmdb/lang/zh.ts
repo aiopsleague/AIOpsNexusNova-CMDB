@@ -861,6 +861,7 @@ export default {
         http: '公有云',
         component: '数据库 & 中间件',
         privateCloud: '私有云',
+        plugin: '插件',
         rule: '自动发现规则',
         timeout: '超时错误',
         mode: '模式',

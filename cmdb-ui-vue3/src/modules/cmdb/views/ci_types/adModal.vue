@@ -2,6 +2,7 @@
 /* eslint-disable vue/prop-name-casing */
 import { provide, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import Discovery from '@/modules/cmdb/views/discovery/index.vue'
 
 withDefaults(defineProps<{ CITypeId?: number | null }>(), { CITypeId: null })
 
@@ -71,7 +72,11 @@ defineExpose({ open })
     @ok="handleOK"
     @cancel="handleCancel"
   >
-    <!-- TODO: wire up <Discovery> (from '@/modules/cmdb/views/discovery') once migrated. -->
+    <Discovery
+      v-if="visible"
+      :is-selected="true"
+      :style="{ maxHeight: '75vh', overflow: 'auto' }"
+    />
     <template #footer>
       <a-space>
         <a-button @click="handleCancel">{{ t('cancel') }}</a-button>
