@@ -953,6 +953,7 @@ if __name__ == "__main__":
         selectRows: 'Select: {rows} items',
         addRelation: 'Add Relation',
         viewRelation: 'View Relation',
+        jsonParseError: 'Invalid JSON, please check and try again',
         all: 'All',
         batchUpdate: 'Bulk Update',
         batchUpdateConfirm: 'Are you sure you want to make bulk updates?',

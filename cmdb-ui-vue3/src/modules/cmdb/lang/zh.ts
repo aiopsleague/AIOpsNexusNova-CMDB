@@ -949,6 +949,7 @@ if __name__ == "__main__":
         selectRows: '选取：{rows} 项',
         addRelation: '添加关系',
         viewRelation: '查看关系',
+        jsonParseError: 'JSON 格式错误，请检查后重试',
         all: '全部',
         batchUpdate: '批量修改',
         batchUpdateConfirm: '确认要批量修改吗？',
