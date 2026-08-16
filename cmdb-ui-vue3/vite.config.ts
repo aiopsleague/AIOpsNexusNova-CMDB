@@ -23,6 +23,14 @@ export default defineConfig({
       },
     },
   },
+  css: {
+    preprocessorOptions: {
+      less: {
+        javascriptEnabled: true,
+        additionalData: `@import "${fileURLToPath(new URL('./src/style/variables.less', import.meta.url))}";`,
+      },
+    },
+  },
   test: {
     environment: 'jsdom',
   },
