@@ -16,3 +16,8 @@ export const DISCOVERY_CATEGORY_TYPE: Record<string, string> = {
   COMPONENT: 'components',
   PRIVATE_CLOUD: 'private_cloud',
 }
+
+/** Private cloud provider names. */
+export const PRIVATE_CLOUD_NAME: Record<string, string> = {
+  VCenter: 'vcenter',
+}

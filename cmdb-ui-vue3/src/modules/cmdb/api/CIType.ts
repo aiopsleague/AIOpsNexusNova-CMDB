@@ -52,6 +52,30 @@ export function getTriggerList(typeId: string | number): Promise<any> {
   return request.get(`${urlPrefix}/ci_types/${typeId}/triggers`)
 }
 
+/** Add a trigger to a CI type. */
+export function addTrigger(typeId: string | number, data: Record<string, unknown>): Promise<any> {
+  return request.post(`${urlPrefix}/ci_types/${typeId}/triggers`, data)
+}
+
+/** Update a trigger of a CI type. */
+export function updateTrigger(
+  typeId: string | number,
+  id: string | number,
+  data: Record<string, unknown>
+): Promise<any> {
+  return request.put(`${urlPrefix}/ci_types/${typeId}/triggers/${id}`, data)
+}
+
+/** Delete a trigger of a CI type. */
+export function deleteTrigger(typeId: string | number, id: string | number): Promise<any> {
+  return request.delete(`${urlPrefix}/ci_types/${typeId}/triggers/${id}`)
+}
+
+/** Send a test notification for a trigger. */
+export function testTrigger(typeId: string | number, id: string | number): Promise<any> {
+  return request.post(`${urlPrefix}/ci_types/${typeId}/triggers/${id}/test_notify`)
+}
+
 /** Add inheritance: { parent_ids, child_id }. */
 export function postCiTypeInheritance(data: Record<string, unknown>): Promise<any> {
   return request.post(`${urlPrefix}/ci_types/inheritance`, data)
