@@ -9,6 +9,8 @@ import i18n from '@/lang'
 import { setupRouterGuard } from '@/router/guard'
 import { setupActionDirective } from '@/directives/action'
 import { initThemeSystem } from '@/theme/system'
+import { setupVxe } from '@/plugins/vxe'
+import { setupTreeselect } from '@/plugins/treeselect'
 import { loadModules } from '@/modules'
 
 async function bootstrap() {
@@ -18,6 +20,9 @@ async function bootstrap() {
   app.use(router)
   app.use(i18n)
   app.use(Antd)
+
+  setupVxe(app)
+  setupTreeselect(app)
 
   setupActionDirective(app)
 
