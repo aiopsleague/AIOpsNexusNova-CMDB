@@ -37,11 +37,9 @@ export const useUserStore = defineStore('user', {
     allDepartments: [],
     authEnable: null,
   }),
-  getters: {
-    isAuthed: (state) => !!state.token,
-  },
   actions: {
     async login(userInfo: { username: string; password: string; remember_me?: boolean }) {
+      this.resetIdentity()
       const res = await apiLogin(userInfo)
       this.token = res.token
       localStorage.setItem(TOKEN_KEY, res.token)
@@ -72,6 +70,16 @@ export const useUserStore = defineStore('user', {
       }
       this.token = ''
       localStorage.removeItem(TOKEN_KEY)
+      this.resetIdentity()
+    },
+    resetIdentity() {
+      this.name = ''
+      this.avatar = ''
+      this.uid = 0
+      this.rid = 0
+      this.username = ''
+      this.roles = {}
+      this.info = {}
     },
     async fetchAuthDataEnable() {
       this.authEnable = await getAuthDataEnable()

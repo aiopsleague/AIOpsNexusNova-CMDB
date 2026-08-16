@@ -8,6 +8,7 @@ import { router } from '@/router'
 import i18n from '@/lang'
 import { setupRouterGuard } from '@/router/guard'
 import { setupActionDirective } from '@/directives/action'
+import { initThemeSystem } from '@/theme/system'
 import { loadModules } from '@/modules'
 
 async function bootstrap() {
@@ -19,6 +20,8 @@ async function bootstrap() {
   app.use(Antd)
 
   setupActionDirective(app)
+
+  initThemeSystem()
 
   await loadModules(router, i18n)
   setupRouterGuard(router)

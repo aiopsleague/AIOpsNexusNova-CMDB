@@ -27,13 +27,14 @@ export function setupRouterGuard(router: Router) {
     if (token && !userStore.uid) {
       try {
         await userStore.getInfo()
-        await userStore.fetchAuthDataEnable()
-        // TODO(acl): register module routes via routesStore.generateRoutes + router.addRoute
-        return next({ ...to, replace: true })
       } catch {
         await userStore.logout()
         return next({ path: '/user/login', query: { redirect: to.fullPath } })
       }
+      // 非关键：鉴权方式列表，失败不阻断登录态
+      userStore.fetchAuthDataEnable().catch(() => {})
+      // TODO(acl): register module routes via routesStore.generateRoutes + router.addRoute
+      return next({ ...to, replace: true })
     }
 
     if (!token) {

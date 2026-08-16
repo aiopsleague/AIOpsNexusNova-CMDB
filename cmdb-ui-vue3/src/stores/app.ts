@@ -1,6 +1,6 @@
 // src/stores/app.ts
 import { defineStore } from 'pinia'
-import { resolveTheme, type ThemeMode, type ResolvedTheme } from '@/theme/resolveTheme'
+import { resolveTheme, getSystemDark, type ThemeMode, type ResolvedTheme } from '@/theme/resolveTheme'
 import setting from '@/config/setting'
 
 interface AppState {
@@ -12,6 +12,7 @@ interface AppState {
   contentWidth: 'Fluid' | 'Fixed'
   colorWeak: boolean
   multiTab: boolean
+  systemDark: boolean
 }
 
 export const useAppStore = defineStore('app', {
@@ -24,15 +25,19 @@ export const useAppStore = defineStore('app', {
     contentWidth: setting.contentWidth,
     colorWeak: setting.colorWeak,
     multiTab: setting.multiTab,
+    systemDark: getSystemDark(),
   }),
   getters: {
     resolvedTheme(state): ResolvedTheme {
-      return resolveTheme(state.themeMode)
+      return resolveTheme(state.themeMode, state.systemDark)
     },
   },
   actions: {
     setThemeMode(mode: ThemeMode) {
       this.themeMode = mode
+    },
+    setSystemDark(value: boolean) {
+      this.systemDark = value
     },
     toggleSidebar() {
       this.sidebar = !this.sidebar

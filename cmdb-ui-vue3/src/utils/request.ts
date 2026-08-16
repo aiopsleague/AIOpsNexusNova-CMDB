@@ -46,6 +46,11 @@ service.interceptors.response.use(
         description: i18n.global.t('requestWait', { time: 5 }),
         duration: 5,
       })
+    } else if (status === 401) {
+      if (window.location.pathname !== '/user/login') {
+        localStorage.removeItem(TOKEN_KEY)
+        window.location.href = '/user/logout'
+      }
     } else if ((error.config as { isShowMessage?: boolean })?.isShowMessage === false) {
       // 静默：调用方显式关闭错误提示
     } else {
