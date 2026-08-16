@@ -47,7 +47,7 @@ const componentMap: Record<string, () => Promise<unknown>> = {
   aclHistory: () => import('@/modules/acl/views/history.vue'),
   aclOperationHistory: () => import('@/modules/acl/views/operation_history/index.vue'),
   // cmdb views are not yet migrated; all placeholders resolve to a stub.
-  cmdbDashboard: () => import('@/modules/cmdb/views/placeholder.vue'),
+  cmdbDashboard: () => import('@/modules/cmdb/views/dashboard/index_v2.vue'),
   cmdbTopologyView: () => import('@/modules/cmdb/views/placeholder.vue'),
   cmdbRelationViews: () => import('@/modules/cmdb/views/placeholder.vue'),
   cmdbResourceViews: () => import('@/modules/cmdb/views/placeholder.vue'),
@@ -60,7 +60,7 @@ const componentMap: Record<string, () => Promise<unknown>> = {
   cmdbPreference: () => import('@/modules/cmdb/views/placeholder.vue'),
   cmdbBatch: () => import('@/modules/cmdb/views/placeholder.vue'),
   cmdbCiTypes: () => import('@/modules/cmdb/views/ci_types/index.vue'),
-  cmdbCustomDashboard: () => import('@/modules/cmdb/views/placeholder.vue'),
+  cmdbCustomDashboard: () => import('@/modules/cmdb/views/custom_dashboard/index.vue'),
   cmdbPreferenceRelation: () => import('@/modules/cmdb/views/placeholder.vue'),
   cmdbDiscovery: () => import('@/modules/cmdb/views/discovery/index.vue'),
   cmdbOperationHistory: () => import('@/modules/cmdb/views/placeholder.vue'),

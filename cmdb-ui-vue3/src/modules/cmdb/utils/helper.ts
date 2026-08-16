@@ -97,6 +97,36 @@ export function cloneDeep<T>(value: T): T {
   return JSON.parse(JSON.stringify(value))
 }
 
+/** Add thousands separators to an integer (e.g. 12345 -> "12,345"). */
+export function toThousands(num: number | string = 0): string {
+  return num.toString().replace(/\d+/, (n) => n.replace(/(\d)(?=(?:\d{3})+$)/g, '$1,'))
+}
+
+/**
+ * Compute the last (bottom-right) occupied grid cell from a list of layout items,
+ * so a newly added dashboard chart can be placed right after the existing ones.
+ */
+export function getLastLayout(
+  data: Array<{ x: number; y: number; w: number }>,
+  x1 = 0,
+  y1 = 0,
+  w1 = 0
+): { xLast: number; yLast: number; wLast: number } {
+  const tempData = [...data].sort((a, b) => a.y - b.y || a.x - b.x)
+  if (!tempData.length) {
+    return { xLast: 0, yLast: 0, wLast: 0 }
+  }
+  const { x, y, w } = tempData[tempData.length - 1]
+  if (y < y1) {
+    return { xLast: x1, yLast: y1, wLast: w1 }
+  } else if (y > y1) {
+    return { xLast: x, yLast: y, wLast: w }
+  } else {
+    const xLast = Math.max(x, x1)
+    return { xLast, yLast: y, wLast: xLast === x ? w : w1 }
+  }
+}
+
 /** Minimal lodash.orderBy drop-in for a single ascending/descending key. */
 function orderBy<T>(list: T[], key: string, order: 'asc' | 'desc'): T[] {
   const result = [...list]
