@@ -1,6 +1,18 @@
 // src/modules/cmdb/lang/zh.ts
 export default {
   cmdb: {
+    common: {
+        other: '其他',
+        alias: '别名',
+        icon: '图标',
+        type: '类型',
+        save: '保存',
+        required: '必填',
+        loading: '加载中...',
+        upload: '导入',
+        export: '导出',
+        uploadSuccess: '导入成功'
+    },
     relation: '关系',
     attribute: '属性',
     configTable: '配置表格',

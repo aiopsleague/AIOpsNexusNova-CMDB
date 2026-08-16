@@ -1,6 +1,18 @@
 // src/modules/cmdb/lang/en.ts
 export default {
   cmdb: {
+    common: {
+        other: 'Other',
+        alias: 'Alias',
+        icon: 'Icon',
+        type: 'Type',
+        save: 'Save',
+        required: 'Required',
+        loading: 'Loading...',
+        upload: 'Import',
+        export: 'Export',
+        uploadSuccess: 'Import Success'
+    },
     relation: 'Relation',
     attribute: 'Attributes',
     configTable: 'Config Table',
