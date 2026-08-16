@@ -17,5 +17,5 @@ export function logout() {
 }
 
 export function getAllUsers(params: Record<string, unknown>) {
-  return request.get('/v1/acl/users', { params })
+  return request.get<unknown, { users: unknown[] }>('/v1/acl/users', { params })
 }

@@ -3,7 +3,6 @@ import type { Router } from 'vue-router'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 import { useUserStore } from '@/stores/user'
-import { useRoutesStore } from '@/stores/routes'
 import { TOKEN_KEY } from '@/utils/request'
 import { setDocumentTitle } from '@/utils/dom'
 
@@ -19,20 +18,17 @@ export function setupRouterGuard(router: Router) {
     }
 
     const userStore = useUserStore()
-    const routesStore = useRoutesStore()
     const token = localStorage.getItem(TOKEN_KEY)
 
     if (whiteList.includes(to.path)) {
       return next()
     }
 
-    if (token && !userStore.isAuthed) {
+    if (token && !userStore.uid) {
       try {
         await userStore.getInfo()
         await userStore.fetchAuthDataEnable()
-        const permissions = userStore.roles.permissions?.map((p) => p.name) ?? []
-        const dynamic = routesStore.generateRoutes(permissions)
-        dynamic.forEach((r) => router.addRoute(r as never))
+        // TODO(acl): register module routes via routesStore.generateRoutes + router.addRoute
         return next({ ...to, replace: true })
       } catch {
         await userStore.logout()

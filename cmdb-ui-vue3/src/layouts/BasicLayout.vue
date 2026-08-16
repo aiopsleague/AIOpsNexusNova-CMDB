@@ -29,8 +29,8 @@ const themeLabel = computed(() => {
   return appStore.themeMode === 'dark' ? 'Dark' : 'Light'
 })
 
-function onMenuClick({ key }: { key: string }) {
-  router.push(key)
+function onMenuClick({ key }: { key: string | number }) {
+  router.push(String(key))
 }
 
 function cycleTheme() {

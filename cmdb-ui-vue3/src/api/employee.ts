@@ -3,7 +3,7 @@ import request from '@/utils/request'
 import type { Employee } from '@/types'
 
 export function getEmployeeList(params: Record<string, unknown>) {
-  return request.get('/common-setting/v1/employee', { params })
+  return request.get<unknown, { data_list: unknown[] }>('/common-setting/v1/employee', { params })
 }
 
 export function getEmployeeByUid(uid: number) {

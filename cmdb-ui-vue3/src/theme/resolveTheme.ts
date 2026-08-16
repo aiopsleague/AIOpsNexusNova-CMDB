@@ -13,7 +13,7 @@ export function getSystemDark(): boolean {
  * - 'light' → 'light'
  * - 其余（含旧 'liquid-glass' 等）→ 'dark'
  */
-export function resolveTheme(mode: ThemeMode): ResolvedTheme {
+export function resolveTheme(mode: string): ResolvedTheme {
   if (mode === 'system') return getSystemDark() ? 'dark' : 'light'
   if (mode === 'light') return 'light'
   return 'dark'

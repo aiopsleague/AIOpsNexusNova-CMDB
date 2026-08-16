@@ -44,6 +44,10 @@ ui: ## start UI dev server
 	cd cmdb-ui && yarn run serve
 .PHONY: ui
 
+ui3: ## start new UI dev server (vue3)
+	cd cmdb-ui-vue3 && pnpm run dev
+.PHONY: ui3
+
 lint: ## check style with ruff
 	cd cmdb-api && uv run ruff check .
 .PHONY: lint
