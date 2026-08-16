@@ -3,6 +3,7 @@ import type { Router } from 'vue-router'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 import { useUserStore } from '@/stores/user'
+import { useRoutesStore } from '@/stores/routes'
 import { TOKEN_KEY } from '@/utils/request'
 import { setDocumentTitle } from '@/utils/dom'
 
@@ -33,7 +34,13 @@ export function setupRouterGuard(router: Router) {
       }
       // 非关键：鉴权方式列表，失败不阻断登录态
       userStore.fetchAuthDataEnable().catch(() => {})
-      // TODO(acl): register module routes via routesStore.generateRoutes + router.addRoute
+      try {
+        const permissions = userStore.roles.permissions?.map((p) => p.name) ?? []
+        const dynamic = await useRoutesStore().generateRoutes(permissions)
+        dynamic.forEach((r) => router.addRoute(r as never))
+      } catch {
+        // 模块路由构建失败不阻断导航
+      }
       return next({ ...to, replace: true })
     }
 
