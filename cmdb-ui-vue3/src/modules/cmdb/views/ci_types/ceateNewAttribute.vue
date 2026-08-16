@@ -9,6 +9,7 @@ import RegSelect from '@/components/RegexSelect/index.vue'
 import MonacoCodeEditor from '@/components/MonacoCodeEditor/index.vue'
 import { createAttribute, canDefineComputed } from '@/modules/cmdb/api/CITypeAttr'
 import { getPropertyIcon, valueTypeMap } from '../../utils/helper'
+import ReferenceModelSelect from './attributeEdit/referenceModelSelect.vue'
 
 const ENUM_VALUE_TYPE = {
   INPUT: 'input',
@@ -415,10 +416,7 @@ defineExpose({ handleSubmit, checkCanDefineComputed })
         </a-form-item>
       </a-col>
       <a-col v-if="currentValueType === '11'" :span="12">
-        <a-form-item :label="t('cmdb.ciType.referenceModel')">
-          <!-- TODO: wire up <ReferenceModelSelect> once migrated -->
-          <a-input v-model:value="formModel.reference_type_id" :placeholder="t('cmdb.ciType.referenceModelTip')" />
-        </a-form-item>
+        <ReferenceModelSelect v-model="formModel.reference_type_id" />
       </a-col>
     </a-row>
 

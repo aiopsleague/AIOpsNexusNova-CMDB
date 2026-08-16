@@ -15,6 +15,7 @@ import {
   calcComputedAttribute,
 } from '@/modules/cmdb/api/CITypeAttr'
 import { cloneDeep, getPropertyIcon, getPropertyType, valueTypeMap } from '../../utils/helper'
+import ReferenceModelSelect from './attributeEdit/referenceModelSelect.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -482,10 +483,7 @@ defineExpose({ handleCreate, handleEdit })
         </a-form-item>
       </a-col>
       <a-col v-if="currentValueType === '11'" :span="12">
-        <a-form-item :label="t('cmdb.ciType.referenceModel')">
-          <!-- TODO: wire up <ReferenceModelSelect> once migrated -->
-          <a-input v-model:value="formModel.reference_type_id" :placeholder="t('cmdb.ciType.referenceModelTip')" />
-        </a-form-item>
+        <ReferenceModelSelect v-model="formModel.reference_type_id" :is-lazy-require="false" />
       </a-col>
 
       <a-col v-if="currentValueType !== '6' && currentValueType !== '7'" :span="6">
