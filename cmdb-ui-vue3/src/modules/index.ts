@@ -59,7 +59,7 @@ const componentMap: Record<string, () => Promise<unknown>> = {
   cmdbDcim: () => import('@/modules/cmdb/views/placeholder.vue'),
   cmdbPreference: () => import('@/modules/cmdb/views/placeholder.vue'),
   cmdbBatch: () => import('@/modules/cmdb/views/placeholder.vue'),
-  cmdbCiTypes: () => import('@/modules/cmdb/views/placeholder.vue'),
+  cmdbCiTypes: () => import('@/modules/cmdb/views/ci_types/index.vue'),
   cmdbCustomDashboard: () => import('@/modules/cmdb/views/placeholder.vue'),
   cmdbPreferenceRelation: () => import('@/modules/cmdb/views/placeholder.vue'),
   cmdbDiscovery: () => import('@/modules/cmdb/views/placeholder.vue'),
