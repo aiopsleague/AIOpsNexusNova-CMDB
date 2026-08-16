@@ -27,9 +27,19 @@ export function getCIById(ciId: string | number): Promise<any> {
   return request.get(`${urlPrefix}/ci/s`, { params: { q: `_id:${ciId}` } })
 }
 
+/** Fetch the Grafana dashboard config for a CI. */
+export function getCIGrafana(ciId: string | number): Promise<any> {
+  return request.get(`${urlPrefix}/ci/${ciId}/grafana`)
+}
+
 /** Check whether a CI type has monitoring configured. */
 export function checkCITypeMonitoring(ciTypeId: string | number): Promise<any> {
   return request.get(`${urlPrefix}/ci_type/${ciTypeId}/monitoring/check`)
+}
+
+/** Fetch Prometheus alerts for a CI. */
+export function getCIPrometheusAlerts(ciId: string | number): Promise<any> {
+  return request.get(`${urlPrefix}/ci/${ciId}/prometheus/alerts`)
 }
 
 /** Check whether a CI type has Prometheus configured. */
