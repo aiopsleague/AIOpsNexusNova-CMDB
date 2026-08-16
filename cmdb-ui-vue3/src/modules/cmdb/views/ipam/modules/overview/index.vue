@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue'
 import { getIPAMStats } from '@/modules/cmdb/api/ipam'
 import Stats from './stats.vue'
+import SubnetTable from './subnetTable.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -45,7 +46,7 @@ defineExpose({ initData })
 <template>
   <div class="overview">
     <Stats :stats-data="statsData" />
-    <!-- TODO: wire up SubnetTable (modules/overview/subnetTable not yet migrated) -->
+    <SubnetTable :table-data="tableData" />
   </div>
 </template>
 

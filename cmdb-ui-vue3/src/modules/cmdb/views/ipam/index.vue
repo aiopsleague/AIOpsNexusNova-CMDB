@@ -7,7 +7,10 @@ import { SUB_NET_CITYPE_NAME, ADDRESS_CITYPE_NAME } from './constants'
 import SplitPane from '@/components/SplitPane/SplitPane.vue'
 import IPAMTree from './components/ipamTree.vue'
 import Overview from './modules/overview/index.vue'
+import Address from './modules/address/index.vue'
+import IPSearch from './modules/ipSearch/index.vue'
 import SubnetList from './modules/subnetList/index.vue'
+import HistoryLog from './modules/history/index.vue'
 
 const TAB_STORAGE_KEY = 'ops_ipam_tab_active'
 const TREE_STORAGE_KEY = 'ops_ipam_tree_active'
@@ -34,6 +37,9 @@ const addressCIType = ref<Record<string, any>>({})
 
 const overviewRef = ref<InstanceType<typeof Overview>>()
 const subnetListRef = ref<InstanceType<typeof SubnetList>>()
+const historyRef = ref<InstanceType<typeof HistoryLog>>()
+
+const nodeData = computed(() => findNodeById(treeData.value, treeKey.value))
 
 watch(
   tabKey,
@@ -136,6 +142,21 @@ function handleTreeData(data: any, type2name: any, parentId = ''): any {
   }
 }
 
+function findNodeById(nodes: any[], key: string): any {
+  for (const node of nodes) {
+    if (node.key === key) {
+      return node
+    }
+    if (node.children) {
+      const foundNode = findNodeById(node.children, key)
+      if (foundNode) {
+        return foundNode
+      }
+    }
+  }
+  return null
+}
+
 function handleTabChange(key: string) {
   if (key !== tabKey.value) {
     tabKey.value = key
@@ -158,7 +179,7 @@ function refreshData() {
       subnetListRef.value?.getTableData()
       break
     case 'history':
-      // TODO: wire up HistoryLog refresh (modules/history not yet migrated)
+      historyRef.value?.refreshData()
       break
     default:
       break
@@ -212,8 +233,15 @@ getTreeData()
             :node-id="treeKey"
           />
           <template v-if="addressCIType.id">
-            <!-- TODO: wire up Address (modules/address not yet migrated) -->
-            <!-- TODO: wire up IPSearch (modules/ipSearch not yet migrated) -->
+            <Address
+              v-if="tabKey === 'address'"
+              :node-data="nodeData"
+              :address-c-i-type="addressCIType"
+            />
+            <IPSearch
+              v-if="tabKey === 'ipSearch'"
+              :address-c-i-type="addressCIType"
+            />
           </template>
           <SubnetList
             v-if="tabKey === 'subnet' && subnetCIType.id"
@@ -221,7 +249,10 @@ getTreeData()
             :subnet-c-i-type="subnetCIType"
             @delete="getTreeData"
           />
-          <!-- TODO: wire up HistoryLog (modules/history not yet migrated) -->
+          <HistoryLog
+            v-if="tabKey === 'history'"
+            ref="historyRef"
+          />
         </div>
       </template>
     </SplitPane>
