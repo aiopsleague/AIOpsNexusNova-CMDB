@@ -21,12 +21,12 @@ const column = ref<Record<string, any> | null>(null)
 const editorHeight = computed(() => Math.max(240, window.innerHeight - 300))
 
 function open(
-  columnRef: Record<string, any>,
-  rowRef: Record<string, any>,
+  columnRef: Record<string, any> | null,
+  rowRef: Record<string, any> | null,
   initialData?: Record<string, any>
 ) {
   visible.value = true
-  if (rowRef && rowRef[columnRef.property]) {
+  if (rowRef && columnRef && rowRef[columnRef.property]) {
     try {
       jsonData.value = JSON.stringify(JSON.parse(rowRef[columnRef.property]), null, 2)
     } catch {

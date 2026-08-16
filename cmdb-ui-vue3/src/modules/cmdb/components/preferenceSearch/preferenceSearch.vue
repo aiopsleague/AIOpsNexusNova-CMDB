@@ -109,7 +109,7 @@ function clickPreferenceSearch(item: PreferenceSearchItem, index?: number, isGot
   emit('setParamsFromPreferenceSearch', item)
 }
 
-defineExpose({ savePreference })
+defineExpose({ savePreference, currentPreferenceSearch })
 </script>
 
 <template>

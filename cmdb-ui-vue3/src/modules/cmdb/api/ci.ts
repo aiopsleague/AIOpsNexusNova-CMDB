@@ -12,6 +12,11 @@ export function getCIType(CITypeName: string | number, parameter?: Record<string
   return request.get(`${urlPrefix}/ci_types/${CITypeName}`, { params: parameter })
 }
 
+/** Create a new CI instance. */
+export function addCI(params: Record<string, unknown>): Promise<any> {
+  return request.post(`${urlPrefix}/ci`, params)
+}
+
 /** Update a single CI by id. */
 export function updateCI(id: string | number, params: Record<string, unknown>, isShowMessage = true): Promise<any> {
   return request.put(`${urlPrefix}/ci/${id}`, params, { isShowMessage } as any)

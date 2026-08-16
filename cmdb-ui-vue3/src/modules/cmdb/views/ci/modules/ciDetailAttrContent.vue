@@ -6,6 +6,9 @@ import { useI18n } from 'vue-i18n'
 import { updateCI } from '@/modules/cmdb/api/ci'
 import { getAttrPassword } from '@/modules/cmdb/api/CITypeAttr'
 import CIReferenceAttr from '@/components/ciReferenceAttr/index.vue'
+import JsonEditor from '@/modules/cmdb/components/JsonEditor/jsonEditor.vue'
+import PasswordField from '@/modules/cmdb/components/passwordField/index.vue'
+import CiFileField from '@/modules/cmdb/components/CiFileField.vue'
 
 const { t } = useI18n()
 
@@ -30,6 +33,7 @@ const emit = defineEmits<{
 
 const isEdit = ref(false)
 const formModel = reactive<Record<string, any>>({})
+const jsonEditorRef = ref<InstanceType<typeof JsonEditor>>()
 
 function isLongText(attr: Record<string, any>): boolean {
   return (
@@ -68,7 +72,7 @@ function handleEdit(e: MouseEvent) {
   e.stopPropagation()
   e.preventDefault()
   if (props.attr.value_type === '6') {
-    // TODO: wire up JsonEditor (JSON value_type editor not yet ported)
+    jsonEditorRef.value?.open(null, null, props.ci[props.attr.name] || {})
     return
   }
   isEdit.value = true
@@ -127,6 +131,24 @@ function getInitReferenceSelectOption(attr: Record<string, any>): { key: number;
     title: attr?.referenceShowAttrNameMap?.[key] ?? '',
   }))
 }
+
+function jsonEditorOk(jsonData: any) {
+  if (JSON.stringify(props.ci[props.attr.name]) !== JSON.stringify(jsonData)) {
+    updateCI(props.ci._id, { [props.attr.name]: jsonData })
+      .then(() => {
+        message.success(t('updateSuccess'))
+        emit('updateCIByself', { [props.attr.name]: jsonData }, props.attr.name)
+      })
+      .catch(() => {
+        emit('refresh', props.attr.name)
+      })
+  }
+}
+
+function handleFileInput(val: any) {
+  // eslint-disable-next-line vue/no-mutating-props
+  props.ci[props.attr.name] = val
+}
 </script>
 
 <template>
@@ -143,10 +165,22 @@ function getInitReferenceSelectOption(attr: Record<string, any>): { key: number;
           {{ attr.referenceShowAttrNameMap ? attr.referenceShowAttrNameMap[ciId] || ciId : ciId }}
         </a>
       </template>
-      <!-- TODO: wire up CiFileField (file attribute display not yet ported) -->
-      <span v-else-if="attr.is_file">{{ ci[attr.name] }}</span>
-      <!-- TODO: wire up PasswordField (password attribute display not yet ported) -->
-      <span v-else-if="attr.is_password && ci[attr.name]">********</span>
+      <CiFileField
+        v-else-if="attr.is_file"
+        :value="ci[attr.name]"
+        :is-list="attr.is_list"
+        :is-edit="false"
+        :attr-id="attr.id"
+        :ci-id="ci._id"
+        :attr-name="attr.name"
+        @input="handleFileInput"
+      />
+      <PasswordField
+        v-else-if="attr.is_password && ci[attr.name]"
+        :style="{ display: 'inline-block' }"
+        :ci_id="ci._id"
+        :attr_id="attr.id"
+      />
       <a-tooltip
         v-else-if="attr.value_type === '6'"
         :title="JSON.stringify(ci[attr.name] || {})"
@@ -204,8 +238,14 @@ function getInitReferenceSelectOption(attr: Record<string, any>): { key: number;
             :value="formModel[attr.name]"
             @change="(v: any) => (formModel[attr.name] = v)"
           />
-          <!-- TODO: wire up CiFileField (file attribute editing not yet ported) -->
-          <a-input v-else-if="attr.is_file" v-model:value="formModel[attr.name]" size="small" style="width: 100%" />
+          <CiFileField
+            v-else-if="attr.is_file"
+            :is-edit="true"
+            :is-list="attr.is_list"
+            :attr-id="attr.id"
+            :value="formModel[attr.name]"
+            @input="(val: string) => (formModel[attr.name] = val)"
+          />
           <a-switch
             v-else-if="attr.is_bool"
             :checked="!!formModel[attr.name]"
@@ -260,7 +300,7 @@ function getInitReferenceSelectOption(attr: Record<string, any>): { key: number;
     <a v-if="!isEdit && !attr.is_computed && !attr.sys_computed && showEdit" @click="handleEdit" :style="{ opacity: 0 }">
       <EditOutlined />
     </a>
-    <!-- TODO: wire up JsonEditor (jsonEditorOk handler retained above) -->
+    <JsonEditor ref="jsonEditorRef" @json-editor-ok="jsonEditorOk" />
   </span>
 </template>
 

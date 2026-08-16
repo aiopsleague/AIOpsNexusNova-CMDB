@@ -4,13 +4,13 @@ import CiDetailRelationTopo from './ciDetailRelationTopo/index.vue'
 
 const props = withDefaults(
   defineProps<{
-    ciId?: number
+    ciId?: number | null
     typeId?: number
     ci?: Record<string, any>
     relationData?: Record<string, any>
   }>(),
   {
-    ciId: 0,
+    ciId: null,
     typeId: 0,
     ci: () => ({}),
     relationData: () => ({}),

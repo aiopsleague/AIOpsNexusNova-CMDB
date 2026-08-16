@@ -3,6 +3,14 @@ import request from '@/utils/request'
 const urlPrefix = '/v0.1'
 
  
+/** Fetch attributes of a CI type by id or unique name. */
+export function getCITypeAttributesByName(
+  CITypeName: string | number,
+  parameter?: Record<string, unknown>
+): Promise<any> {
+  return request.get(`${urlPrefix}/ci_types/${CITypeName}/attributes`, { params: parameter })
+}
+
 export function getCITypeAttributesById(CITypeId: string | number, parameter?: Record<string, unknown>): Promise<any> {
   return request.get(`${urlPrefix}/ci_types/${CITypeId}/attributes`, { params: parameter })
 }

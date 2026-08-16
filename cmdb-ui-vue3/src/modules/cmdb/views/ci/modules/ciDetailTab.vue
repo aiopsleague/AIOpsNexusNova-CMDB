@@ -28,6 +28,12 @@ import CIDetailTitle from './ciDetailComponent/ciDetailTitle.vue'
 import CIDetailTableTitle from './ciDetailComponent/ciDetailTableTitle.vue'
 import CIDetailAttrContent from './ciDetailAttrContent.vue'
 import CIRelationTable from './ciDetailComponent/ciRelationTable.vue'
+import QRCodeButton from '@/modules/cmdb/components/QRCodeButton/index.vue'
+import CIDetailRelation from './ciDetailRelation.vue'
+import CiDetailRelatedItsm from './ciDetailRelatedItsm.vue'
+import CiRollbackForm from './ciRollbackForm.vue'
+import CiDetailMonitoring from './ciDetailMonitoring.vue'
+import CiDetailPrometheus from './ciDetailPrometheus.vue'
 
 const { t } = useI18n()
 
@@ -74,6 +80,9 @@ const relationData = ref<Record<string, any>>({
 })
 
 const xTableRef = ref<any>()
+const ciRollbackFormRef = ref<InstanceType<typeof CiRollbackForm>>()
+
+const monitoringToolType = ref('grafana')
 
 const tableHeight = computed(() => props.attributeHistoryTableHeight || window.innerHeight - 130)
 
@@ -348,7 +357,21 @@ async function shareCi() {
 }
 
 function handleRollbackCI() {
-  // TODO: wire up CIRollbackForm (rollback drawer not yet ported)
+  nextTick(() => {
+    ciRollbackFormRef.value?.onOpen()
+  })
+}
+
+function onGrafanaStatusChange(status: any) {
+  grafanaConHealthy.value = status ? status.ok : null
+}
+
+function onPrometheusStatusChange(statuses: any[]) {
+  if (!statuses || statuses.length === 0) {
+    promConHealthy.value = null
+    return
+  }
+  promConHealthy.value = statuses.every((s) => s.ok)
 }
 
 function handleExport() {
@@ -433,7 +456,7 @@ defineExpose({ create, handleNavigateToCi })
     <a-tabs v-if="hasPermission" v-model:activeKey="activeTabKey" class="ci-detail-tab" @change="changeTab">
       <template #tabBarExtraContent>
         <span class="tab-bar-extra">
-          <!-- TODO: wire up QRCodeButton (:typeId="typeId" :ciId="ciId") -->
+          <QRCodeButton :type-id="typeId" :ci-id="ciId" />
           <a @click="shareCi">
             <ShareAltOutlined />
             {{ t('cmdb.ci.share') }}
@@ -495,7 +518,13 @@ defineExpose({ create, handleNavigateToCi })
       <a-tab-pane key="tab_2">
         <template #tab><BranchesOutlined />{{ t('cmdb.ci.topo') }}</template>
         <div :style="{ height: '100%', padding: '24px', overflow: 'auto' }">
-          <!-- TODO: wire up CIDetailRelation (topology tab not yet ported) -->
+          <CIDetailRelation
+            :ci-id="ciId"
+            :type-id="typeId"
+            :ci="ci"
+            :relation-data="relationData"
+            @navigate-to-ci="handleNavigateToCi"
+          />
         </div>
       </a-tab-pane>
       <a-tab-pane key="tab_3">
@@ -525,6 +554,7 @@ defineExpose({ create, handleNavigateToCi })
               {{ t('export') }}
             </a-button>
           </div>
+          <CiRollbackForm ref="ciRollbackFormRef" :ci-ids="[ciId]" @get-ci-history="loadCIHistory" />
 
           <!-- Change Log Table -->
           <vxe-table
@@ -609,7 +639,7 @@ defineExpose({ create, handleNavigateToCi })
       <a-tab-pane key="tab_5">
         <template #tab><LinkOutlined />{{ t('cmdb.ci.relITSM') }}</template>
         <div :style="{ padding: '24px', height: '100%' }">
-          <!-- TODO: wire up RelatedItsm -->
+          <CiDetailRelatedItsm />
         </div>
       </a-tab-pane>
       <a-tab-pane key="tab_6" v-if="hasMonitoring">
@@ -618,7 +648,13 @@ defineExpose({ create, handleNavigateToCi })
           <a-badge v-if="grafanaConHealthy === false" status="error" class="tab-status-dot" />
         </template>
         <div :style="{ padding: '24px', height: '100%' }">
-          <!-- TODO: wire up CiDetailMonitoring (:ciId="ciId") -->
+          <CiDetailMonitoring
+            v-if="ciId"
+            :key="ciId"
+            :ci-id="ciId"
+            :tool-type="monitoringToolType"
+            @connection-status-change="onGrafanaStatusChange"
+          />
         </div>
       </a-tab-pane>
       <a-tab-pane key="tab_7" v-if="hasPrometheus">
@@ -627,7 +663,7 @@ defineExpose({ create, handleNavigateToCi })
           <a-badge v-if="promConHealthy === false" status="error" class="tab-status-dot" />
         </template>
         <div :style="{ padding: '24px', height: '100%' }">
-          <!-- TODO: wire up CiDetailPrometheus (:ciId="ciId") -->
+          <CiDetailPrometheus v-if="ciId" :ci-id="ciId" @connection-status-change="onPrometheusStatusChange" />
         </div>
       </a-tab-pane>
     </a-tabs>

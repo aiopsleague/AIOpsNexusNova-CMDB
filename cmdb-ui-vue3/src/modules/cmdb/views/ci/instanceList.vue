@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /* eslint-disable vue/prop-name-casing */
-import { onMounted, provide, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, provide, ref, watch } from 'vue'
 import {
   InfoCircleOutlined,
   MoreOutlined,
@@ -9,15 +9,26 @@ import {
   StarOutlined,
   UserAddOutlined,
 } from '@ant-design/icons-vue'
-import { message, Modal } from 'ant-design-vue'
+import { message, Modal, notification } from 'ant-design-vue'
 import { useI18n } from 'vue-i18n'
-import { searchCI, deleteCI } from '@/modules/cmdb/api/ci'
+import { searchCI, deleteCI as deleteCIById, updateCI } from '@/modules/cmdb/api/ci'
 import { getSubscribeAttributes, subscribeCIType, subscribeTreeView } from '@/modules/cmdb/api/preference'
 import { getCITypeAttributesById } from '@/modules/cmdb/api/CITypeAttr'
+import { CIBaselineRollback } from '@/modules/cmdb/api/history'
 import { roleHasPermissionToGrant } from '@/modules/acl/api/permission'
 import { searchResourceType } from '@/modules/acl/api/resource'
 import { getCITableColumns, cloneDeep } from '@/modules/cmdb/utils/helper'
 import CMDBGrant from '@/modules/cmdb/components/cmdbGrant/index.vue'
+import SearchForm from '@/modules/cmdb/components/searchForm/SearchForm.vue'
+import PreferenceSearch from '@/modules/cmdb/components/preferenceSearch/preferenceSearch.vue'
+import CITable from '@/modules/cmdb/components/ciTable/index.vue'
+import BatchDownload from '@/modules/cmdb/components/batchDownload/batchDownload.vue'
+import QRCodeBatchExport from '@/modules/cmdb/components/QRCodeBatchExport/index.vue'
+import CreateInstanceForm from './modules/CreateInstanceForm.vue'
+import CiDetailDrawer from './modules/ciDetailDrawer.vue'
+import EditAttrsPopover from './modules/editAttrsPopover.vue'
+import MetadataDrawer from './modules/MetadataDrawer.vue'
+import CiRollbackForm from './modules/ciRollbackForm.vue'
 
 const { t } = useI18n()
 
@@ -39,8 +50,15 @@ const emit = defineEmits<{
 }>()
 
 const searchRef = ref<any>()
-const xTableRef = ref<any>()
+const xTableRef = ref<InstanceType<typeof CITable>>()
 const cmdbGrantRef = ref<InstanceType<typeof CMDBGrant>>()
+const preferenceSearchRef = ref<any>()
+const createRef = ref<InstanceType<typeof CreateInstanceForm>>()
+const ciDetailDrawerRef = ref<InstanceType<typeof CiDetailDrawer>>()
+const batchDownloadRef = ref<InstanceType<typeof BatchDownload>>()
+const qrcodeBatchExportRef = ref<InstanceType<typeof QRCodeBatchExport>>()
+const metadataDrawerRef = ref<InstanceType<typeof MetadataDrawer>>()
+const ciRollbackFormRef = ref<InstanceType<typeof CiRollbackForm>>()
 
 const loading = ref(false)
 const currentPage = ref(1)
@@ -64,12 +82,18 @@ const initialPasswordValue = ref<Record<string, string>>({})
 const passwordValue = ref<Record<string, string>>({})
 const visible = ref(false)
 
+const tableHeight = computed(() => window.innerHeight - 240)
+
 provide('handleSearch', handleSearch)
 provide('setPreferenceSearchCurrent', setPreferenceSearchCurrent)
 provide('attrList', () => attrList.value)
 provide('attributes', () => attributes.value)
 provide('filterCompPreferenceSearch', () => ({ type_id: props.typeId }))
 provide('resource_type', () => resourceType.value)
+
+function getTableRef(): any {
+  return xTableRef.value?.getVxetableRef() || null
+}
 
 async function getAttributeList() {
   await getCITypeAttributesById(props.typeId as number).then((res) => {
@@ -79,7 +103,7 @@ async function getAttributeList() {
 }
 
 function handleSearch() {
-  xTableRef.value?.clearSort()
+  getTableRef()?.clearSort()
   sortByTable.value = undefined
   if (currentPage.value === 1) {
     reloadData()
@@ -88,8 +112,10 @@ function handleSearch() {
   }
 }
 
-function setPreferenceSearchCurrent(_id: number | null = null) {
-  // TODO: wire up PreferenceSearch (preference search state not yet ported)
+function setPreferenceSearchCurrent(id: number | null = null) {
+  if (preferenceSearchRef.value) {
+    preferenceSearchRef.value.currentPreferenceSearch = id
+  }
 }
 
 function reloadData() {
@@ -133,7 +159,7 @@ async function loadTableData(sortBy?: string) {
       return { ...cloneDeep(item) }
     })
     initialInstanceList.value = cloneDeep(instanceList.value)
-    xTableRef.value?.refreshColumn()
+    getTableRef()?.refreshColumn()
   } finally {
     loading.value = false
   }
@@ -148,6 +174,10 @@ function getColumns(data: any[], attrList: any[]) {
 async function loadPreferenceAttrList() {
   const subscribed = await getSubscribeAttributes(props.typeId as number)
   preferenceAttrList.value = subscribed.attributes
+}
+
+function onSelectChange(records: any[]) {
+  selectedRowKeys.value = records.map((i) => i.ci_id || i._id)
 }
 
 function onShowSizeChange(_current: number, nextPageSize: number) {
@@ -228,20 +258,45 @@ function handleCITypeConfig() {
   }
 }
 
+function openMetadata() {
+  if (props.typeId) {
+    metadataDrawerRef.value?.open(props.typeId)
+  }
+}
+
 function openUpdate() {
-  // TODO: wire up CreateInstanceForm (batch update flow not yet ported)
+  createRef.value?.handleOpen(true, 'update')
 }
 
 function openBatchQRCode() {
-  // TODO: wire up QRCodeBatchExport (batch QR code export not yet ported)
+  const showAttrName = attrList.value.find((attr) => attr?.id === props.CIType?.show_id)?.name || ''
+  const uniqueAttrName = attrList.value.find((attr) => attr?.id === props.CIType?.unique_id)?.name || ''
+
+  const ciList = selectedRowKeys.value.map((ciId) => {
+    const item = instanceList.value.find((i) => i._id === ciId) || {}
+    const label = item?.[showAttrName] || item?.[uniqueAttrName] || `CI ${ciId}`
+
+    return {
+      ciId,
+      typeId: props.typeId,
+      label,
+    }
+  })
+
+  qrcodeBatchExportRef.value?.open(ciList)
 }
 
 function openBatchDownload() {
-  // TODO: wire up BatchDownload (batch download not yet ported)
+  batchDownloadRef.value?.open({
+    preferenceAttrList: preferenceAttrList.value.filter((attr) => !attr?.is_reference),
+    ciTypeName: props.CIType.alias || props.CIType.name,
+  })
 }
 
 function batchRollback() {
-  // TODO: wire up CiRollbackForm (baseline rollback not yet ported)
+  nextTick(() => {
+    ciRollbackFormRef.value?.onOpen(true)
+  })
 }
 
 function batchDelete() {
@@ -262,7 +317,7 @@ async function batchDeleteAsync() {
   const floor = Math.ceil(selectedRowKeys.value.length / 6)
   for (let i = 0; i < floor; i++) {
     const itemList = selectedRowKeys.value.slice(6 * i, 6 * i + 6)
-    const promises = itemList.map((x) => deleteCI(x, false))
+    const promises = itemList.map((x) => deleteCIById(x, false))
     await Promise.allSettled(promises)
       .then((res) => {
         res.forEach((r) => {
@@ -284,13 +339,213 @@ async function batchDeleteAsync() {
   loading.value = false
   loadTip.value = ''
   selectedRowKeys.value = []
-  xTableRef.value?.clearCheckboxRow()
-  xTableRef.value?.clearCheckboxReserve()
+  getTableRef()?.clearCheckboxRow()
+  getTableRef()?.clearCheckboxReserve()
   if (currentPage.value === 1) {
     loadTableData()
   } else {
     currentPage.value = 1
   }
+}
+
+function batchUpdate(values: Record<string, any>) {
+  Modal.confirm({
+    title: t('warning'),
+    content: t('cmdb.ci.batchUpdateConfirm'),
+    onOk() {
+      batchUpdateAsync(values)
+    },
+  })
+}
+
+async function batchUpdateAsync(values: Record<string, any>) {
+  let successNum = 0
+  let errorNum = 0
+  loading.value = true
+  loadTip.value = t('cmdb.ci.batchUpdateInProgress') + '...'
+  const payload: Record<string, any> = {}
+  Object.keys(values).forEach((key) => {
+    payload[key] = values[key] === undefined || values[key] === null ? null : values[key]
+  })
+  createRef.value?.handleClose()
+  const key = 'updatable'
+  let errorMsg = ''
+  for (let i = 0; i < selectedRowKeys.value.length; i++) {
+    await updateCI(selectedRowKeys.value[i], payload, false)
+      .then(() => {
+        successNum += 1
+      })
+      .catch((error) => {
+        errorMsg = errorMsg + '\n' + `${selectedRowKeys.value[i]}:${error.response?.data?.message ?? ''}`
+        notification.warning({
+          key,
+          message: t('warning'),
+          description: errorMsg,
+          duration: 0,
+          style: { whiteSpace: 'break-spaces', overflow: 'auto', maxHeight: window.innerHeight - 80 + 'px' },
+        })
+        errorNum += 1
+      })
+      .finally(() => {
+        loadTip.value = t('cmdb.ci.batchUpdateInProgress2', {
+          total: selectedRowKeys.value.length,
+          successNum,
+          errorNum,
+        })
+      })
+  }
+  loading.value = false
+  loadTip.value = ''
+  selectedRowKeys.value = []
+  getTableRef()?.clearCheckboxRow()
+  getTableRef()?.clearCheckboxReserve()
+  reloadData()
+}
+
+async function batchRollbackAsync(params: Record<string, any>) {
+  const mask = document.querySelector('.ant-drawer-mask') as HTMLElement | null
+  const oldValue = mask?.style.zIndex
+  if (mask) {
+    mask.style.zIndex = '2'
+  }
+  let successNum = 0
+  let errorNum = 0
+  loading.value = true
+  loadTip.value = t('cmdb.ci.rollbackingTips')
+  const floor = Math.ceil(selectedRowKeys.value.length / 6)
+  for (let i = 0; i < floor; i++) {
+    const itemList = selectedRowKeys.value.slice(6 * i, 6 * i + 6)
+    const promises = itemList.map((x) => CIBaselineRollback(x, params))
+    await Promise.allSettled(promises)
+      .then((res) => {
+        res.forEach((r) => {
+          if (r.status === 'fulfilled') {
+            successNum += 1
+          } else {
+            errorNum += 1
+          }
+        })
+      })
+      .finally(() => {
+        loadTip.value = t('cmdb.ci.batchRollbacking', {
+          total: selectedRowKeys.value.length,
+          successNum,
+          errorNum,
+        })
+      })
+  }
+  loading.value = false
+  loadTip.value = ''
+  if (mask) {
+    mask.style.zIndex = oldValue || ''
+  }
+  selectedRowKeys.value = []
+  getTableRef()?.clearCheckboxRow()
+  getTableRef()?.clearCheckboxReserve()
+  if (currentPage.value === 1) {
+    loadTableData()
+  } else {
+    currentPage.value = 1
+  }
+}
+
+function batchDownload({ filename, type, checkedKeys, exportQRCode }: any) {
+  const jsonAttrList: string[] = []
+  checkedKeys.forEach((key: string) => {
+    const _find = attrList.value.find((attr) => attr.name === key)
+    if (_find && _find.value_type === '6') jsonAttrList.push(key)
+  })
+  const data = cloneDeep([
+    ...(getTableRef()?.getCheckboxReserveRecords() || []),
+    ...(getTableRef()?.getCheckboxRecords(true) || []),
+  ])
+
+  const tableRef = getTableRef()
+  // The ExcelJS-based QR-code embedding is unavailable in the Vue 3 shell, so the
+  // QR export option falls back to a plain data export.
+  void exportQRCode
+
+  tableRef?.exportData({
+    filename,
+    type,
+    columnFilterMethod({ column }: any) {
+      return checkedKeys.includes(column.property)
+    },
+    data: [
+      ...data.map((item: any) => {
+        jsonAttrList.forEach((jsonAttr) => (item[jsonAttr] = item[jsonAttr] ? JSON.stringify(item[jsonAttr]) : ''))
+        return { ...item }
+      }),
+    ],
+  })
+  selectedRowKeys.value = []
+  tableRef?.clearCheckboxRow()
+  tableRef?.clearCheckboxReserve()
+}
+
+function deleteCI(record: any) {
+  Modal.confirm({
+    title: t('warning'),
+    content: t('confirmDelete'),
+    onOk() {
+      deleteCIById(record.ci_id || record._id).then(() => {
+        message.success(t('deleteSuccess'))
+        reloadData()
+      })
+    },
+  })
+}
+
+function openDetail(id: any, activeTabKey?: string, ciDetailRelationKey?: string) {
+  void ciDetailRelationKey
+  ciDetailDrawerRef.value?.create(id, activeTabKey)
+}
+
+function refreshAfterEditAttrs() {
+  loadPreferenceAttrList().then(() => loadTableData())
+}
+
+function getQAndSort() {
+  const fuzzySearch = searchRef.value?.fuzzySearch || ''
+  const expression = searchRef.value?.expression || ''
+  preferenceSearchRef.value?.savePreference({ fuzzySearch, expression })
+}
+
+function setParamsFromPreferenceSearch(item: any) {
+  const { fuzzySearch, expression } = item.option
+  if (searchRef.value) {
+    searchRef.value.fuzzySearch = fuzzySearch
+    searchRef.value.expression = expression
+  }
+  selectedRowKeys.value = []
+  getTableRef()?.clearCheckboxRow()
+  getTableRef()?.clearCheckboxReserve()
+  getTableRef()?.clearSort()
+  sortByTable.value = undefined
+  nextTick(() => {
+    if (currentPage.value === 1) {
+      loadTableData()
+    } else {
+      currentPage.value = 1
+    }
+  })
+}
+
+function copyExpression() {
+  const expression = searchRef.value?.expression || ''
+  const fuzzySearch = searchRef.value?.fuzzySearch
+
+  const regQ = /(?<=q=).+(?=&)|(?<=q=).+$/g
+  const exp = expression.match(regQ) ? expression.match(regQ)[0] : null
+  const text = `q=_type:${props.typeId}${exp ? `,${exp}` : ''}${fuzzySearch ? `,*${fuzzySearch}*` : ''}`
+  navigator.clipboard
+    .writeText(text)
+    .then(() => {
+      message.success(t('copySuccess'))
+    })
+    .catch(() => {
+      message.error(t('cmdb.ci.copyFailed'))
+    })
 }
 
 watch(currentPage, () => {
@@ -317,21 +572,23 @@ onMounted(async () => {
       <div class="cmdb-views-header">
         <span>
           <span class="cmdb-views-header-title">{{ CIType.alias || CIType.name }}</span>
-          <!-- TODO: wire up MetadataDrawer (attributeDesc trigger) -->
-          <span class="cmdb-views-header-metadata">
+          <span
+            class="cmdb-views-header-metadata"
+            @click="openMetadata"
+          >
             <InfoCircleOutlined />{{ t('cmdb.ci.attributeDesc') }}
           </span>
         </span>
         <a-space>
-          <!-- TODO: wire up CreateInstanceForm (create trigger) -->
-          <a-button type="primary" class="ops-button-ghost" ghost>
+          <a-button type="primary" class="ops-button-ghost" ghost @click="createRef?.handleOpen(true, 'create')">
             <template #icon><PlusOutlined /></template>
             {{ t('create') }}
           </a-button>
-          <!-- TODO: wire up EditAttrsPopover (config table trigger) -->
-          <a-button type="primary" ghost class="ops-button-ghost">
-            <template #icon><SettingOutlined /></template>{{ t('cmdb.configTable') }}
-          </a-button>
+          <EditAttrsPopover :type-id="typeId" class="operation-icon" @refresh="refreshAfterEditAttrs">
+            <a-button type="primary" ghost class="ops-button-ghost">
+              <template #icon><SettingOutlined /></template>{{ t('cmdb.configTable') }}
+            </a-button>
+          </EditAttrsPopover>
           <a-dropdown>
             <a-button type="primary" ghost class="ops-button-ghost"><MoreOutlined /></a-button>
             <template #overlay>
@@ -353,22 +610,49 @@ onMounted(async () => {
         </a-space>
       </div>
       <div class="cmdb-ci-main">
-        <!-- TODO: wire up SearchForm / PreferenceSearch -->
-        <div class="ops-list-batch-action" v-show="!!selectedRowKeys.length">
-          <span @click="openUpdate">{{ t('update') }}</span>
-          <a-divider type="vertical" />
-          <span @click="openBatchQRCode">{{ t('cmdb.ci.qrcodeExport') }}</span>
-          <a-divider type="vertical" />
-          <span @click="openBatchDownload">{{ t('download') }}</span>
-          <a-divider type="vertical" />
-          <span @click="batchDelete">{{ t('delete') }}</span>
-          <a-divider type="vertical" />
-          <span @click="batchRollback">{{ t('cmdb.ci.rollback') }}</span>
-          <span>{{ t('cmdb.ci.selectRows', { rows: selectedRowKeys.length }) }}</span>
-        </div>
+        <SearchForm
+          ref="searchRef"
+          :preference-attr-list="preferenceAttrList"
+          :type-id="typeId"
+          :selected-row-keys="selectedRowKeys"
+          @refresh="handleSearch"
+          @copy-expression="copyExpression"
+        >
+          <PreferenceSearch
+            ref="preferenceSearchRef"
+            v-show="!selectedRowKeys.length"
+            @get-q-and-sort="getQAndSort"
+            @set-params-from-preference-search="setParamsFromPreferenceSearch"
+          />
+          <div class="ops-list-batch-action" v-show="!!selectedRowKeys.length">
+            <span @click="openUpdate">{{ t('update') }}</span>
+            <a-divider type="vertical" />
+            <span @click="openBatchQRCode">{{ t('cmdb.ci.qrcodeExport') }}</span>
+            <a-divider type="vertical" />
+            <span @click="openBatchDownload">{{ t('download') }}</span>
+            <a-divider type="vertical" />
+            <span @click="batchDelete">{{ t('delete') }}</span>
+            <a-divider type="vertical" />
+            <span @click="batchRollback">{{ t('cmdb.ci.rollback') }}</span>
+            <span>{{ t('cmdb.ci.selectRows', { rows: selectedRowKeys.length }) }}</span>
+          </div>
+        </SearchForm>
 
-        <!-- TODO: wire up CiDetailDrawer -->
-        <!-- TODO: wire up CITable (the instance table) -->
+        <CiDetailDrawer ref="ciDetailDrawerRef" :type-id="typeId" />
+
+        <CITable
+          ref="xTableRef"
+          :id="`cmdb-ci-${typeId}`"
+          :loading="loading"
+          :attr-list="preferenceAttrList"
+          :columns="columns"
+          :password-value="passwordValue"
+          :data="instanceList"
+          :height="tableHeight"
+          @on-select-change="onSelectChange"
+          @open-detail="openDetail"
+          @delete-c-i="deleteCI"
+        />
 
         <div :style="{ textAlign: 'right', marginTop: '4px' }">
           <a-pagination
@@ -384,6 +668,17 @@ onMounted(async () => {
             @change="(page: number) => (currentPage = page)"
           />
         </div>
+
+        <CreateInstanceForm
+          ref="createRef"
+          :type-id-from-prop="typeId"
+          @reload="reloadData"
+          @submit="batchUpdate"
+        />
+        <BatchDownload ref="batchDownloadRef" @batch-download="batchDownload" />
+        <CiRollbackForm ref="ciRollbackFormRef" :ci-ids="selectedRowKeys" @batch-rollback-async="batchRollbackAsync" />
+        <QRCodeBatchExport ref="qrcodeBatchExportRef" />
+        <MetadataDrawer ref="metadataDrawerRef" />
         <CMDBGrant ref="cmdbGrantRef" resource-type="CIType" app_id="cmdb" />
       </div>
     </a-spin>
