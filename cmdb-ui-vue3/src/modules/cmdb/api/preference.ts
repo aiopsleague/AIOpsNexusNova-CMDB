@@ -32,6 +32,26 @@ export function subscribeTreeView(ciTypeId: string | number, levels: unknown): P
   return request.post(`${urlPrefix}/preference/tree/view`, { type_id: ciTypeId, levels })
 }
 
+/** Fetch the subscribed tree view levels for every CI type. */
+export function getSubscribeTreeView(): Promise<any> {
+  return request.get(`${urlPrefix}/preference/tree/view`)
+}
+
+/** Fetch the saved search-option preference list. */
+export function getPreferenceSearch(payload?: Record<string, unknown>): Promise<any> {
+  return request.get(`${urlPrefix}/preference/search/option`, { params: payload })
+}
+
+/** Persist a search-option preference. */
+export function savePreferenceSearch(payload: Record<string, unknown>): Promise<any> {
+  return request.post(`${urlPrefix}/preference/search/option`, payload)
+}
+
+/** Delete a search-option preference by id. */
+export function deletePreferenceSearch(id: string | number): Promise<any> {
+  return request.delete(`${urlPrefix}/preference/search/option/${id}`)
+}
+
 /** Fetch the auto-subscription config. */
 export function getAutoSubscription(): Promise<any> {
   return request.get(`${urlPrefix}/preference/auto_subscription`)
