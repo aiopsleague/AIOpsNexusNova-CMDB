@@ -13,6 +13,8 @@ export default {
   status: '状态',
   create: '创建',
   update: '修改',
+  delete: '删除',
+  new: '新增',
   warning: '警告',
   operation: '操作',
   admin: '管理员',

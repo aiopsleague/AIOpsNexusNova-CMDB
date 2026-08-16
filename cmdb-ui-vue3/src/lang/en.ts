@@ -13,6 +13,8 @@ export default {
   status: 'Status',
   create: 'Create',
   update: 'Update',
+  delete: 'Delete',
+  new: 'New',
   warning: 'Warning',
   operation: 'Operation',
   admin: 'Admin',

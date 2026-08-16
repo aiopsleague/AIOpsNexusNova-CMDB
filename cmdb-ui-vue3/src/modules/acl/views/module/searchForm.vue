@@ -100,6 +100,7 @@ function handleSearch() {
 function handleReset() {
   queryParams.value = { page: 1 }
   date.value = undefined
+  checked.value = false
   emit('searchFormReset')
 }
 
@@ -135,6 +136,10 @@ function fetchData(value: string, name: string) {
     emit('fetchData', value)
   }
 }
+
+// Expose the query params so parent tables can clear stale filter fields when
+// the selected app changes (rid / resource_type_id / resource_id / link_id / trigger_id).
+defineExpose({ queryParams })
 </script>
 
 <template>
