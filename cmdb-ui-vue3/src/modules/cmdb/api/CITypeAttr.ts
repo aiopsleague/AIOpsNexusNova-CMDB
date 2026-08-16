@@ -71,3 +71,8 @@ export function canDefineComputed(): Promise<any> {
 export function calcComputedAttribute(attrId: string | number): Promise<any> {
   return request.put(`${urlPrefix}/attributes/${attrId}/calc_computed_attribute`)
 }
+
+/** Fetch the decrypted value of a password attribute for a CI. */
+export function getAttrPassword(ci_id: string | number, attr_id: string | number): Promise<any> {
+  return request.get(`${urlPrefix}/ci/${ci_id}/attributes/${attr_id}/password`)
+}

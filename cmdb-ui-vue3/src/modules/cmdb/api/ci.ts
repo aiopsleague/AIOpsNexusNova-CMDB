@@ -11,3 +11,28 @@ export function searchCI(params: Record<string, unknown>): Promise<any> {
 export function getCIType(CITypeName: string | number, parameter?: Record<string, unknown>): Promise<any> {
   return request.get(`${urlPrefix}/ci_types/${CITypeName}`, { params: parameter })
 }
+
+/** Update a single CI by id. */
+export function updateCI(id: string | number, params: Record<string, unknown>, isShowMessage = true): Promise<any> {
+  return request.put(`${urlPrefix}/ci/${id}`, params, { isShowMessage } as any)
+}
+
+/** Delete a single CI by id. */
+export function deleteCI(ciId: string | number, isShowMessage = true): Promise<any> {
+  return request.delete(`${urlPrefix}/ci/${ciId}`, { isShowMessage } as any)
+}
+
+/** Fetch a single CI instance by id. */
+export function getCIById(ciId: string | number): Promise<any> {
+  return request.get(`${urlPrefix}/ci/s`, { params: { q: `_id:${ciId}` } })
+}
+
+/** Check whether a CI type has monitoring configured. */
+export function checkCITypeMonitoring(ciTypeId: string | number): Promise<any> {
+  return request.get(`${urlPrefix}/ci_type/${ciTypeId}/monitoring/check`)
+}
+
+/** Check whether a CI type has Prometheus configured. */
+export function checkCIPrometheus(ciTypeId: string | number): Promise<any> {
+  return request.get(`${urlPrefix}/ci_type/${ciTypeId}/prometheus/check`)
+}

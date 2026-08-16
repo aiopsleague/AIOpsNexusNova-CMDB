@@ -12,6 +12,11 @@ export function getCITypeParent(CITypeID: string | number): Promise<any> {
   return request.get(`${urlPrefix}/ci_type_relations/${CITypeID}/parents`)
 }
 
+/** Check whether a role can edit relations between two CI types. */
+export function getCanEditByParentIdChildId(parent_id: string | number, child_id: string | number): Promise<any> {
+  return request.get(`${urlPrefix}/ci_type_relations/${parent_id}/${child_id}/can_edit`)
+}
+
 /** Fetch all relation types. */
 export function getRelationTypes(parameter?: Record<string, unknown>): Promise<any> {
   return request.get(`${urlPrefix}/relation_types`, { params: parameter })
