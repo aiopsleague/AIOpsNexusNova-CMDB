@@ -124,3 +124,8 @@ export function updateUniqueConstraint(
 export function deleteUniqueConstraint(type_id: string | number, id: string | number): Promise<any> {
   return request.delete(`${urlPrefix}/ci_types/${type_id}/unique_constraint/${id}`)
 }
+
+/** Fetch the icon mapping for all CI types (id -> icon). */
+export function getCITypeIcons(): Promise<any> {
+  return request.get(`${urlPrefix}/ci_types/icons`)
+}

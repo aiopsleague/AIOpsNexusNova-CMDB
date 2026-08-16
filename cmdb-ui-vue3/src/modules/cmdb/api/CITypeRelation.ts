@@ -2,6 +2,11 @@ import request from '@/utils/request'
 
 const urlPrefix = '/v0.1'
 
+/** Fetch all CI type relations (with the per-type attribute map). */
+export function getCITypeRelations(): Promise<any> {
+  return request.get(`${urlPrefix}/ci_type_relations`)
+}
+
 /** Fetch the child CI types of a CI type. */
 export function getCITypeChildren(CITypeID: string | number, parameter?: Record<string, unknown>): Promise<any> {
   return request.get(`${urlPrefix}/ci_type_relations/${CITypeID}/children`, { params: parameter })

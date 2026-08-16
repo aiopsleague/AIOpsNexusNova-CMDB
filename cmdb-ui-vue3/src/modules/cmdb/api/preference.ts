@@ -7,6 +7,11 @@ export function getPreference(instance = true, tree: unknown = null): Promise<an
   return request.get(`${urlPrefix}/preference/ci_types`, { params: { instance, tree } })
 }
 
+/** Fetch the relation views (service tree views). */
+export function getRelationView(): Promise<any> {
+  return request.get(`${urlPrefix}/preference/relation/view`)
+}
+
 /** Grant a role access to a relation view. */
 export function grantRelationView(rid: string | number, data: Record<string, unknown>): Promise<any> {
   return request.post(`${urlPrefix}/preference/relation/view/roles/${rid}/grant`, data)

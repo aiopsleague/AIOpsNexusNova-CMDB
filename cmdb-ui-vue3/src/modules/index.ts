@@ -48,8 +48,8 @@ const componentMap: Record<string, () => Promise<unknown>> = {
   aclOperationHistory: () => import('@/modules/acl/views/operation_history/index.vue'),
   // cmdb views are not yet migrated; all placeholders resolve to a stub.
   cmdbDashboard: () => import('@/modules/cmdb/views/dashboard/index_v2.vue'),
-  cmdbTopologyView: () => import('@/modules/cmdb/views/placeholder.vue'),
-  cmdbRelationViews: () => import('@/modules/cmdb/views/placeholder.vue'),
+  cmdbTopologyView: () => import('@/modules/cmdb/views/topology_view/index.vue'),
+  cmdbRelationViews: () => import('@/modules/cmdb/views/relation_views/index.vue'),
   cmdbResourceViews: () => import('@/modules/cmdb/views/placeholder.vue'),
   cmdbTreeViews: () => import('@/modules/cmdb/views/placeholder.vue'),
   cmdbResourceSearch: () => import('@/modules/cmdb/views/resource_search_2/index.vue'),
@@ -64,8 +64,8 @@ const componentMap: Record<string, () => Promise<unknown>> = {
   cmdbPreferenceRelation: () => import('@/modules/cmdb/views/placeholder.vue'),
   cmdbDiscovery: () => import('@/modules/cmdb/views/discovery/index.vue'),
   cmdbOperationHistory: () => import('@/modules/cmdb/views/placeholder.vue'),
-  cmdbModelRelation: () => import('@/modules/cmdb/views/placeholder.vue'),
-  cmdbRelationType: () => import('@/modules/cmdb/views/placeholder.vue'),
+  cmdbModelRelation: () => import('@/modules/cmdb/views/model_relation/index.vue'),
+  cmdbRelationType: () => import('@/modules/cmdb/views/relation_type/index.vue'),
   cmdbMobileDetail: () => import('@/modules/cmdb/views/placeholder.vue'),
 }
 
