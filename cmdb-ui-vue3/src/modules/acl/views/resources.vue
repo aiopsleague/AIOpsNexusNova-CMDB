@@ -16,6 +16,9 @@ import {
 import ResourceForm from './module/resourceForm.vue'
 import ResourceGroupModal from './module/resourceGroupModal.vue'
 import ResourceGroupMember from './module/resourceGroupMember.vue'
+import ResourcePermForm from './module/resourcePermForm.vue'
+import ResourcePermManageForm from './module/resourcePermManageForm.vue'
+import ResourceBatchPerm from './module/resourceBatchPerm.vue'
 
 interface ResourceRow {
   id: number
@@ -58,6 +61,11 @@ const scrollY = computed(() => Math.max(windowHeight.value - 250, 200))
 const resourceFormRef = ref<{ handleCreate: (type: ResourceTypeRow) => void }>()
 const resourceGroupModalRef = ref<{ handleEdit: (record: ResourceRow) => void }>()
 const resourceGroupMemberRef = ref<{ handleEdit: (record: ResourceRow) => void }>()
+const resourcePermFormRef = ref<{ handlePerm: (record: ResourceRow, group: boolean) => void }>()
+const resourcePermManageFormRef = ref<{
+  editPerm: (record: ResourceRow | ResourceRow[], group: boolean, grantOrRevoke?: 'grant' | 'revoke') => void
+}>()
+const resourceBatchPermRef = ref<{ open: (currentTypeId: number) => void }>()
 
 const columns = computed<TableColumnsType<ResourceRow>>(() => [
   {
@@ -191,24 +199,23 @@ function onSizeChange(size: number) {
   searchData()
 }
 
-// TODO: wire up the permission components once they are migrated in a later group:
-//   - resourcePermForm -> handlePerm (view auth, eye icon)
-//   - resourcePermManageForm -> handlePermManage / handleBatchPerm / handleBatchRevoke
-//   - resourceBatchPerm -> handleBatchPermOpen (quick grant)
-function handlePerm(_record: ResourceRow) {
-  // resourcePermFormRef.value?.handlePerm(record, isGroup.value)
+function handlePerm(record: ResourceRow) {
+  resourcePermFormRef.value?.handlePerm(record, isGroup.value)
 }
-function handlePermManage(_record: ResourceRow) {
-  // resourcePermManageFormRef.value?.editPerm(record, isGroup.value)
+function handlePermManage(record: ResourceRow) {
+  resourcePermManageFormRef.value?.editPerm(record, isGroup.value)
 }
 function handleBatchPerm() {
-  // resourcePermManageFormRef.value?.editPerm(selectedRows.value, isGroup.value)
+  resourcePermManageFormRef.value?.editPerm(selectedRows.value, isGroup.value)
 }
 function handleBatchRevoke() {
-  // resourcePermManageFormRef.value?.editPerm(selectedRows.value, isGroup.value, 'revoke')
+  resourcePermManageFormRef.value?.editPerm(selectedRows.value, isGroup.value, 'revoke')
 }
 function handleBatchPermOpen() {
-  // resourceBatchPermRef.value?.open(currentType.value.id)
+  resourceBatchPermRef.value?.open(currentType.value.id as number)
+}
+function closePerm() {
+  clearSelection()
 }
 
 function handleResize() {
@@ -331,9 +338,11 @@ onBeforeUnmount(() => {
     </div>
 
     <ResourceForm ref="resourceFormRef" :handle-ok="handleOk" />
-    <!-- TODO: resourcePermForm / resourcePermManageForm / resourceBatchPerm belong to a later migration group. -->
+    <ResourcePermForm ref="resourcePermFormRef" />
+    <ResourcePermManageForm ref="resourcePermManageFormRef" :group-type-message="currentType" @close="closePerm" />
     <ResourceGroupModal ref="resourceGroupModalRef" />
     <ResourceGroupMember ref="resourceGroupMemberRef" />
+    <ResourceBatchPerm ref="resourceBatchPermRef" />
   </div>
 </template>
 

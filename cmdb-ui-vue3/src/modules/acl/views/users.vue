@@ -7,6 +7,7 @@ import type { TableColumnsType } from 'ant-design-vue'
 import { useUserStore } from '@/stores/user'
 import { deleteUserById, searchUser, getOnDutyUser as fetchOnDutyUser } from '@/modules/acl/api/user'
 import UserForm from './module/userForm.vue'
+import PermCollectForm from './module/permCollectForm.vue'
 
 interface UserRow {
   uid: number
@@ -36,6 +37,10 @@ const scrollY = computed(() => Math.max(windowHeight.value - 165, 200))
 const userFormRef = ref<{
   handleCreate: () => void
   handleEdit: (record: UserRow) => void
+}>()
+
+const permCollectFormRef = ref<{
+  collect: (record: UserRow) => void
 }>()
 
 const isAclAdmin = computed(() => {
@@ -89,8 +94,8 @@ function handleEdit(record: UserRow) {
   userFormRef.value?.handleEdit(record)
 }
 
-function handlePermCollect(_record: UserRow) {
-  // TODO: wire up the permission summary drawer once permCollectForm is migrated.
+function handlePermCollect(record: UserRow) {
+  permCollectFormRef.value?.collect(record)
 }
 
 async function handleOk() {
@@ -178,6 +183,7 @@ onBeforeUnmount(() => {
     </a-spin>
 
     <user-form ref="userFormRef" :handle-ok="handleOk" />
+    <PermCollectForm ref="permCollectFormRef" />
   </div>
 </template>
 
