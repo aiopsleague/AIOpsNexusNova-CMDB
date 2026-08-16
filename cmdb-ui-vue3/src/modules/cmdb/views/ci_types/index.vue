@@ -22,6 +22,9 @@ import CMDBTypeSelect from '../../components/cmdbTypeSelect/index.vue'
 import CMDBGrant from '../../components/cmdbGrant/index.vue'
 import CreateNewAttribute from './ceateNewAttribute.vue'
 import CITypeDetail from './ciTypedetail.vue'
+import IconArea from './iconArea.vue'
+import AttributeStore from './attributeStore.vue'
+import ModelExport from './modelExport.vue'
 import emptyImage from '@/assets/data_empty.png'
 import {
   createCIType,
@@ -93,7 +96,11 @@ const searchValue = ref('')
 const modelExportVisible = ref(false)
 const preferenceData = ref<Record<string, any>>({})
 
-const iconData = ref<Record<string, any>>({})
+const iconAreaRef = ref<{
+  setIcon: (icon?: Record<string, any>) => void
+  getIcon: () => Record<string, any> | undefined
+}>()
+const attributeStoreRef = ref<{ open: () => void }>()
 
 const createNewAttributeRef = ref<{ checkCanDefineComputed: () => void }>()
 const cmdbGrantRef = ref<{ open: (arg: Record<string, any>) => void }>()
@@ -188,14 +195,6 @@ const rules = computed(() => ({
   ],
   unique_key: [{ required: true, message: t('cmdb.ciType.uniqueKeySelect') }],
 }))
-
-function setIcon(icon?: Record<string, any>) {
-  iconData.value = icon || {}
-}
-
-function getIcon() {
-  return iconData.value
-}
 
 function getAllDepAndEmployeeData() {
   getAllDepAndEmployee({ block: 0 }).then((res) => {
@@ -308,7 +307,7 @@ function handleCreate(g: any) {
   drawerVisible.value = true
   selectGroup.value = g
   nextTick(() => {
-    setIcon()
+    iconAreaRef.value?.setIcon()
   })
 }
 
@@ -318,7 +317,7 @@ function handleCreateCiFromEmpty() {
   const _find = CITypeGroups.value.find((item) => item.id === currentGId.value)
   selectGroup.value = _find
   nextTick(() => {
-    setIcon()
+    iconAreaRef.value?.setIcon()
   })
 }
 
@@ -367,7 +366,7 @@ function handleSubmit() {
       if (values.default_order_attr && defaultOrderAsc.value === '2') {
         values.default_order_attr = `-${values.default_order_attr}`
       }
-      const _icon = getIcon()
+      const _icon = iconAreaRef.value?.getIcon()
       const icon = _icon && _icon.name ? `${_icon.name}$${_icon.color || ''}$${_icon.id || ''}$${_icon.url || ''}` : ''
       if (values.id) {
         const { parent_ids: oldP = [] } = editCiType.value || {}
@@ -522,7 +521,7 @@ async function handleEdit(e: any, record: any) {
       record.default_order_attr && record.default_order_attr.startsWith('-')
         ? record.default_order_attr.slice(1)
         : record.default_order_attr
-    setIcon(
+    iconAreaRef.value?.setIcon(
       record.icon
         ? {
             name: record.icon.split('$$')[0] || '',
@@ -643,7 +642,7 @@ getPreferenceData()
                     <PlusOutlined />
                     <span>{{ t('cmdb.ciType.addGroup2') }}</span>
                   </a-menu-item>
-                  <a-menu-item key="1" @click="() => {}">
+                  <a-menu-item key="1" @click="attributeStoreRef?.open()">
                     <AppstoreOutlined />
                     <span>{{ t('cmdb.ciType.viewAttributeLibray') }}</span>
                   </a-menu-item>
@@ -829,7 +828,7 @@ getPreferenceData()
           <div class="ant-form-explain">{{ t('cmdb.ciType.inheritTypeHint') }}</div>
         </a-form-item>
         <a-form-item :label="t('cmdb.common.icon')">
-          <!-- TODO: wire up <IconArea> once migrated -->
+          <IconArea ref="iconAreaRef" class="ci_types-icon-area" />
           <div class="ant-form-explain">{{ t('cmdb.ciType.iconHint') }}</div>
         </a-form-item>
         <a-form-item v-if="drawerTitle === t('cmdb.ciType.editCIType')" :label="t('cmdb.ciType.defaultSort')">
@@ -903,7 +902,8 @@ getPreferenceData()
       </a-form>
     </CustomDrawer>
     <CMDBGrant ref="cmdbGrantRef" resource-type="CIType" app_id="cmdb" />
-    <!-- TODO: wire up <AttributeStore> and <ModelExport> once migrated -->
+    <AttributeStore ref="attributeStoreRef" />
+    <ModelExport :visible="modelExportVisible" :CITypeGroups="CITypeGroups" @cancel="() => (modelExportVisible = false)" />
   </div>
 </template>
 

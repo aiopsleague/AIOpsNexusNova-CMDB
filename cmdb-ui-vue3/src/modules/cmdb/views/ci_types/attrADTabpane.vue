@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /* eslint-disable vue/prop-name-casing */
-import { computed, provide, ref } from 'vue'
+import { computed, nextTick, provide, ref } from 'vue'
 import { message } from 'ant-design-vue'
 import { useI18n } from 'vue-i18n'
 import { MenuOutlined, EditOutlined, QuestionCircleOutlined } from '@ant-design/icons-vue'
@@ -14,6 +14,13 @@ import HttpSnmpAD from '@/modules/cmdb/components/httpSnmpAD/index.vue'
 import AttrMapTable from '@/modules/cmdb/components/attrMapTable/index.vue'
 import CMDBExprDrawer from '@/components/CMDBExprDrawer/index.vue'
 import AttrADTest from './attrADTest.vue'
+import NodeSetting from './attrAD/nodeSetting/index.vue'
+import SNMPConfig from './attrAD/SNMPConfig/index.vue'
+import SNMPScanningConfig from './attrAD/SNMPScanningConfig/index.vue'
+import CIDRTags from './attrAD/cidrTags/index.vue'
+import VcenterForm from './attrAD/privateCloud/vcenterForm.vue'
+import PublicCloud from './attrAD/publicCloud/index.vue'
+import PortScanConfig from './attrAD/portScanConfig/index.vue'
 
 const TAB_KEY = { CUSTOM: 'custom', CONFIG: 'config' } as const
 
@@ -94,6 +101,8 @@ const isClient = ref(false)
 const attrMapTableRef = ref<InstanceType<typeof AttrMapTable>>()
 const httpSnmpAdRef = ref<InstanceType<typeof HttpSnmpAD>>()
 const cmdbDrawerRef = ref<InstanceType<typeof CMDBExprDrawer>>()
+const nodeSettingRef = ref<InstanceType<typeof NodeSetting>>()
+const httpFormRef = ref<InstanceType<typeof VcenterForm> | InstanceType<typeof PublicCloud>>()
 
 const windowHeight = computed(() => window.innerHeight)
 
@@ -169,7 +178,6 @@ function init() {
 
   if (adrType.value === DISCOVERY_CATEGORY_TYPE.HTTP) {
     const {
-      category = undefined,
       key = '',
       secret = '',
       host = '',
@@ -203,8 +211,9 @@ function init() {
       }
     }
 
-    // The httpSnmpAD component derives its category from currentAdt internally.
-    void category
+    nextTick(() => {
+      httpFormRef.value?.init(props.adr_id)
+    })
   }
 
   if (adrType.value === DISCOVERY_CATEGORY_TYPE.COMPONENT) {
@@ -230,8 +239,9 @@ function init() {
             version: '',
           },
         ]
-    // TODO: wire up <NodeSetting> once migrated.
-    void initializeNodes
+    nextTick(() => {
+      nodeSettingRef.value?.initNodesFunc(initializeNodes)
+    })
 
     let cidrList: any[] = []
     if (Array.isArray(cidr) && cidr?.length) {
@@ -430,8 +440,7 @@ function handleSave() {
 
   if (adrType.value === DISCOVERY_CATEGORY_TYPE.SNMP) {
     const { cidr, ...otherConfigForm } = SNMPScanningConfigForm.value
-    // TODO: wire up <NodeSetting> once migrated; nodes default to [].
-    const nodes: any[] = []
+    const nodes = nodeSettingRef.value?.getNodeValue() ?? []
 
     params = {
       extra_option: {
@@ -596,9 +605,12 @@ defineExpose({ init })
       <div class="attr-ad-header">{{ t('cmdb.ciType.scanningParameter') }}</div>
       <div class="attr-ad-form attr-ad-snmp-form">
         <div class="attr-ad-snmp-form-title">{{ t('cmdb.ciType.SNMPConfiguration') }}</div>
-        <!-- TODO: wire up <NodeSetting> / <SNMPConfig> once migrated. -->
+        <NodeSetting ref="nodeSettingRef" />
+        <SNMPConfig :value="SNMPScanningConfigForm" @change="(v) => (SNMPScanningConfigForm = v)" />
+
         <div class="attr-ad-snmp-form-title">{{ t('cmdb.ciType.scanningConfiguration') }}</div>
-        <!-- TODO: wire up <SNMPScanningConfig> / <CIDRTags> once migrated. -->
+        <SNMPScanningConfig :value="SNMPScanningConfigForm" @change="(v) => (SNMPScanningConfigForm = v)" />
+        <CIDRTags :value="SNMPScanningConfigForm.cidr" @change="(v) => (SNMPScanningConfigForm.cidr = v)" />
       </div>
     </template>
 
@@ -655,18 +667,18 @@ defineExpose({ init })
       <template v-if="isPrivateCloud">
         <template v-if="privateCloudName === PRIVATE_CLOUD_NAME.VCenter">
           <div class="attr-ad-header">{{ t('cmdb.ciType.privateCloud') }}</div>
-          <!-- TODO: wire up <VcenterForm> once migrated. -->
+          <VcenterForm ref="httpFormRef" :value="privateCloudForm" @change="(v) => (privateCloudForm = v)" />
         </template>
       </template>
       <template v-else>
         <div class="attr-ad-header">{{ t('cmdb.ciType.cloudAccessKey') }}</div>
-        <!-- TODO: wire up <PublicCloud> once migrated. -->
+        <PublicCloud ref="httpFormRef" :value="publicCloudForm" @change="(v) => (publicCloudForm = v)" />
       </template>
     </template>
 
     <template v-if="adrType === DISCOVERY_CATEGORY_TYPE.COMPONENT">
       <div class="attr-ad-header">{{ t('cmdb.ciType.portScanConfig') }}</div>
-      <!-- TODO: wire up <PortScanConfig> once migrated. -->
+      <PortScanConfig :value="portScanConfigForm" @change="(v) => (portScanConfigForm = v)" />
     </template>
 
     <AttrADTest :adtId="currentAdt.id" />

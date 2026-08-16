@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /* eslint-disable vue/prop-name-casing */
-import { computed, inject, type Component } from 'vue'
+import { computed, inject, ref, type Component } from 'vue'
 import { message, Modal } from 'ant-design-vue'
 import { useI18n } from 'vue-i18n'
 import {
@@ -20,6 +20,7 @@ import ValueTypeIcon from '@/components/CMDBValueTypeMapIcon/index.vue'
 import { deleteCITypeAttributesById, deleteAttributesById, calcComputedAttribute } from '@/modules/cmdb/api/CITypeAttr'
 import { updateCIType } from '@/modules/cmdb/api/CIType'
 import { getPropertyType, valueTypeMap } from '../../utils/helper'
+import TriggerForm from './triggerForm.vue'
 
 interface AttributeProperty {
   id?: number
@@ -127,9 +128,10 @@ function handleDelete() {
   })
 }
 
-// TODO: wire up <TriggerForm> once migrated.
+const triggerFormRef = ref<{ open: (property: any, attrs: any[]) => void }>()
+
 function openTrigger() {
-  // this.$refs.triggerForm.open(this.property, this.attributes)
+  triggerFormRef.value?.open(props.property, props.attributes)
 }
 
 function handleCalcComputed() {
@@ -154,6 +156,7 @@ function setAsShow() {
 </script>
 
 <template>
+  <!-- eslint-disable vue/attribute-hyphenation -->
   <div
     :class="['attribute-card', { 'attribute-card-add': isAdd, 'attribute-card-inherited': inherited }, typeClass]"
     @click="
@@ -242,7 +245,7 @@ function setAsShow() {
           <a v-if="!isUnique && !inherited" style="color: red"><DeleteOutlined @click="handleDelete" /></a>
         </a-space>
       </div>
-      <!-- TODO: wire up <TriggerForm> once migrated -->
+      <TriggerForm ref="triggerFormRef" :CITypeId="CITypeId" />
     </template>
     <template v-else>
       <a><PlusOutlined /></a>

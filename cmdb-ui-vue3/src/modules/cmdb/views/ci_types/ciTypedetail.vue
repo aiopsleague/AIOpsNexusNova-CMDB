@@ -1,10 +1,14 @@
 <script setup lang="ts">
 /* eslint-disable vue/prop-name-casing */
-import { computed, nextTick, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import { message } from 'ant-design-vue'
 import { useI18n } from 'vue-i18n'
 import { TableOutlined } from '@ant-design/icons-vue'
 import AttributesTable from './attributesTable.vue'
+import RelationTable from './relationTable.vue'
+import TriggerTable from './triggerTable.vue'
+import ADTab from './adTab.vue'
+import OnetermSyncTab from './onetermSync/index.vue'
 import GrantComp from '../../components/cmdbGrant/grantComp.vue'
 
 const ACTIVE_KEY_STORAGE_KEY = 'ops_model_config_tab_key'
@@ -23,6 +27,7 @@ const { t } = useI18n()
 const activeKey = ref(localStorage.getItem(ACTIVE_KEY_STORAGE_KEY) || '1')
 
 const attributesTableRef = ref<{ getCITypeGroupData: () => void }>()
+const triggerTableRef = ref<{ getTableData: () => void }>()
 
 const windowHeight = computed(() => window.innerHeight)
 
@@ -35,13 +40,21 @@ function changeTab(key: string) {
         attributesTableRef.value?.getCITypeGroupData()
         break
       case '5':
-        // TODO: wire up <TriggerTable> once migrated.
+        triggerTableRef.value?.getTableData()
         break
       default:
         break
     }
   })
 }
+
+onMounted(() => {
+  nextTick(() => {
+    if (activeKey.value === '5') {
+      triggerTableRef.value?.getTableData()
+    }
+  })
+})
 
 function jumpResourceView() {
   const isSub = props.preferenceData?.type_ids?.includes(props.CITypeId)
@@ -63,16 +76,13 @@ function jumpResourceView() {
         <AttributesTable ref="attributesTableRef" :CITypeId="CITypeId" :CITypeName="CITypeName" />
       </a-tab-pane>
       <a-tab-pane key="2" :tab="t('cmdb.ciType.relation')">
-        <!-- TODO: wire up <RelationTable> once migrated -->
-        <div v-if="activeKey === '2'" />
+        <RelationTable v-if="activeKey === '2'" :CITypeId="CITypeId" :CITypeName="CITypeName" />
       </a-tab-pane>
       <a-tab-pane key="3" :tab="t('cmdb.ciType.autoDiscoveryTab')">
-        <!-- TODO: wire up <ADTab> once migrated -->
-        <div v-if="activeKey === '3'" />
+        <ADTab v-if="activeKey === '3'" :CITypeId="CITypeId" />
       </a-tab-pane>
       <a-tab-pane key="5" :tab="t('cmdb.ciType.trigger')">
-        <!-- TODO: wire up <TriggerTable> once migrated -->
-        <div />
+        <TriggerTable ref="triggerTableRef" :CITypeId="CITypeId" />
       </a-tab-pane>
       <a-tab-pane key="oneterm">
         <template #tab>
@@ -81,8 +91,7 @@ function jumpResourceView() {
             <span class="oneterm-sync-tab-title-pro">Pro</span>
           </div>
         </template>
-        <!-- TODO: wire up <OnetermSyncTab> once migrated -->
-        <div v-if="activeKey === 'oneterm'" />
+        <OnetermSyncTab v-if="activeKey === 'oneterm' && CITypeId" :CITypeId="CITypeId" :CITypeName="CITypeName" />
       </a-tab-pane>
       <a-tab-pane key="6" :tab="t('cmdb.ciType.grant')">
         <div
@@ -92,7 +101,7 @@ function jumpResourceView() {
         >
           <GrantComp :CITypeId="CITypeId" resource-type="CIType" :resource-type-name="CITypeName" />
           <div class="citype-detail-title">{{ t('cmdb.components.relationGrant') }}</div>
-          <!-- TODO: wire up <RelationTable isInGrantComp> once migrated -->
+          <RelationTable is-in-grant-comp :CITypeId="CITypeId" :CITypeName="CITypeName" />
         </div>
       </a-tab-pane>
 

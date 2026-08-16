@@ -15,6 +15,7 @@ import {
 import { getCITypeAttributesById } from '@/modules/cmdb/api/CITypeAttr'
 import AttrADTabpane from './attrADTabpane.vue'
 import AttrADTabs from './attrADTabs.vue'
+import ADModal from './adModal.vue'
 
 const props = withDefaults(defineProps<{ CITypeId?: number | null }>(), { CITypeId: null })
 
@@ -29,6 +30,7 @@ const deletePlugin = ref(false)
 const queryLoaded = ref(false)
 
 const attrAdTabpaneRef = ref<InstanceType<typeof AttrADTabpane>>()
+const adModalRef = ref<{ open: () => void }>()
 
 const windowHeight = computed(() => window.innerHeight)
 
@@ -147,9 +149,20 @@ function deleteDiscoveryData(id: number) {
   })
 }
 
-// TODO: wire up <ADModal> / <EditDrawer> once migrated.
-function openAdModal() {}
+function openAdModal() {
+  adModalRef.value?.open()
+}
 
+function pushCITypeList(list: any[]) {
+  list.forEach((item) => {
+    const find = adrList.value.find((adr) => adr.id === item.adr_id)
+    item.icon = find?.option?.icon || {}
+  })
+  clientCITypeList.value = [...clientCITypeList.value, ...list]
+  currentTab.value = list[0].id
+}
+
+// EditDrawer lives in the discovery sub-domain (not yet migrated).
 function openEditDrawer(_data: any, _type: string, _adType: string) {}
 
 function changeTab(id: string | number) {
@@ -239,7 +252,8 @@ onMounted(async () => {
         {{ t('add') }}
       </a-button>
     </a-empty>
-    <!-- TODO: wire up <ADModal> and <EditDrawer> once migrated. -->
+    <ADModal ref="adModalRef" :CITypeId="CITypeId" @pushCITypeList="pushCITypeList" @addPlugin="openEditDrawer(null, 'add', 'plugin')" />
+    <!-- EditDrawer (discovery sub-domain) not yet migrated. -->
   </div>
 </template>
 

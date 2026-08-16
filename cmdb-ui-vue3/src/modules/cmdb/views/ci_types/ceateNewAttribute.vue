@@ -9,6 +9,9 @@ import RegSelect from '@/components/RegexSelect/index.vue'
 import MonacoCodeEditor from '@/components/MonacoCodeEditor/index.vue'
 import { createAttribute, canDefineComputed } from '@/modules/cmdb/api/CITypeAttr'
 import { getPropertyIcon, valueTypeMap } from '../../utils/helper'
+import ComputedArea from './computedArea.vue'
+import PreValueArea from './preValueArea.vue'
+import FontArea from './fontArea.vue'
 import ReferenceModelSelect from './attributeEdit/referenceModelSelect.vue'
 
 const ENUM_VALUE_TYPE = {
@@ -70,6 +73,23 @@ const defaultForDatetime = ref('')
 const reCheck = ref<Record<string, any>>({})
 const enumValueType = ref<string>(ENUM_VALUE_TYPE.INPUT)
 
+const computedAreaRef = ref<{
+  setData: (data: { compute_expr?: string; compute_script?: string }) => void
+  getData: () => Record<string, any>
+}>()
+const preValueAreaRef = ref<{
+  setData: (data: { choice_value?: any[]; choice_web_hook?: any; choice_other?: any }) => void
+  getData: () => Record<string, any>
+  resetData: () => void
+  initEnumValue: () => void
+}>()
+const fontAreaRef = ref<{
+  setData: (data: { fontOptions?: Record<string, any> }) => void
+  getData: () => Record<string, any> | undefined
+}>()
+
+const canDefineScript = computed(() => canDefineComputedFlag.value)
+
 const valueTypeOptions = computed(() => {
   const map = valueTypeMap()
   const keys = ['0', '1', '2', '9', '3', '4', '5', '6', '7', '8', '10', '11', '12']
@@ -80,7 +100,7 @@ function handleSubmit(isCloseModal = true) {
   formRef.value
     .validate()
     .then(async () => {
-      const values = { ...formModel }
+      let values = { ...formModel }
 
       const { is_required, default_show, default_value, is_dynamic } = values
       const data = { is_required, default_show, is_dynamic }
@@ -116,21 +136,21 @@ function handleSubmit(isCloseModal = true) {
       }
 
       if (values.is_computed) {
-        // TODO: wire up <ComputedArea> once migrated.
-        const computedAreaData = {}
-        Object.assign(values, computedAreaData)
+        const computedAreaData = computedAreaRef.value?.getData()
+        values = { ...values, ...computedAreaData }
       } else if (!['6', '7', '10', '11'].includes(values.value_type)) {
-        // TODO: wire up <PreValueArea> once migrated.
-        const preValueAreaData: Record<string, any> = {}
-        Object.assign(values, preValueAreaData)
+        const preValueAreaData = preValueAreaRef.value?.getData()
+        if (preValueAreaData?.isError) {
+          return
+        }
+        values = { ...values, ...preValueAreaData }
       }
 
       delete values.is_required
       delete values.default_show
       delete values.default_value
 
-      // TODO: wire up <FontArea> once migrated.
-      const fontOptions = {}
+      const fontOptions = fontAreaRef.value?.getData()
 
       values.is_index = !['6', '7', '8', '9', '11'].includes(values.value_type)
 
@@ -216,6 +236,10 @@ function handleChangeValueType(value: string) {
       default:
         enumValueType.value = ENUM_VALUE_TYPE.INPUT
         break
+    }
+
+    if (['0', '1', '3', '4'].includes(value)) {
+      preValueAreaRef.value?.initEnumValue()
     }
 
     handleSwitchType({ valueType: value })
@@ -310,10 +334,15 @@ function getLimitedFormat(): string[] {
   return []
 }
 
+function resetPreValue() {
+  preValueAreaRef.value?.resetData()
+}
+
 defineExpose({ handleSubmit, checkCanDefineComputed })
 </script>
 
 <template>
+  <!-- eslint-disable vue/attribute-hyphenation, vue/attributes-order -->
   <a-form ref="formRef" :model="formModel" :rules="rules" class="create-new-attribute" :label-col="{ span: 8 }" :wrapper-col="{ span: 15 }">
     <a-divider style="font-size: 14px; margin-top: 6px">{{ t('cmdb.ciType.basicConfig') }}</a-divider>
     <a-row>
@@ -504,7 +533,7 @@ defineExpose({ handleSubmit, checkCanDefineComputed })
       </a-col>
       <a-col :span="24">
         <a-form-item :label-col="{ span: 4 }" :wrapper-col="{ span: 20 }" :label="t('cmdb.ciType.font')">
-          <!-- TODO: wire up <FontArea> once migrated -->
+          <FontArea ref="fontAreaRef" :font-color-disabled="['8', '11'].includes(currentValueType)" />
           <div class="ant-form-explain">{{ t('cmdb.ciType.fontHint') }}</div>
         </a-form-item>
       </a-col>
@@ -517,7 +546,16 @@ defineExpose({ handleSubmit, checkCanDefineComputed })
               </a-tooltip>
             </span>
           </template>
-          <!-- TODO: wire up <PreValueArea> once migrated -->
+          <PreValueArea
+            ref="preValueAreaRef"
+            :can-define-script="canDefineScript"
+            :disabled="isShowComputedArea"
+            :CITypeId="CITypeId"
+            :enum-value-type="enumValueType"
+          />
+          <a-button type="primary" size="small" ghost style="margin-top: 8px" @click="resetPreValue">{{
+            t('reset')
+          }}</a-button>
         </a-form-item>
       </a-col>
       <a-col v-if="!['6', '7', '10', '11'].includes(currentValueType)" :span="24">
@@ -536,7 +574,7 @@ defineExpose({ handleSubmit, checkCanDefineComputed })
             <div>2. {{ t('cmdb.ciType.computedAttrTip2') }}</div>
             <div>3. {{ t('cmdb.ciType.computedAttrTip3') }}</div>
           </div>
-          <!-- TODO: wire up <ComputedArea> once migrated -->
+          <ComputedArea ref="computedAreaRef" v-if="isShowComputedArea" :can-define-computed="canDefineComputedFlag" />
         </a-form-item>
       </a-col>
     </a-row>

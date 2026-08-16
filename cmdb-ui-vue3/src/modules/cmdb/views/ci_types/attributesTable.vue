@@ -27,6 +27,7 @@ import {
 import AttributeCard from './attributeCard.vue'
 import AttributeEditForm from './attributeEditForm.vue'
 import NewCiTypeAttrModal from './newCiTypeAttrModal.vue'
+import UniqueConstraint from './uniqueConstraint.vue'
 import { getPropertyIcon, getPropertyType, valueTypeMap } from '../../utils/helper'
 
 interface Group {
@@ -52,8 +53,9 @@ const props = withDefaults(
 
 const { t } = useI18n()
 
-const attributeEditFormRef = ref<{ handleEdit: (property: any) => void }>()
+const attributeEditFormRef = ref<{ handleEdit: (property: any, attributes: any[]) => void }>()
 const newCiTypeAttrModalRef = ref<{ handleEdit: (group: Group | null) => void }>()
+const uniqueConstraintRef = ref<{ open: (attrs: any[]) => void }>()
 
 const CITypeGroups = ref<Group[]>([])
 const attributes = ref<any[]>([])
@@ -84,7 +86,7 @@ function init() {
 }
 
 function handleEditProperty(property: any) {
-  attributeEditFormRef.value?.handleEdit(property)
+  attributeEditFormRef.value?.handleEdit(property, attributes.value)
 }
 
 function handleOk() {
@@ -283,7 +285,7 @@ function updatePropertyIndex() {
 }
 
 function handleOpenUniqueConstraint() {
-  // TODO: wire up <UniqueConstraint> once migrated.
+  uniqueConstraintRef.value?.open(attributes.value)
 }
 
 function handleFilterType(type: string) {
@@ -452,7 +454,7 @@ defineExpose({ getCITypeGroupData })
     </div>
     <AttributeEditForm ref="attributeEditFormRef" :CITypeId="CITypeId" :CITypeName="CITypeName" @ok="handleOk" />
     <NewCiTypeAttrModal ref="newCiTypeAttrModalRef" :CITypeId="CITypeId" :linked-ids="linkedIds" @ok="handleOk" />
-    <!-- TODO: wire up <UniqueConstraint> once migrated -->
+    <UniqueConstraint ref="uniqueConstraintRef" :CITypeId="CITypeId" />
   </div>
 </template>
 

@@ -11,6 +11,9 @@ import MonacoCodeEditor from '@/components/MonacoCodeEditor/index.vue'
 import { getCITypeGroups } from '@/modules/cmdb/api/ciTypeGroup'
 import { getCITypeCommonAttributesByTypeIds, getCITypeAttributesById } from '@/modules/cmdb/api/CITypeAttr'
 import AllAttrDrawer from './allAttrDrawer.vue'
+import AttrFilter from './preValueAttr/attrFilter/index.vue'
+import PreValueDefine from './preValueAttr/define/index.vue'
+import PreValueBuiltIn from './preValueAttr/builtin/index.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -219,6 +222,14 @@ function changeCodeContent(value: string) {
   script.value = value && value.replace('\t', '    ')
 }
 
+function setExpFromFilter(v: string) {
+  if (v) {
+    filterExp.value = `${v}`
+  } else {
+    filterExp.value = ''
+  }
+}
+
 function showAllPropDrawer() {
   allAttrDrawerRef.value?.open()
 }
@@ -255,10 +266,11 @@ defineExpose({ getData, setData, resetData, initEnumValue })
 </script>
 
 <template>
+  <!-- eslint-disable vue/attribute-hyphenation, vue/attributes-order, vue/v-on-event-hyphenation -->
   <a-tabs id="preValueArea" v-model:active-key="activeKey" size="small" :tab-bar-style="{ borderBottom: 'none' }">
     <a-tab-pane key="define" :disabled="disabled">
       <template #tab><span style="font-size: 14px">{{ t('cmdb.ciType.enum') }}</span></template>
-      <!-- TODO: wire up <PreValueDefine v-model="valueList" :disabled="disabled" :enum-value-type="enumValueType" /> once migrated -->
+      <PreValueDefine v-model:value="valueList" :disabled="disabled" :enum-value-type="enumValueType" />
     </a-tab-pane>
     <a-tab-pane key="builtin" :disabled="disabled">
       <template #tab>
@@ -267,7 +279,7 @@ defineExpose({ getData, setData, resetData, initEnumValue })
           <span v-if="isOpenSource" class="tab-builtin-tag">Pro</span>
         </div>
       </template>
-      <!-- TODO: wire up <PreValueBuiltIn ref="builtInRef" /> once migrated -->
+      <PreValueBuiltIn ref="builtInRef" />
     </a-tab-pane>
     <a-tab-pane key="webhook" :disabled="disabled">
       <template #tab><span style="font-size: 14px">Webhook</span></template>
@@ -365,7 +377,14 @@ defineExpose({ getData, setData, resetData, initEnumValue })
             :label-col="{ span: 3 }"
             :wrapper-col="{ span: 19 }"
           >
-            <!-- TODO: wire up <AttrFilter ref="attrFilterRef" ... @setExpFromFilter="setExpFromFilter" /> once migrated -->
+            <AttrFilter
+              ref="attrFilterRef"
+              :can-search-preference-attr-list="typeAttrs"
+              :CITypeId="CITypeId"
+              :expression="filterExp ? `q=${filterExp}` : ''"
+              :cur-model-attr-list="curModelAttrList"
+              @setExpFromFilter="setExpFromFilter"
+            />
           </a-form-item>
         </a-col>
       </a-row>

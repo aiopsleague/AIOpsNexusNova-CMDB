@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /* eslint-disable vue/prop-name-casing */
-import { nextTick, reactive, ref } from 'vue'
+import { computed, nextTick, reactive, ref } from 'vue'
 import { message } from 'ant-design-vue'
 import { useI18n } from 'vue-i18n'
 import { DownOutlined, InfoCircleOutlined } from '@ant-design/icons-vue'
@@ -15,7 +15,11 @@ import {
   calcComputedAttribute,
 } from '@/modules/cmdb/api/CITypeAttr'
 import { cloneDeep, getPropertyIcon, getPropertyType, valueTypeMap } from '../../utils/helper'
+import ComputedArea from './computedArea.vue'
+import PreValueArea from './preValueArea.vue'
+import FontArea from './fontArea.vue'
 import ReferenceModelSelect from './attributeEdit/referenceModelSelect.vue'
+import { ENUM_VALUE_TYPE } from './preValueAttr/constants'
 
 const props = withDefaults(
   defineProps<{
@@ -45,6 +49,23 @@ const isShowComputedArea = ref(false)
 
 const defaultForDatetime = ref('')
 const reCheck = ref<Record<string, any>>({})
+const enumValueType = ref<string>(ENUM_VALUE_TYPE.INPUT)
+
+const computedAreaRef = ref<{
+  setData: (data: { compute_expr?: string; compute_script?: string }) => void
+  getData: () => Record<string, any>
+}>()
+const preValueAreaRef = ref<{
+  setData: (data: { choice_value?: any[]; choice_web_hook?: any; choice_other?: any }) => void
+  getData: () => Record<string, any>
+  resetData: () => void
+}>()
+const fontAreaRef = ref<{
+  setData: (data: { fontOptions?: Record<string, any> }) => void
+  getData: () => Record<string, any> | undefined
+}>()
+
+const canDefineScript = computed(() => canDefineComputedFlag.value)
 
 const formModel = reactive<Record<string, any>>({
   id: null,
@@ -141,7 +162,7 @@ function handleSwitchIsList(checked: boolean) {
   formModel.default_value = defaultValue
 }
 
-async function handleEdit(attrRecord: Record<string, any>) {
+async function handleEdit(attrRecord: Record<string, any>, attributes: any[] = []) {
   try {
     await canDefineComputed()
     canDefineComputedFlag.value = true
@@ -213,7 +234,41 @@ async function handleEdit(attrRecord: Record<string, any>) {
     }
 
     isShowComputedArea.value = _record.is_computed
-    // TODO: wire up <ComputedArea>/<PreValueArea>/<FontArea> once migrated.
+    if (_record.is_computed) {
+      nextTick(() => {
+        computedAreaRef.value?.setData({
+          compute_expr: _record.compute_expr,
+          compute_script: _record.compute_script,
+        })
+      })
+    }
+    const _find = attributes.find((item) => item.id === _record.id)
+    if (!['6', '7', '10', '11'].includes(_record.value_type)) {
+      switch (_record.value_type) {
+        case '0':
+        case '1':
+          enumValueType.value = ENUM_VALUE_TYPE.NUMBER
+          break
+        case '3':
+          enumValueType.value = ENUM_VALUE_TYPE.DATE_TIME
+          break
+        case '4':
+          enumValueType.value = ENUM_VALUE_TYPE.DATE
+          break
+        default:
+          enumValueType.value = ENUM_VALUE_TYPE.INPUT
+          break
+      }
+
+      preValueAreaRef.value?.setData({
+        choice_value: (_find || {}).choice_value || [],
+        choice_web_hook: _record.choice_web_hook,
+        choice_other: _record.choice_other || undefined,
+      })
+    }
+    fontAreaRef.value?.setData({
+      fontOptions: _find?.option?.fontOptions || {},
+    })
   })
 }
 
@@ -221,7 +276,7 @@ async function handleSubmit(isCalcComputed = false) {
   formRef.value
     .validate()
     .then(async () => {
-      const values: Record<string, any> = { ...formModel }
+      let values: Record<string, any> = { ...formModel }
 
       if (record.value.is_required !== values.is_required || record.value.default_show !== values.default_show) {
         await updateCITypeAttributesById(props.CITypeId as number, {
@@ -259,19 +314,21 @@ async function handleSubmit(isCalcComputed = false) {
       }
 
       if (values.is_computed) {
-        // TODO: wire up <ComputedArea> once migrated.
-        Object.assign(values, {})
+        const computedAreaData = computedAreaRef.value?.getData()
+        values = { ...values, ...computedAreaData }
       } else if (!['6', '7', '10', '11'].includes(values.value_type)) {
-        // TODO: wire up <PreValueArea> once migrated.
-        Object.assign(values, {})
+        const preValueAreaData = preValueAreaRef.value?.getData()
+        if (preValueAreaData?.isError) {
+          return
+        }
+        values = { ...values, ...preValueAreaData }
       }
 
       delete values.default_show
       delete values.is_required
       delete values.default_value
 
-      // TODO: wire up <FontArea> once migrated.
-      const fontOptions = {}
+      const fontOptions = fontAreaRef.value?.getData()
 
       if (!['6', '10', '11'].includes(values.value_type)) {
         values.re_check = reCheck.value?.value ?? null
@@ -367,6 +424,14 @@ function onClickDateTime({ key }: { key: string }) {
   formModel.default_value = key
 }
 
+async function handleCalcComputed() {
+  await handleSubmit(true)
+}
+
+function resetPreValue() {
+  preValueAreaRef.value?.resetData()
+}
+
 function getLimitedFormat(): string[] {
   if (['0'].includes(currentValueType.value)) {
     return ['number', 'phone', 'landline', 'zipCode', 'IDCard', 'monetaryAmount', 'custom']
@@ -387,6 +452,7 @@ defineExpose({ handleCreate, handleEdit })
 </script>
 
 <template>
+  <!-- eslint-disable vue/attribute-hyphenation, vue/attributes-order, vue/v-on-event-hyphenation -->
   <CustomDrawer
     :closable="true"
     :title="drawerTitle"
@@ -570,7 +636,7 @@ defineExpose({ handleCreate, handleEdit })
         </a-col>
         <a-col :span="24">
           <a-form-item :label-col="{ span: 4 }" :wrapper-col="{ span: 20 }" :label="t('cmdb.ciType.font')">
-            <!-- TODO: wire up <FontArea> once migrated -->
+            <FontArea ref="fontAreaRef" :font-color-disabled="['8', '11'].includes(currentValueType)" />
             <div class="ant-form-explain">{{ t('cmdb.ciType.fontHint') }}</div>
           </a-form-item>
         </a-col>
@@ -583,7 +649,17 @@ defineExpose({ handleCreate, handleEdit })
                 </a-tooltip>
               </span>
             </template>
-            <!-- TODO: wire up <PreValueArea> once migrated -->
+            <PreValueArea
+              v-if="drawerVisible"
+              ref="preValueAreaRef"
+              :can-define-script="canDefineScript"
+              :disabled="isShowComputedArea"
+              :CITypeId="CITypeId"
+              :enum-value-type="enumValueType"
+            />
+            <a-button type="primary" size="small" ghost style="margin-top: 8px" @click="resetPreValue">{{
+              t('reset')
+            }}</a-button>
           </a-form-item>
         </a-col>
         <a-col v-if="!['6', '7', '10', '11'].includes(currentValueType)" :span="24">
@@ -602,7 +678,13 @@ defineExpose({ handleCreate, handleEdit })
               <div>2. {{ t('cmdb.ciType.computedAttrTip2') }}</div>
               <div>3. {{ t('cmdb.ciType.computedAttrTip3') }}</div>
             </div>
-            <!-- TODO: wire up <ComputedArea> once migrated -->
+            <ComputedArea
+              ref="computedAreaRef"
+              v-show="isShowComputedArea"
+              show-calc-computed
+              :can-define-computed="canDefineComputedFlag"
+              @handleCalcComputed="handleCalcComputed"
+            />
           </a-form-item>
         </a-col>
       </a-row>
