@@ -12,6 +12,11 @@ export function getCITypeAttributesByTypeIds(params?: Record<string, unknown>): 
   return request.get(`${urlPrefix}/ci_types/attributes`, { params })
 }
 
+/** Fetch common attributes shared across multiple CI types (params: { type_ids }). */
+export function getCITypeCommonAttributesByTypeIds(params?: Record<string, unknown>): Promise<any> {
+  return request.get(`${urlPrefix}/ci_types/common_attributes`, { params })
+}
+
 /** Update an attribute by id. */
 export function updateAttributeById(attrId: string | number, data: Record<string, unknown>): Promise<any> {
   return request.put(`${urlPrefix}/attributes/${attrId}`, data)

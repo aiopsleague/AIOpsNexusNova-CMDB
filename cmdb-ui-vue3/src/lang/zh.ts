@@ -37,6 +37,9 @@ export default {
   query: '查询',
   expand: '展开',
   copySuccess: '复制成功',
+  pagination: {
+    total: '当前展示 {range0}-{range1} 条数据， 共 {total} 条',
+  },
   addSuccess: '新增成功',
   updateSuccess: '更新成功',
   deleteSuccess: '删除成功',

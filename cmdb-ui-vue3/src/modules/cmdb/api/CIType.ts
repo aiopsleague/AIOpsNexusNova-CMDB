@@ -76,3 +76,27 @@ export function revokeCiType(type_id: string | number, rid: string | number, dat
 export function ciTypeFilterPermissions(type_id: string | number): Promise<any> {
   return request.get(`${urlPrefix}/ci_types/${type_id}/filters/permissions`)
 }
+
+/** Fetch the unique constraint list of a CI type. */
+export function getUniqueConstraintList(type_id: string | number): Promise<any> {
+  return request.get(`${urlPrefix}/ci_types/${type_id}/unique_constraint`)
+}
+
+/** Add a unique constraint to a CI type. */
+export function addUniqueConstraint(type_id: string | number, data: Record<string, unknown>): Promise<any> {
+  return request.post(`${urlPrefix}/ci_types/${type_id}/unique_constraint`, data)
+}
+
+/** Update a unique constraint by id. */
+export function updateUniqueConstraint(
+  type_id: string | number,
+  id: string | number,
+  data: Record<string, unknown>
+): Promise<any> {
+  return request.put(`${urlPrefix}/ci_types/${type_id}/unique_constraint/${id}`, data)
+}
+
+/** Delete a unique constraint by id. */
+export function deleteUniqueConstraint(type_id: string | number, id: string | number): Promise<any> {
+  return request.delete(`${urlPrefix}/ci_types/${type_id}/unique_constraint/${id}`)
+}

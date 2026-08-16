@@ -37,6 +37,9 @@ export default {
   query: 'Query',
   expand: 'Expand',
   copySuccess: 'Copy successfully',
+  pagination: {
+    total: '{range0}-{range1} of {total} items',
+  },
   addSuccess: 'Added successfully',
   updateSuccess: 'Updated successfully',
   deleteSuccess: 'Deleted successfully',
