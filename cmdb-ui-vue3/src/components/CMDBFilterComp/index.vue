@@ -187,6 +187,11 @@ function handleSubmit() {
   }
   visible.value = false
 }
+
+// Exposed so consumers (e.g. readGrantModal) can drive the non-dropdown form
+// programmatically: parse the persisted expression into rules and force-serialize
+// the current rule list back into an expression.
+defineExpose({ visibleChange, handleSubmit, handleClear })
 </script>
 
 <template>
