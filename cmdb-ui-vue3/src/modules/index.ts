@@ -2,6 +2,7 @@
 import type { Router } from 'vue-router'
 import type { AppRouteRecord } from '@/stores/routeFilter'
 import { aclManifest } from './acl'
+import { cmdbManifest } from './cmdb'
 
 export interface ModuleManifest {
   name: string
@@ -9,7 +10,7 @@ export interface ModuleManifest {
   locales?: Record<string, Record<string, unknown>>
 }
 
-const manifests: ModuleManifest[] = [aclManifest]
+const manifests: ModuleManifest[] = [aclManifest, cmdbManifest]
 
 /** i18n 实例的最小结构（legacy: false 时暴露 global Composer）。 */
 interface I18nLike {
@@ -45,6 +46,27 @@ const componentMap: Record<string, () => Promise<unknown>> = {
   aclSecretKey: () => import('@/modules/acl/views/secretKey.vue'),
   aclHistory: () => import('@/modules/acl/views/history.vue'),
   aclOperationHistory: () => import('@/modules/acl/views/operation_history/index.vue'),
+  // cmdb views are not yet migrated; all placeholders resolve to a stub.
+  cmdbDashboard: () => import('@/modules/cmdb/views/placeholder.vue'),
+  cmdbTopologyView: () => import('@/modules/cmdb/views/placeholder.vue'),
+  cmdbRelationViews: () => import('@/modules/cmdb/views/placeholder.vue'),
+  cmdbResourceViews: () => import('@/modules/cmdb/views/placeholder.vue'),
+  cmdbTreeViews: () => import('@/modules/cmdb/views/placeholder.vue'),
+  cmdbResourceSearch: () => import('@/modules/cmdb/views/placeholder.vue'),
+  cmdbDiscoveryCI: () => import('@/modules/cmdb/views/placeholder.vue'),
+  cmdbCiDetail: () => import('@/modules/cmdb/views/placeholder.vue'),
+  cmdbIpam: () => import('@/modules/cmdb/views/placeholder.vue'),
+  cmdbDcim: () => import('@/modules/cmdb/views/placeholder.vue'),
+  cmdbPreference: () => import('@/modules/cmdb/views/placeholder.vue'),
+  cmdbBatch: () => import('@/modules/cmdb/views/placeholder.vue'),
+  cmdbCiTypes: () => import('@/modules/cmdb/views/placeholder.vue'),
+  cmdbCustomDashboard: () => import('@/modules/cmdb/views/placeholder.vue'),
+  cmdbPreferenceRelation: () => import('@/modules/cmdb/views/placeholder.vue'),
+  cmdbDiscovery: () => import('@/modules/cmdb/views/placeholder.vue'),
+  cmdbOperationHistory: () => import('@/modules/cmdb/views/placeholder.vue'),
+  cmdbModelRelation: () => import('@/modules/cmdb/views/placeholder.vue'),
+  cmdbRelationType: () => import('@/modules/cmdb/views/placeholder.vue'),
+  cmdbMobileDetail: () => import('@/modules/cmdb/views/placeholder.vue'),
 }
 
 function resolveNode(node: AppRouteRecord): AppRouteRecord {
