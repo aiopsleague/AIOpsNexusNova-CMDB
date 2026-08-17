@@ -1,5 +1,5 @@
 <template>
-  <a-card :bordered="false" :bodyStyle="{ padding: '0' }">
+  <a-card class="ci-type-detail-card" :bordered="false" :bodyStyle="{ padding: '0' }">
     <a-tabs :activeKey="activeKey" @change="changeTab" class="ops-tab">
       <a-tab-pane key="1" :tab="$t('cmdb.ciType.attributes')">
         <AttributesTable ref="attributesTable" :CITypeId="CITypeId" :CITypeName="CITypeName"></AttributesTable>
