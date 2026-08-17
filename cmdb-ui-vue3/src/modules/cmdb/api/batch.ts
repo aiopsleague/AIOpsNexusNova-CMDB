@@ -1,4 +1,5 @@
 // src/modules/cmdb/api/batch.ts
+import * as XLSX from 'xlsx'
 import request from '@/utils/request'
 
 const urlPrefix = '/v0.1'
@@ -15,14 +16,22 @@ export function uploadData(ciId: string | number, data: Record<string, unknown>)
 /**
  * Parse an uploaded Excel file into a two-dimensional array of rows.
  *
- * TODO: reintroduce the `xlsx`-based parser once the `xlsx` dependency is added
- * to the Vue 3 app. The legacy implementation used `FileReader.readAsBinaryString`
- * + `XLSX.read(...).Sheets[0]` + `XLSX.utils.sheet_to_json(sheet, { header: 1 })`.
+ * The legacy implementation used `FileReader.readAsBinaryString` +
+ * `XLSX.read(...).Sheets[0]` + `XLSX.utils.sheet_to_json(sheet, { header: 1 })`.
+ * The `readAsArrayBuffer` variant is used here as the modern, non-deprecated
+ * equivalent.
  */
 export function processFile(file: File): Promise<any[][]> {
-  return new Promise((_resolve, reject) => {
-    // TODO: implement XLSX parsing (xlsx dep missing).
-    reject(new Error(`Excel parsing is not available yet (file: ${file?.name ?? 'unknown'})`))
+  return new Promise((resolve) => {
+    const reader = new FileReader()
+    reader.readAsArrayBuffer(file)
+    reader.onload = (e) => {
+      const data = e.target?.result as ArrayBuffer
+      const workbook = XLSX.read(data, { type: 'array' })
+      const sheet = workbook.Sheets[workbook.SheetNames[0]]
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as any[][]
+      resolve(rows)
+    }
   })
 }
 

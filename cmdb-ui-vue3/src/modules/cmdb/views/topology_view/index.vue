@@ -23,6 +23,7 @@ import {
   getTopoGroups,
   postTopoGroup,
   putTopoGroupByGId,
+  putTopoGroupsOrder,
   deleteTopoGroup,
   getTopoView,
   addTopoView,
@@ -35,6 +36,7 @@ import {
 import CMDBExprDrawer from '@/components/CMDBExprDrawer/index.vue'
 import CMDBTypeSelectAntd from '@/modules/cmdb/components/cmdbTypeSelect/cmdbTypeSelectAntd.vue'
 import { useUserStore } from '@/stores/user'
+import draggable from 'vuedraggable'
 
 const currentTopoKey = 'ops_cmdb_topo_currentId'
 
@@ -52,6 +54,11 @@ const searchValue = ref('')
 const currentId = ref<string | null>(null)
 const topoGroups = ref<any[]>([])
 const CITypeId = ref<number | null>(null)
+
+const startId = ref<number | null>(null)
+const endId = ref<number | null>(null)
+const addId = ref<number | null>(null)
+const addGroup = ref<any>(null)
 
 const modalTitle = ref(t('cmdb.ciType.addGroup'))
 const modalVisible = ref(false)
@@ -183,6 +190,55 @@ function handleDeleteGroup(g: any) {
       })
     },
   })
+}
+
+function start(g: any) {
+  startId.value = g.id
+}
+
+function end(g: any) {
+  endId.value = g.id
+  let groupId: number | null = null
+  const payload: Record<string, any> = {}
+  if (startId.value === g.id && g.id && addId.value) {
+    groupId = addGroup.value.id
+    payload.name = addGroup.value.name
+    payload.view_ids = addGroup.value.views.map((i: any) => i.id)
+  }
+  if (startId.value === g.id && g.id && !addId.value) {
+    groupId = g.id
+    payload.name = g.name
+    payload.view_ids = g.views.map((i: any) => i.id)
+  }
+  if (groupId) {
+    putTopoGroupByGId(groupId, { view_ids: payload.view_ids })
+      .then(() => {
+        message.success(t('saveSuccess'))
+      })
+      .catch(() => {
+        loadTopoViews(!currentId.value)
+      })
+      .finally(() => {
+        startId.value = null
+        endId.value = null
+        addId.value = null
+      })
+  }
+}
+
+function add(g: any) {
+  addId.value = g.id
+  addGroup.value = cloneDeep(g)
+}
+
+function handleChangeGroups() {
+  putTopoGroupsOrder({ group_ids: topoGroups.value.filter((c: any) => c.id).map((c: any) => c.id) })
+    .then(() => {
+      message.success(t('saveSuccess'))
+    })
+    .catch(() => {
+      loadTopoViews(!currentId.value)
+    })
 }
 
 async function loadTopoViews(isResetCurrentId = false) {
@@ -519,11 +575,12 @@ onMounted(async () => {
               {{ t('cmdb.ciType.group') }}
             </a-button>
           </div>
-          <!-- TODO: restore drag-and-drop group/view reordering (vuedraggable not yet ported) -->
-          <div class="topo-left-content">
+          <draggable class="topo-left-content" :list="computedTopoGroups" @end="handleChangeGroups" filter=".undraggable">
             <div v-for="group in computedTopoGroups" :key="group.id || group.name">
               <div
-                :class="`${currentGId === group.id && !currentCId ? 'selected' : ''} topo-left-group`"
+                :class="`${currentGId === group.id && !currentCId ? 'selected' : ''} topo-left-group ${
+                  group.id === undefined ? 'undraggable' : ''
+                }`"
                 @click="handleClickGroup(group.id)"
               >
                 <div>
@@ -557,14 +614,22 @@ onMounted(async () => {
                   </template>
                 </div>
               </div>
-              <div>
+              <draggable
+                v-model="group.views"
+                group="topo"
+                :animation="100"
+                @start="start(group)"
+                @end="end(group)"
+                @add="add(group)"
+                filter=".undraggable"
+              >
                 <div
                   v-for="topo in group.views"
                   :key="topo.id"
                   :class="`${currentCId === topo.id ? 'selected' : ''} topo-left-detail`"
                   @click="handleClickView(group.id, topo.id, topo.name)"
                 >
-                  <div>
+                  <div :class="`${group.id === undefined ? 'undraggable' : ''}`">
                     <HolderOutlined
                       v-if="group.id"
                       style="width: 17px; height: 17px; display: none; position: absolute; left: -1px; top: 8px"
@@ -606,9 +671,9 @@ onMounted(async () => {
                     </template>
                   </a-dropdown>
                 </div>
-              </div>
+              </draggable>
             </div>
-          </div>
+          </draggable>
         </div>
       </template>
       <template #two>

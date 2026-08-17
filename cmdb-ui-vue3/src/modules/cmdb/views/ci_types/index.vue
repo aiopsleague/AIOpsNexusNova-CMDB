@@ -38,6 +38,7 @@ import {
   getCITypeGroupsConfig,
   postCITypeGroup,
   putCITypeGroupByGId,
+  putCITypeGroups,
   deleteCITypeGroup,
   exportCITypeGroups,
 } from '@/modules/cmdb/api/ciTypeGroup'
@@ -47,6 +48,7 @@ import { searchResourceType } from '@/modules/acl/api/resource'
 import { roleHasPermissionToGrant } from '@/modules/acl/api/permission'
 import { getAllDepAndEmployee } from '@/api/company'
 import { cloneDeep } from '../../utils/helper'
+import draggable from 'vuedraggable'
 
 const { t } = useI18n()
 const userStore = useUserStore()
@@ -95,6 +97,11 @@ const uniqueId = ref<number | null>(null)
 const searchValue = ref('')
 const modelExportVisible = ref(false)
 const preferenceData = ref<Record<string, any>>({})
+
+const startId = ref<number | null>(null)
+const startGroup = ref<any>(null)
+const endId = ref<number | null>(null)
+const addId = ref<number | null>(null)
 
 const iconAreaRef = ref<{
   setIcon: (icon?: Record<string, any>) => void
@@ -260,6 +267,80 @@ function getAttributes() {
   searchAttributes({ page_size: 10000 }).then((res) => {
     allAttributes.value = res.attributes
   })
+}
+
+function start(g: any) {
+  startId.value = g.id
+  startGroup.value = cloneDeep(g)
+}
+
+function end(g: any) {
+  endId.value = g.id
+  if (startId.value === g.id && g.id !== -1 && addId.value !== -1) {
+    putCITypeGroupByGId(g.id, { name: g.name, type_ids: g.ci_types.map((i: any) => i.id) })
+      .then(() => {
+        message.success(t('saveSuccess'))
+      })
+      .catch(() => {
+        loadCITypes(!currentId.value)
+      })
+      .finally(() => {
+        startId.value = null
+        endId.value = null
+        addId.value = null
+      })
+  }
+  if (startId.value === g.id && g.id !== -1 && addId.value === -1) {
+    const changedCiTypes = startGroup.value.ci_types
+      .filter((ciType: any) => {
+        const _find = g.ci_types.find((gCiType: any) => ciType.id === gCiType.id)
+        if (_find) {
+          return false
+        }
+        return true
+      })
+      .map((item: any) => item.id)
+    deleteCITypeGroup(g.id, { name: g.name, type_ids: changedCiTypes })
+      .then(() => {
+        message.success(t('saveSuccess'))
+      })
+      .catch(() => {
+        loadCITypes(!currentId.value)
+      })
+      .finally(() => {
+        startId.value = null
+        endId.value = null
+        addId.value = null
+      })
+  }
+}
+
+function add(g: any) {
+  addId.value = g.id
+  if (g.id && g.id !== -1) {
+    putCITypeGroupByGId(g.id, { name: g.name, type_ids: g.ci_types.map((i: any) => i.id) })
+      .then(() => {
+        message.success(t('saveSuccess'))
+      })
+      .catch(() => {
+        loadCITypes(!currentId.value)
+      })
+      .finally(() => {
+        startId.value = null
+        endId.value = null
+        addId.value = null
+      })
+  }
+}
+
+function handleChangeGroups() {
+  putCITypeGroups({ group_ids: CITypeGroups.value.filter((c: any) => c.id).map((c: any) => c.id) })
+    .then(() => {
+      message.success(t('saveSuccess'))
+    })
+    .catch(() => {
+      loadCITypes(!currentId.value)
+    })
 }
 
 function handleClickAddGroup() {
@@ -671,8 +752,7 @@ getPreferenceData()
               </template>
             </a-dropdown>
           </div>
-          <div class="ci-types-left-content">
-            <!-- TODO: restore drag-and-drop reordering (vuedraggable not yet ported) -->
+          <draggable class="ci-types-left-content" :list="computedCITypeGroups" filter=".undraggable" @end="handleChangeGroups">
             <div v-for="g in computedCITypeGroups" :key="g.id || g.name">
               <div
                 :class="
@@ -704,7 +784,15 @@ getPreferenceData()
                   </template>
                 </div>
               </div>
-              <div>
+              <draggable
+                v-model="g.ci_types"
+                group="ciType"
+                :animation="100"
+                filter=".undraggable"
+                @start="start(g)"
+                @end="end(g)"
+                @add="add(g)"
+              >
                 <div
                   v-for="ci in g.ci_types"
                   :key="ci.id"
@@ -757,9 +845,9 @@ getPreferenceData()
                     </template>
                   </a-dropdown>
                 </div>
-              </div>
+              </draggable>
             </div>
-          </div>
+          </draggable>
         </div>
       </template>
       <template #two>

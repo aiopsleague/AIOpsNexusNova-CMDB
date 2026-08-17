@@ -3,6 +3,8 @@ import { computed, nextTick, onMounted, provide, ref } from 'vue'
 import { message } from 'ant-design-vue'
 import { useI18n } from 'vue-i18n'
 import { AppstoreOutlined, DownloadOutlined } from '@ant-design/icons-vue'
+import ExcelJS from 'exceljs'
+import FileSaver from 'file-saver'
 import SearchForm from '@/modules/cmdb/components/searchForm/SearchForm.vue'
 import { searchCI } from '@/modules/cmdb/api/ci'
 import { searchAttributes, getCITypeAttributesByTypeIds, getCITypeAttributesById } from '@/modules/cmdb/api/CITypeAttr'
@@ -406,9 +408,48 @@ function handleExport() {
 }
 
 function batchDownload(payload: Record<string, unknown>) {
-  // TODO: restore the vxe-table export (the export-xlsx plugin is not available
-  // in the Vue3 shell yet).
-  void payload
+  const { checkedKeys = [], filename } = payload as { checkedKeys: string[]; filename: string }
+
+  const jsonAttrList: string[] = []
+  checkedKeys.forEach((key) => {
+    const _find = allAttributesList.value.find((attr) => attr.name === key)
+    if (_find && _find.value_type === '6') jsonAttrList.push(key)
+  })
+
+  const colMap = new Map<string, string>()
+  colMap.set('ci_type_alias', t('cmdb.ciType.ciType'))
+  columnsGroup.value.forEach((group: any) => {
+    ;(group.children || []).forEach((col: any) => {
+      colMap.set(col.id, col.label || col.title)
+    })
+  })
+
+  const wb = new ExcelJS.Workbook()
+  const ws = wb.addWorksheet('Sheet1')
+
+  const columns = checkedKeys.map((key) => ({
+    header: colMap.get(key) || key,
+    key,
+    width: 20,
+  }))
+  ws.columns = columns
+
+  instanceList.value.forEach((item: any) => {
+    const row: Record<string, any> = {}
+    columns.forEach(({ key }) => {
+      let value = item[key]
+      if (jsonAttrList.includes(key)) {
+        value = value ? JSON.stringify(value) : ''
+      }
+      row[key] = value ?? ''
+    })
+    ws.addRow(row)
+  })
+
+  wb.xlsx.writeBuffer().then((buffer) => {
+    const file = new Blob([buffer], { type: 'application/octet-stream' })
+    FileSaver.saveAs(file, `${filename}.xlsx`)
+  })
 
   xTableRef.value?.clearCheckboxRow()
   xTableRef.value?.clearCheckboxReserve()

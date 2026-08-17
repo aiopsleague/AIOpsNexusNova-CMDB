@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /* eslint-disable vue/prop-name-casing */
-import { computed, provide, ref } from 'vue'
+import { computed, nextTick, provide, ref } from 'vue'
 import { message, Modal } from 'ant-design-vue'
 import { useI18n } from 'vue-i18n'
 import {
@@ -22,6 +22,7 @@ import {
 import {
   getCITypeAttributesById,
   updateCITypeAttributesById,
+  transferCITypeAttrIndex,
   transferCITypeGroupIndex,
 } from '@/modules/cmdb/api/CITypeAttr'
 import AttributeCard from './attributeCard.vue'
@@ -29,6 +30,7 @@ import AttributeEditForm from './attributeEditForm.vue'
 import NewCiTypeAttrModal from './newCiTypeAttrModal.vue'
 import UniqueConstraint from './uniqueConstraint.vue'
 import { getPropertyIcon, getPropertyType, valueTypeMap } from '../../utils/helper'
+import draggable from 'vuedraggable'
 
 interface Group {
   id: number
@@ -65,6 +67,8 @@ const newGroupName = ref('')
 const attrTypeFilter = ref<string[]>([])
 const unique = ref('')
 const showId = ref<number | null>(null)
+const groupMaxCount = ref<Record<string, number>>({})
+const addRemoveGroupFlag = ref<Record<string, any>>({})
 
 const linkedIds = computed(() => attributes.value.map((i) => i.id))
 
@@ -142,6 +146,7 @@ function getCITypeGroupData() {
     })
     CITypeGroups.value = values[1]
     CITypeGroups.value.forEach((g) => {
+      groupMaxCount.value[g.name] = g.attributes.filter((a) => a.inherited).length
       g.attributes.forEach((a) => {
         a.is_required = (temp[a.id] && temp[a.id].is_required) || false
         a.default_show = (temp[a.id] && temp[a.id].default_show) || false
@@ -235,6 +240,48 @@ function handleDeleteGroup(group: Group) {
       })
     },
   })
+}
+
+function handleChange(e: any, group: any) {
+  if (Object.prototype.hasOwnProperty.call(e, 'moved') && e.moved.oldIndex !== e.moved.newIndex) {
+    if (group === -1 || group === null) {
+      refreshPage(t('cmdb.ciType.attributeSortedTips'))
+    } else if (e.moved.newIndex < groupMaxCount.value[group]) {
+      refreshPage(t('cmdb.ciType.attributeSortedTips2'))
+    } else {
+      transferCITypeAttrIndex(props.CITypeId as number, {
+        from: { attr_id: e.moved.element.id, group_name: group },
+        to: { order: e.moved.newIndex, group_name: group },
+      })
+        .then(() => message.success(t('updateSuccess')))
+        .catch(() => init())
+    }
+  }
+  if (Object.prototype.hasOwnProperty.call(e, 'added')) {
+    addRemoveGroupFlag.value = { to: { group_name: group, order: e.added.newIndex }, inited: true }
+  }
+  if (Object.prototype.hasOwnProperty.call(e, 'removed')) {
+    nextTick(() => {
+      if (addRemoveGroupFlag.value.to.order < groupMaxCount.value[addRemoveGroupFlag.value.to.group_name]) {
+        refreshPage(t('cmdb.ciType.attributeSortedTips2'))
+      } else {
+        transferCITypeAttrIndex(props.CITypeId as number, {
+          from: { attr_id: e.removed.element.id, group_name: group },
+          to: { group_name: addRemoveGroupFlag.value.to.group_name, order: addRemoveGroupFlag.value.to.order },
+        })
+          .then(() => message.success(t('saveSuccess')))
+          .catch(() => init())
+          .finally(() => {
+            addRemoveGroupFlag.value = {}
+          })
+      }
+    })
+  }
+}
+
+function refreshPage(errorMessage: string) {
+  message.error(errorMessage)
+  init()
 }
 
 function updatePropertyIndex() {
@@ -404,9 +451,17 @@ defineExpose({ getCITypeGroupData })
             </a-dropdown>
           </a-space>
         </div>
-        <!-- TODO: restore drag-and-drop reordering (vuedraggable not yet ported) -->
         <div class="ci-types-attributes-wrapper">
-          <div class="ci-types-attributes-list">
+          <draggable
+            v-model="group.attributes"
+            group="properties"
+            :filter="'.filter-empty'"
+            :animation="300"
+            tag="div"
+            class="ci-types-attributes-list"
+            handle=".handle"
+            @change="(e) => handleChange(e, group.name)"
+          >
             <AttributeCard
               v-for="item in filterValueType(group.attributes)"
               :key="item.id"
@@ -418,7 +473,7 @@ defineExpose({ getCITypeGroupData })
             />
             <AttributeCard is-add @add="handleAddGroupAttr(index)" />
             <i></i> <i></i> <i></i> <i></i> <i></i>
-          </div>
+          </draggable>
         </div>
       </div>
       <div>
@@ -436,8 +491,16 @@ defineExpose({ getCITypeGroupData })
       </div>
 
       <div class="ci-types-attributes-wrapper">
-        <!-- TODO: restore drag-and-drop reordering (vuedraggable not yet ported) -->
-        <div class="ci-types-attributes-list" style="min-height: 2rem">
+        <draggable
+          v-model="otherGroupAttributes"
+          group="properties"
+          :animation="300"
+          tag="div"
+          class="ci-types-attributes-list"
+          style="min-height: 2rem"
+          handle=".handle"
+          @change="(e) => handleChange(e, null)"
+        >
           <AttributeCard
             v-for="item in filterValueType(otherGroupAttributes)"
             :key="item.id"
@@ -449,7 +512,7 @@ defineExpose({ getCITypeGroupData })
           />
           <AttributeCard is-add @add="handleAddGroupAttr(undefined)" />
           <i></i> <i></i> <i></i> <i></i> <i></i>
-        </div>
+        </draggable>
       </div>
     </div>
     <AttributeEditForm ref="attributeEditFormRef" :CITypeId="CITypeId" :CITypeName="CITypeName" @ok="handleOk" />

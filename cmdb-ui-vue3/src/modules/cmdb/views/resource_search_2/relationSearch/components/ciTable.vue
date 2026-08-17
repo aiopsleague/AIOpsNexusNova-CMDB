@@ -2,6 +2,8 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { CaretRightOutlined, ExportOutlined } from '@ant-design/icons-vue'
+import ExcelJS from 'exceljs'
+import FileSaver from 'file-saver'
 import AttrDisplay from '@/modules/cmdb/views/resource_search_2/resourceSearch/components/attrDisplay.vue'
 import BatchDownload from '@/modules/cmdb/components/batchDownload/batchDownload.vue'
 import { cloneDeep } from '@/modules/cmdb/utils/helper'
@@ -116,13 +118,68 @@ function handleExport() {
 }
 
 function batchDownload(payload: Record<string, unknown>) {
-  // TODO: restore the ExcelJS export (exceljs / file-saver are not available in
-  // the Vue3 shell yet). `payload.checkedKeys` / `payload.filename` carry the
-  // selected columns and target file name.
-  void payload
+  const { checkedKeys = [], filename } = payload as { checkedKeys: string[]; filename: string }
+  const wb = new ExcelJS.Workbook()
 
-  xTableRef.value?.clearCheckboxRow()
-  xTableRef.value?.clearCheckboxReserve()
+  const tableRef = xTableRef.value
+  let rows: any[] = cloneDeep([
+    ...tableRef.getCheckboxReserveRecords(),
+    ...tableRef.getCheckboxRecords(true),
+  ])
+  if (!rows.length) {
+    const { fullData } = tableRef.getTableData()
+    rows = cloneDeep(fullData)
+  }
+
+  const ws = wb.addWorksheet(props.tabActive)
+
+  const pathColumns: any[] = []
+  const targetColumns: any[] = []
+
+  if (props.returnPath) {
+    const pathFilter = tableData.value.pathList.filter((path: any) => checkedKeys.includes(path.id))
+    pathFilter.forEach((path: any) => {
+      pathColumns.push({ header: path.name || '', key: path.id, width: 20 })
+    })
+  }
+
+  const attrMap = new Map<string, any>()
+  const attrFilter = tableData.value.ciAttr.filter((attr: any) => checkedKeys.includes(attr.name))
+  attrFilter.forEach((attr: any) => {
+    attrMap.set(attr.name, attr)
+    targetColumns.push({ header: attr.alias || attr.name || '', key: attr.name, width: 20 })
+  })
+
+  ws.columns = [...pathColumns, ...targetColumns]
+
+  rows.forEach(({ pathCI, targetCI }: any) => {
+    const row: Record<string, any> = {}
+    if (props.returnPath) {
+      pathColumns.forEach(({ key }: { key: string }) => {
+        row[key] = pathCI?.[key] || ''
+      })
+    }
+    targetColumns.forEach(({ key }: { key: string }) => {
+      const value = targetCI?.[key] ?? null
+      const attr = attrMap.get(key)
+      if (attr.valueType === '6') {
+        row[key] = value ? JSON.stringify(value) : value
+      } else if (attr.is_list && Array.isArray(value)) {
+        row[key] = value.join(',')
+      } else {
+        row[key] = value
+      }
+    })
+    ws.addRow(row)
+  })
+
+  wb.xlsx.writeBuffer().then((buffer) => {
+    const file = new Blob([buffer], { type: 'application/octet-stream' })
+    FileSaver.saveAs(file, `${filename}.xlsx`)
+  })
+
+  tableRef.clearCheckboxRow()
+  tableRef.clearCheckboxReserve()
 }
 
 function onSelectChange() {

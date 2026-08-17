@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { message } from 'ant-design-vue'
 import { DownloadOutlined } from '@ant-design/icons-vue'
+import ExcelJS from 'exceljs'
+import FileSaver from 'file-saver'
 import { cloneDeep } from '@/modules/cmdb/utils/helper'
 import { getCITypeGroupsConfig } from '@/modules/cmdb/api/ciTypeGroup'
 import { getCITypeAttributesById } from '@/modules/cmdb/api/CITypeAttr'
@@ -109,12 +110,69 @@ function handleCancel() {
 }
 
 function handleOk() {
-  // TODO: template download (ExcelJS + FileSaver) is not yet available in the Vue 3
-  // app. Reintroduce once `exceljs` and `file-saver` are added to dependencies. The
-  // legacy implementation built a .xlsx template from the checked attributes/parents
-  // (with data-validation dropdowns) and saved it via FileSaver.saveAs.
-  message.info(t('cmdb.batch.requestFailedTips'))
-  handleCancel()
+  const excel_name = `${ciTypeName.value}.xlsx`
+  const wb = new ExcelJS.Workbook()
+  const ws = wb.addWorksheet(ciTypeName.value)
+  const choice_value_obj: Record<string, any> = {}
+
+  const columns1 = checkedAttrs.value.map((item: string, index: number) => {
+    const _find = selectCiTypeAttrList.value.attributes.find(
+      (attr: any) => item === attr.alias || item === attr.name
+    )
+    if (_find?.choice_value && _find?.choice_value.length) {
+      choice_value_obj[item] = {
+        choice_value: _find?.choice_value,
+        columnIdx: index + 1,
+      }
+    }
+    return {
+      header: item,
+      key: item,
+      width: 20,
+    }
+  })
+
+  const columns2 = checkedParents.value.map((p: string, idx: number) => {
+    const _selectedParentAttr = parentsForm.value[p].selectedParentAttr
+    const _find = parentsForm.value[p].attributes.find(
+      (attr: any) => _selectedParentAttr === attr.alias || _selectedParentAttr === attr.name
+    )
+    if (_find?.choice_value && _find?.choice_value.length) {
+      choice_value_obj[p] = {
+        choice_value: _find?.choice_value,
+        columnIdx: columns1.length + idx + 1,
+      }
+    }
+    return {
+      header: `$${p}.${parentsForm.value[p].selectedParentAttr}`,
+      key: `$${p}.${parentsForm.value[p].selectedParentAttr}`,
+      width: 40,
+      style: {
+        font: {
+          color: { argb: 'ff0000' },
+        },
+      },
+    }
+  })
+  ws.columns = [...columns1, ...columns2]
+
+  for (let row = 2; row < 5000; row++) {
+    Object.keys(choice_value_obj).forEach((key) => {
+      const formulae = `"${choice_value_obj[key].choice_value.map((value: any) => value[0]).join(',')}"`
+      if (formulae.length <= 255) {
+        ws.getCell(row, choice_value_obj[key].columnIdx).dataValidation = {
+          type: 'list',
+          formulae: [formulae],
+        }
+      }
+    })
+  }
+
+  wb.xlsx.writeBuffer().then((buffer) => {
+    const file = new Blob([buffer], { type: 'application/octet-stream' })
+    FileSaver.saveAs(file, excel_name)
+    handleCancel()
+  })
 }
 
 function changeCheckAll(e: any) {

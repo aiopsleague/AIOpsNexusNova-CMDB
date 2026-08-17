@@ -2,6 +2,9 @@
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { DownloadOutlined, StarFilled, StarOutlined } from '@ant-design/icons-vue'
+import ExcelJS from 'exceljs'
+import FileSaver from 'file-saver'
+import dayjs from 'dayjs'
 
 import AttrDisplay from './attrDisplay.vue'
 import CIIcon from '@/modules/cmdb/components/ciIcon/index.vue'
@@ -88,8 +91,58 @@ function deleteCollect(ciId: string | number) {
 }
 
 function handleExport() {
-  // TODO: restore the multi-sheet ExcelJS export (exceljs / file-saver are not
-  // available in the Vue3 shell yet).
+  const excel_name = `cmdb-${t('cmdb.ciType.resourceSearch')}-${dayjs().format('YYYYMMDDHHmmss')}.xlsx`
+  const wb = new ExcelJS.Workbook()
+
+  props.tabList.forEach((sheet: any) => {
+    if (sheet.id === -1) {
+      return
+    }
+    const ws = wb.addWorksheet(sheet.title)
+    handleSheetData({ ws, sheet })
+  })
+
+  wb.xlsx.writeBuffer().then((buffer) => {
+    const file = new Blob([buffer], { type: 'application/octet-stream' })
+    FileSaver.saveAs(file, excel_name)
+  })
+}
+
+function handleSheetData({ ws, sheet }: { ws: ExcelJS.Worksheet; sheet: any }) {
+  const listData = props.list.filter((item: any) => item.ciTypeObj.id === sheet.id)
+  if (!listData.length) {
+    return
+  }
+
+  const columnMap = new Map<string, any>()
+  const columns = listData[0].attributes
+    .filter((attr: any) => !attr.is_password)
+    .map((attr: any) => {
+      columnMap.set(attr.name, attr)
+      return {
+        header: attr.alias || attr.name || '',
+        key: attr.name,
+        width: 20,
+      }
+    })
+
+  ws.columns = columns
+
+  listData.forEach((data: any) => {
+    const row: Record<string, any> = {}
+    columns.forEach(({ key }: { key: string }) => {
+      const value = data?.ci?.[key] ?? null
+      const attr = columnMap.get(key)
+      if (attr.valueType === '6') {
+        row[key] = value ? JSON.stringify(value) : value
+      } else if (attr.is_list && Array.isArray(value)) {
+        row[key] = value.join(',')
+      } else {
+        row[key] = value
+      }
+    })
+    ws.addRow(row)
+  })
 }
 </script>
 

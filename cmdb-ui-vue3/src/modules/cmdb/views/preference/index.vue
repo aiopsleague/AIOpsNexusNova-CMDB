@@ -21,6 +21,7 @@ import {
   getPreference2,
   subscribeCIType,
   subscribeTreeView,
+  preferenceCitypeOrder,
   getAutoSubscription as getAutoSubscriptionApi,
 } from '@/modules/cmdb/api/preference'
 import { getCITypeAttributesByName } from '@/modules/cmdb/api/CITypeAttr'
@@ -32,6 +33,7 @@ import {
 } from '@/modules/cmdb/views/ipam/constants'
 import SubscribeSetting from '@/modules/cmdb/components/subscribeSetting/subscribeSetting.vue'
 import AutoSubscribe from './components/autoSubscribe.vue'
+import draggable from 'vuedraggable'
 
 const { t } = useI18n()
 
@@ -238,6 +240,50 @@ function changeGroupExpand(group: any) {
   }
 }
 
+function handleChangeGroups() {
+  const typeIds: any[] = []
+  myPreferences.value[0].groups.forEach((groupTypes: any) => {
+    groupTypes.ci_types.forEach((ciType: any) => {
+      typeIds.push(ciType.id)
+    })
+  })
+  preferenceCitypeOrder({ type_ids: typeIds, is_tree: false })
+    .then(() => {
+      initData()
+    })
+    .catch(() => {
+      getCITypes(false)
+    })
+}
+
+function orderChange(_e: any, group: any, isTree: boolean) {
+  let typeIds: any[] = []
+  if (!isTree) {
+    myPreferences.value[0].groups.forEach((groupTypes: any) => {
+      if (group.id === groupTypes.id) {
+        group.ci_types.forEach((ciType: any) => {
+          typeIds.push(ciType.id)
+        })
+      } else {
+        groupTypes.ci_types.forEach((ciType: any) => {
+          typeIds.push(ciType.id)
+        })
+      }
+    })
+  } else {
+    typeIds = group.ci_types.map((item: any) => item.id)
+  }
+  preferenceCitypeOrder({ type_ids: typeIds, is_tree: isTree })
+    .then(() => {
+      if (!isTree) {
+        initData()
+      }
+    })
+    .catch(() => {
+      getCITypes(false)
+    })
+}
+
 function openAutoSubModal() {
   autoSubRef.value?.open()
 }
@@ -290,60 +336,63 @@ onMounted(() => {
             {{ subType.name }}
           </span>
         </div>
-        <!-- TODO: restore drag-and-drop reordering (vuedraggable not yet ported) -->
-        <div class="ci-types-left-content">
+        <draggable class="ci-types-left-content" :list="subType.groups" @end="handleChangeGroups" filter=".undraggable">
           <div v-for="group in subType.groups" :key="group.id ?? group.name">
-            <div v-if="index === 0 && subType.groups.length > 1" class="cmdb-preference-group-content">
-              <HolderOutlined v-if="group.name" class="cmdb-preference-move-icon" />
-              <span style="font-weight: 500; color: #a5a9bc" :title="group.name || t('other')">
-                {{ group.name || t('other') }}
-              </span>
-              <span :style="{ color: '#c3cdd7' }">({{ group.ci_types.length }})</span>
-            </div>
-            <div class="cmdb-preference-group-content" v-for="ciType in group.ci_types" :key="ciType.id">
-              <HolderOutlined class="cmdb-preference-move-icon" />
-              <div
-                :class="{
-                  'cmdb-preference-avatar': true,
-                  'cmdb-preference-avatar-noicon': !ciType.icon,
-                }"
-                :style="{ marginRight: '10px' }"
-              >
-                <template v-if="ciType.icon">
-                  <img
-                    v-if="ciType.icon.split('$$')[2]"
-                    :src="`/api/common-setting/v1/file/${ciType.icon.split('$$')[3]}`"
-                    :style="{ maxHeight: '30px', maxWidth: '30px' }"
-                  />
-                  <TableOutlined
-                    v-else
-                    :style="{
-                      color: ciType.icon.split('$$')[1],
-                      fontSize: '14px',
-                    }"
-                  />
-                </template>
-                <span v-else :style="{ fontSize: '20px' }">{{ ciType.name[0].toUpperCase() }}</span>
+            <div :class="`${group.id === undefined ? 'undraggable' : ''}`">
+              <div v-if="index === 0 && subType.groups.length > 1" class="cmdb-preference-group-content">
+                <HolderOutlined v-if="group.name" class="cmdb-preference-move-icon" />
+                <span style="font-weight: 500; color: #a5a9bc" :title="group.name || t('other')">
+                  {{ group.name || t('other') }}
+                </span>
+                <span :style="{ color: '#c3cdd7' }">({{ group.ci_types.length }})</span>
               </div>
-              <span class="cmdb-preference-group-content-title">{{ ciType.alias || ciType.name }}</span>
-              <span class="cmdb-preference-group-content-action">
-                <template v-if="!enableAutoSub || subType.type === 'tree'">
-                  <a-tooltip :title="t('cmdb.preference.cancelSub')">
-                    <span @click="unsubscribe(ciType, group.type)">
-                      <CloseCircleOutlined />
+            </div>
+            <draggable v-model="group.ci_types" :animation="300" @change="(e) => orderChange(e, group, index === 1)">
+              <div class="cmdb-preference-group-content" v-for="ciType in group.ci_types" :key="ciType.id">
+                <HolderOutlined class="cmdb-preference-move-icon" />
+                <div
+                  :class="{
+                    'cmdb-preference-avatar': true,
+                    'cmdb-preference-avatar-noicon': !ciType.icon,
+                  }"
+                  :style="{ marginRight: '10px' }"
+                >
+                  <template v-if="ciType.icon">
+                    <img
+                      v-if="ciType.icon.split('$$')[2]"
+                      :src="`/api/common-setting/v1/file/${ciType.icon.split('$$')[3]}`"
+                      :style="{ maxHeight: '30px', maxWidth: '30px' }"
+                    />
+                    <TableOutlined
+                      v-else
+                      :style="{
+                        color: ciType.icon.split('$$')[1],
+                        fontSize: '14px',
+                      }"
+                    />
+                  </template>
+                  <span v-else :style="{ fontSize: '20px' }">{{ ciType.name[0].toUpperCase() }}</span>
+                </div>
+                <span class="cmdb-preference-group-content-title">{{ ciType.alias || ciType.name }}</span>
+                <span class="cmdb-preference-group-content-action">
+                  <template v-if="!enableAutoSub || subType.type === 'tree'">
+                    <a-tooltip :title="t('cmdb.preference.cancelSub')">
+                      <span @click="unsubscribe(ciType, group.type)">
+                        <CloseCircleOutlined />
+                      </span>
+                    </a-tooltip>
+                    <a-divider type="vertical" :style="{ margin: '0 3px' }" />
+                  </template>
+                  <a-tooltip :title="t('cmdb.preference.editSub')">
+                    <span @click="openSubscribeSetting(ciType, `${index + 1}`)">
+                      <SettingOutlined />
                     </span>
                   </a-tooltip>
-                  <a-divider type="vertical" :style="{ margin: '0 3px' }" />
-                </template>
-                <a-tooltip :title="t('cmdb.preference.editSub')">
-                  <span @click="openSubscribeSetting(ciType, `${index + 1}`)">
-                    <SettingOutlined />
-                  </span>
-                </a-tooltip>
-              </span>
-            </div>
+                </span>
+              </div>
+            </draggable>
           </div>
-        </div>
+        </draggable>
       </div>
     </div>
     <div class="cmdb-preference-right">

@@ -15,6 +15,7 @@ import {
   getSubscribeTreeView,
   getSubscribeAttributes,
   subscribeTreeView,
+  preferenceCitypeOrder,
 } from '@/modules/cmdb/api/preference'
 import { searchCI, updateCI, deleteCI } from '@/modules/cmdb/api/ci'
 import { getCITypes } from '@/modules/cmdb/api/CIType'
@@ -30,6 +31,7 @@ import CITable from '@/modules/cmdb/components/ciTable/index.vue'
 import BatchDownload from '@/modules/cmdb/components/batchDownload/batchDownload.vue'
 import PreferenceSearch from '@/modules/cmdb/components/preferenceSearch/preferenceSearch.vue'
 import MetadataDrawer from '@/modules/cmdb/views/ci/modules/MetadataDrawer.vue'
+import draggable from 'vuedraggable'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -693,6 +695,15 @@ function copyExpression() {
     })
 }
 
+function orderChange(_e: any, subscribeTreeViewCiTypesList: any[]) {
+  preferenceCitypeOrder({
+    type_ids: subscribeTreeViewCiTypesList.map((type) => type.type_id),
+    is_tree: true,
+  }).catch(() => {
+    getTreeViews()
+  })
+}
+
 function openDetail(id: any, activeTabKey?: string) {
   detailRef.value?.create(id, activeTabKey)
 }
@@ -743,8 +754,12 @@ onMounted(() => {
       >
         <template #one>
           <div class="tree-views-left" :style="{ height: `${windowHeight - 64}px` }">
-            <!-- TODO: restore drag-and-drop reordering (vuedraggable not yet ported) -->
-            <div v-for="ciType in subscribeTreeViewCiTypes" :key="ciType.type_id">
+            <draggable
+              v-model="subscribeTreeViewCiTypes"
+              :animation="300"
+              @change="(e) => orderChange(e, subscribeTreeViewCiTypes)"
+            >
+              <div v-for="ciType in subscribeTreeViewCiTypes" :key="ciType.type_id">
               <div
                 @click="handleChangeCi(ciType.type_id)"
                 :class="{
@@ -801,6 +816,7 @@ onMounted(() => {
                 </template>
               </a-tree>
             </div>
+          </draggable>
           </div>
         </template>
         <template #two>
