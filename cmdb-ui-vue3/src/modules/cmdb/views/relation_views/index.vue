@@ -328,7 +328,7 @@ async function loadData({
 function changeCIType(typeId: string | number) {
   xTableRef.value?.getVxetableRef()?.clearCheckboxRow()
   xTableRef.value?.getVxetableRef()?.clearCheckboxReserve()
-  // TODO: reset SearchForm (its reset() is not exposed in the Vue 3 shell)
+  searchRef.value?.reset()
   selectedRowKeys.value = []
   currentTypeId.value = [typeId]
   loadColumns()

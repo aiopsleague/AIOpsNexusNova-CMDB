@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, provide, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { message, Modal, notification } from 'ant-design-vue'
@@ -32,6 +32,7 @@ import BatchDownload from '@/modules/cmdb/components/batchDownload/batchDownload
 import PreferenceSearch from '@/modules/cmdb/components/preferenceSearch/preferenceSearch.vue'
 import MetadataDrawer from '@/modules/cmdb/views/ci/modules/MetadataDrawer.vue'
 import draggable from 'vuedraggable'
+import Sortable from 'sortablejs'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -79,6 +80,8 @@ const initialPasswordValue = ref<Record<string, any>>({})
 const passwordValue = ref<Record<string, any>>({})
 const lastEditCiId = ref<string | number | null>(null)
 const isContinueCloseEdit = ref(true)
+const sortable = ref<any>(null)
+const tableDragClassName = ref<string[]>([])
 
 const windowHeight = computed(() => window.innerHeight)
 const tableHeight = computed(() => windowHeight.value - 240)
@@ -358,7 +361,42 @@ function subscribeSetting(e: Event, ciType: any) {
 }
 
 function columnDrop() {
-  // TODO: wire up Sortable (column drag reorder not yet ported)
+  nextTick(() => {
+    const xTable = getXTable()
+    if (!xTable) {
+      return
+    }
+    const header = xTable.$el?.querySelector('.body--wrapper>.vxe-table--header .vxe-header--row')
+    if (!header) {
+      return
+    }
+    sortable.value = Sortable.create(header as HTMLElement, {
+      handle: '.vxe-handle',
+      onChoose: () => {
+        const headerRow = xTable.$el.querySelector('.body--wrapper>.vxe-table--header .vxe-header--row')
+        const classNameList: string[] = []
+        headerRow.childNodes.forEach((item: any) => {
+          classNameList.push(item.classList[1])
+        })
+        tableDragClassName.value = classNameList
+      },
+      onEnd: (params: any) => {
+        // Virtual scrolling makes newIndex/oldIndex virtual; recover the real
+        // column ids from the class names captured on drag start.
+        const { newIndex, oldIndex } = params
+        const fromColid = tableDragClassName.value[oldIndex]
+        const toColid = tableDragClassName.value[newIndex]
+        const fromColumn = xTable.getColumnById(fromColid)
+        const toColumn = xTable.getColumnById(toColid)
+        const fromIndex = xTable.getColumnIndex(fromColumn)
+        const toIndex = xTable.getColumnIndex(toColumn)
+        const tableColumn = xTable.getColumns()
+        const currRow = tableColumn.splice(fromIndex, 1)[0]
+        tableColumn.splice(toIndex, 0, currRow)
+        xTable.loadColumn(tableColumn)
+      },
+    })
+  })
 }
 
 function handleSortCol({ property, order }: { property: string; order: string }) {
@@ -725,6 +763,12 @@ onMounted(() => {
   getCITypes().then((res) => {
     citypes.value = res.ci_types
   })
+})
+
+onBeforeUnmount(() => {
+  if (sortable.value) {
+    sortable.value.destroy()
+  }
 })
 </script>
 

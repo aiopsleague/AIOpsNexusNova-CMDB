@@ -66,7 +66,7 @@ const componentMap: Record<string, () => Promise<unknown>> = {
   cmdbOperationHistory: () => import('@/modules/cmdb/views/operation_history/index.vue'),
   cmdbModelRelation: () => import('@/modules/cmdb/views/model_relation/index.vue'),
   cmdbRelationType: () => import('@/modules/cmdb/views/relation_type/index.vue'),
-  cmdbMobileDetail: () => import('@/modules/cmdb/views/placeholder.vue'),
+  cmdbMobileDetail: () => import('@/modules/cmdb/views/mobile/CIMobileDetail.vue'),
 }
 
 function resolveNode(node: AppRouteRecord): AppRouteRecord {

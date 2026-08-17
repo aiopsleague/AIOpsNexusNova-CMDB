@@ -56,3 +56,8 @@ export function getCIPrometheusAlerts(ciId: string | number): Promise<any> {
 export function checkCIPrometheus(ciTypeId: string | number): Promise<any> {
   return request.get(`${urlPrefix}/ci_type/${ciTypeId}/prometheus/check`)
 }
+
+/** Fetch the mobile-friendly detail payload for a CI. */
+export function getCIMobileDetail(ciId: string | number): Promise<any> {
+  return request.get(`${urlPrefix}/ci/${ciId}/mobile`)
+}
