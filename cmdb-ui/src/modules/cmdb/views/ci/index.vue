@@ -25,14 +25,15 @@
     >
       <template #one>
         <div class="ci-left">
-          <a-input
-            :placeholder="$t('cmdb.preference.searchPlaceholder')"
-            class="ci-types-left-header-input"
-            @change="handleSearch"
-          >
-            <a-icon slot="prefix" type="search" />
-          </a-input>
-
+          <div class="ci-types-left-header">
+            <a-input
+              :placeholder="$t('cmdb.preference.searchPlaceholder')"
+              class="ci-types-left-header-input"
+              @change="handleSearch"
+            >
+              <a-icon slot="prefix" type="search" />
+            </a-input>
+          </div>
           <div class="ci-left-list">
             <div
               v-for="(group) in filterPreferenceGroup"
@@ -263,6 +264,10 @@ export default {
 .page-loading {
   text-align: center;
   padding-top: 150px;
+}
+
+.ci-types-left-header {
+  margin-bottom: 12px;
 }
 
 .ci-types-left-header-input {
