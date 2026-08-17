@@ -7,6 +7,11 @@ export function searchCI(params: Record<string, unknown>): Promise<any> {
   return request.get(`${urlPrefix}/ci/s`, { params })
 }
 
+/** Fetch auto-discovery statistics grouped by CI type. */
+export function getCIAdcStatistics(): Promise<any> {
+  return request.get(`${urlPrefix}/ci/adc/statistics`)
+}
+
 /** Fetch a single CI type by id or unique name. */
 export function getCIType(CITypeName: string | number, parameter?: Record<string, unknown>): Promise<any> {
   return request.get(`${urlPrefix}/ci_types/${CITypeName}`, { params: parameter })

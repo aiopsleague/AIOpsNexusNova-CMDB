@@ -7,9 +7,34 @@ export function getPreference(instance = true, tree: unknown = null): Promise<an
   return request.get(`${urlPrefix}/preference/ci_types`, { params: { instance, tree } })
 }
 
+/** Fetch the extended CI type preference (self / type_id2users). */
+export function getPreference2(instance = true, tree: unknown = null): Promise<any> {
+  return request.get(`${urlPrefix}/preference/ci_types2`, { params: { instance, tree } })
+}
+
+/** Update the ordering of the user's subscribed CI types (instance or tree). */
+export function preferenceCitypeOrder(data: Record<string, unknown>): Promise<any> {
+  return request.post(`${urlPrefix}/preference/ci_types/order`, data)
+}
+
 /** Fetch the relation views (service tree views). */
 export function getRelationView(): Promise<any> {
   return request.get(`${urlPrefix}/preference/relation/view`)
+}
+
+/** Delete a relation view (service tree view) by name. */
+export function deleteRelationView(viewName: string): Promise<any> {
+  return request.delete(`${urlPrefix}/preference/relation/view`, { data: { name: viewName } })
+}
+
+/** Create a relation view (service tree view). */
+export function subscribeRelationView(payload: Record<string, unknown>): Promise<any> {
+  return request.post(`${urlPrefix}/preference/relation/view`, payload)
+}
+
+/** Update a relation view (service tree view) by id. */
+export function putRelationView(id: string | number, data: Record<string, unknown>): Promise<any> {
+  return request.put(`${urlPrefix}/preference/relation/view/${id}`, data)
 }
 
 /** Grant a role access to a relation view. */
@@ -60,4 +85,9 @@ export function deletePreferenceSearch(id: string | number): Promise<any> {
 /** Fetch the auto-subscription config. */
 export function getAutoSubscription(): Promise<any> {
   return request.get(`${urlPrefix}/preference/auto_subscription`)
+}
+
+/** Persist the auto-subscription config. */
+export function putAutoSubscription(data: Record<string, unknown>): Promise<any> {
+  return request.put(`${urlPrefix}/preference/auto_subscription`, data)
 }
