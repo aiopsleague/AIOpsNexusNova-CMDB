@@ -12,6 +12,7 @@ import { initThemeSystem } from '@/theme/system'
 import { setupVxe } from '@/plugins/vxe'
 import { setupTreeselect } from '@/plugins/treeselect'
 import { loadModules } from '@/modules'
+import OpsIcon from '@/components/OpsIcon/index.vue'
 
 async function bootstrap() {
   const app = createApp(App)
@@ -20,6 +21,8 @@ async function bootstrap() {
   app.use(router)
   app.use(i18n)
   app.use(Antd)
+  // eslint-disable-next-line vue/component-definition-name-casing
+  app.component('ops-icon', OpsIcon)
 
   setupVxe(app)
   setupTreeselect(app)

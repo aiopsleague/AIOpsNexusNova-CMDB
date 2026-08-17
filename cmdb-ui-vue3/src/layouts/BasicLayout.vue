@@ -6,11 +6,18 @@ import { LogoutOutlined, UserOutlined } from '@ant-design/icons-vue'
 import { useAppStore } from '@/stores/app'
 import { useUserStore } from '@/stores/user'
 import { useRoutesStore } from '@/stores/routes'
+import OpsIcon from '@/components/OpsIcon/index.vue'
 
 const router = useRouter()
 const appStore = useAppStore()
 const userStore = useUserStore()
 const routesStore = useRoutesStore()
+
+/** Build a menu icon renderer from a route's `meta.icon`, if any. */
+function renderMenuIcon(icon: unknown) {
+  if (typeof icon !== 'string' || !icon) return undefined
+  return () => h(OpsIcon, { type: icon })
+}
 
 const menuItems = computed(() =>
   routesStore.appRoutes
@@ -18,9 +25,14 @@ const menuItems = computed(() =>
     .map((r) => ({
       key: r.path,
       label: (r.meta?.title as string) || r.name,
+      icon: renderMenuIcon(r.meta?.icon),
       children: (r.children || [])
         .filter((c) => !c.meta?.hidden)
-        .map((c) => ({ key: c.path, label: (c.meta?.title as string) || c.name })),
+        .map((c) => ({
+          key: c.path,
+          label: (c.meta?.title as string) || c.name,
+          icon: renderMenuIcon(c.meta?.icon),
+        })),
     }))
 )
 
