@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { message } from 'ant-design-vue'
 import { EditOutlined, CloseOutlined } from '@ant-design/icons-vue'
@@ -10,7 +10,15 @@ import {
   subscribeRelationView,
   putRelationView,
 } from '@/modules/cmdb/api/preference'
+import { getSystemConfig, saveSystemConfig } from '@/modules/cmdb/api/system_config'
+import RelationGraphComponent from 'relation-graph/vue3'
+import type { RGOptions } from 'relation-graph/vue3'
 import ServiceTreeModal from './serviceTreeModal.vue'
+
+// relation-graph ships VueElement-style type declarations that vue-tsc cannot use to
+// infer scoped-slot prop types; cast the component so `node` slot props are treated as
+// loosely-typed in the template.
+const RelationGraph = RelationGraphComponent as any
 
 const { t } = useI18n()
 
@@ -22,43 +30,80 @@ const graphJsonData = ref<any>({})
 
 const serviceTreeModalRef = ref<InstanceType<typeof ServiceTreeModal>>()
 
+// --- relation-graph canvas state ---
+const ciTypeRelationGraphRef = ref<any>()
+const relationViewGraphRefs: Record<string, any> = {}
+const relationViewGraphData = ref<Record<string, { rootId: string; nodes: any[]; lines: any[] }>>({})
+const config = ref<Record<string, any>>({})
+
+const graphOptions = computed<RGOptions>(() => {
+  const base: RGOptions = {
+    allowShowMiniToolBar: false,
+    defaultFocusRootNode: false,
+    defaultNodeColor: 'rgba(230, 247, 255, 1)',
+    defaultNodeFontColor: 'rgba(33, 32, 32, 1)',
+  }
+  if (config.value?.option) {
+    return { ...base, layouts: [{ layoutName: 'fixed' }] }
+  }
+  return { ...base, layouts: [{ layoutName: 'center', distance_coefficient: 1 }] }
+})
+
+const relationViewOptions: RGOptions = {
+  allowShowMiniToolBar: false,
+  defaultFocusRootNode: false,
+  defaultNodeColor: 'rgba(230, 247, 255, 1)',
+  defaultNodeFontColor: 'rgba(33, 32, 32, 1)',
+  disableZoom: true,
+  layouts: [{ layoutName: 'tree', from: 'left' }],
+}
+
 const windowHeight = computed(() => window.innerHeight)
 
 async function getMainData() {
   const { relations: ciTypeRelations } = await getCITypeRelations()
   const nodes: any[] = []
-  const links: any[] = []
+  const lines: any[] = []
+  const savedLayout = config.value?.option
   ciTypeRelations.forEach((item: any) => {
-    links.push({
+    lines.push({
       from: `${item.parent_id}`,
       to: `${item.child_id}`,
       text: item.relation_type.name,
       disableDefaultClickEffect: true,
     })
     if (nodes.findIndex((node: any) => String(node.id) === String(item.child_id)) < 0) {
+      const _find = savedLayout ? savedLayout.find((n: any) => n.id === `${item.child_id}`) : undefined
       nodes.push({
         id: `${item.child_id}`,
-        name: item.child.alias || item.child.name,
+        text: item.child.alias || item.child.name,
         nodeShape: 1,
         borderWidth: -1,
         disableDefaultClickEffect: true,
+        x: _find?.x ?? 500,
+        y: _find?.y ?? 500,
       })
     }
     if (nodes.findIndex((node: any) => String(node.id) === String(item.parent_id)) < 0) {
+      const _find = savedLayout ? savedLayout.find((n: any) => n.id === `${item.parent_id}`) : undefined
       nodes.push({
         id: `${item.parent_id}`,
-        name: item.parent.alias || item.parent.name,
+        text: item.parent.alias || item.parent.name,
         nodeShape: 1,
         borderWidth: -1,
         disableDefaultClickEffect: true,
+        x: _find?.x ?? 500,
+        y: _find?.y ?? 500,
       })
     }
   })
-  const _from = links.map((item: any) => item.from)
-  const _to = links.map((item: any) => item.to)
+  const _from = lines.map((item: any) => item.from)
+  const _to = lines.map((item: any) => item.to)
   const rootId = findMost([..._from, _to])
-  graphJsonData.value = { rootId, nodes, links }
-  // TODO: render the CI type relation graph (SeeksRelationGraph / relation-graph not yet ported).
+  graphJsonData.value = { rootId, nodes, lines }
+  nextTick(() => {
+    ciTypeRelationGraphRef.value?.setJsonData({ rootId, nodes, lines })
+  })
 }
 
 function findMost(arr: string[]) {
@@ -79,11 +124,97 @@ function findMost(arr: string[]) {
   return maxEle
 }
 
+function checked(e: any, node: any) {
+  const graph = ciTypeRelationGraphRef.value?.getInstance?.()
+  if (e.target.checked) {
+    if (!graph) return
+    const currentNode = graph.getNodeById(node.id)
+    if (!currentNode.targetTo.length) {
+      message.warning(`${node.text} ` + t('cmdb.preference_relation.childNodesNotFound'))
+      return
+    }
+    if (!checkedNodes.value.length) {
+      checkedNodes.value.push(node.id)
+    } else if (checkedNodes.value.length === 1) {
+      const currentCheckedNode = graph.getNodeById(checkedNodes.value[0])
+      pushNodeId(currentCheckedNode, currentCheckedNode, node)
+    } else {
+      const startNode = graph.getNodeById(checkedNodes.value[0])
+      const endNode = graph.getNodeById(checkedNodes.value[checkedNodes.value.length - 1])
+      pushNodeId(startNode, endNode, node)
+    }
+  } else {
+    const idx = checkedNodes.value.findIndex((item) => item === node.id)
+    if (idx > -1) {
+      if (checkedNodes.value.slice(0, idx).length >= 2) {
+        checkedNodes.value = checkedNodes.value.slice(0, idx)
+        return
+      }
+      if (checkedNodes.value.slice(idx + 1).length >= 2) {
+        checkedNodes.value = checkedNodes.value.slice(idx + 1)
+        return
+      }
+      checkedNodes.value = []
+    }
+  }
+}
+
+function pushNodeId(startNode: any, endNode: any, node: any) {
+  const idFrom = startNode.targetFrom.findIndex((item: any) => item.id === node.id)
+  const idTo = endNode.targetTo.findIndex((item: any) => item.id === node.id)
+  if (idFrom <= -1 && idTo <= -1) {
+    message.warning(`${node.text} ` + t('cmdb.preference_relation.tips1'))
+    return
+  }
+  if (idFrom > -1) {
+    checkedNodes.value.unshift(node.id)
+  }
+  if (idTo > -1) {
+    checkedNodes.value.push(node.id)
+  }
+}
+
+function setRelationViewGraphRef(viewName: string) {
+  return (el: any) => {
+    if (el) {
+      relationViewGraphRefs[viewName] = el
+    } else {
+      delete relationViewGraphRefs[viewName]
+    }
+  }
+}
+
 async function getViewsData() {
   loading.value = true
   const data = await getRelationView()
   relationViews.value = data
-  // TODO: render each service-tree view with the relation graph (SeeksRelationGraph not yet ported).
+  const { views } = data || {}
+  const nextData: Record<string, { rootId: string; nodes: any[]; lines: any[] }> = {}
+  Object.keys(views || {}).forEach((item) => {
+    const nodes: any[] = []
+    const lines: any[] = []
+    const topoFlatten = views[item].topo_flatten || []
+    topoFlatten.forEach((nodeId: any, idx: number) => {
+      const meta = data.id2type?.[nodeId] || {}
+      nodes.push({
+        id: `${nodeId}`,
+        text: meta.alias || meta.name,
+        nodeShape: 1,
+        borderWidth: -1,
+        disableDefaultClickEffect: true,
+      })
+      if (idx !== topoFlatten.length - 1) {
+        lines.push({ from: `${nodeId}`, to: `${topoFlatten[idx + 1]}` })
+      }
+    })
+    nextData[item] = { rootId: `${topoFlatten[0] || ''}`, nodes, lines }
+  })
+  relationViewGraphData.value = nextData
+  nextTick(() => {
+    Object.keys(nextData).forEach((view) => {
+      relationViewGraphRefs[view]?.setJsonData(nextData[view])
+    })
+  })
   loading.value = false
 }
 
@@ -157,9 +288,16 @@ function resetRoute() {
   // TODO: regenerate dynamic service-tree menu routes (route regeneration not yet wired in the Vue 3 shell).
 }
 
-function handleSave() {
-  // TODO: persist the CI type relation graph layout (graph rendering not yet ported).
-  console.log(graphJsonData.value)
+async function handleSave() {
+  const graph = ciTypeRelationGraphRef.value?.getInstance?.()
+  const graphNodes = graph?.getNodes?.() ?? []
+  if (graphNodes && graphNodes.length) {
+    await saveSystemConfig({
+      name: 'ci_type_relation_layout',
+      option: graphNodes.map((item: any) => ({ id: item.id, x: item.x, y: item.y })),
+    })
+    message.success(t('saveSuccess'))
+  }
 }
 
 function cancelEdit() {
@@ -167,7 +305,10 @@ function cancelEdit() {
   checkedNodes.value = []
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await getSystemConfig({ name: 'ci_type_relation_layout' }).then((res) => {
+    config.value = res || {}
+  })
   init()
 })
 </script>
@@ -193,8 +334,18 @@ onMounted(() => {
           <span>{{ t('cmdb.preference_relation.tips5') }}</span>
         </a-space>
       </div>
-      <!-- TODO: render the CI type relation graph (SeeksRelationGraph / relation-graph not yet ported). -->
-      <div class="ci-type-relation-graph-stub">{{ t('cmdb.preference_relation.tips5') }}</div>
+      <RelationGraph ref="ciTypeRelationGraphRef" :options="graphOptions">
+        <template #node="{ node }">
+          <div :style="{ lineHeight: '20px' }">
+            <a-checkbox
+              v-if="isEdit"
+              :checked="checkedNodes.includes(node.id)"
+              @change="(e: any) => checked(e, node)"
+            ></a-checkbox>
+            <span :style="{ marginLeft: '5px' }">{{ node.text }}</span>
+          </div>
+        </template>
+      </RelationGraph>
     </div>
     <template v-if="relationViews.views && !loading">
       <a-row :gutter="4">
@@ -215,8 +366,9 @@ onMounted(() => {
             <a-popconfirm :title="t('cmdb.ciType.confirmDelete', { name: `${view}` })" @confirm="confirmDelete(view)">
               <a class="relation-views-close"><CloseOutlined /></a>
             </a-popconfirm>
-            <!-- TODO: render service-tree view graph (SeeksRelationGraph not yet ported). -->
-            <div :style="{ height: '250px' }"></div>
+            <div :style="{ height: '250px' }">
+              <RelationGraph :ref="setRelationViewGraphRef(view)" :options="relationViewOptions"></RelationGraph>
+            </div>
           </div>
         </a-col>
       </a-row>
@@ -238,14 +390,6 @@ onMounted(() => {
       top: 20px;
       left: 20px;
       z-index: 10;
-    }
-    .ci-type-relation-graph-stub {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      min-height: 250px;
-      color: @text-color_3;
     }
   }
   .relation-views {

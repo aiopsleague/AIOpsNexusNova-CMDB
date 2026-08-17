@@ -37,6 +37,15 @@ import CMDBExprDrawer from '@/components/CMDBExprDrawer/index.vue'
 import CMDBTypeSelectAntd from '@/modules/cmdb/components/cmdbTypeSelect/cmdbTypeSelectAntd.vue'
 import { useUserStore } from '@/stores/user'
 import draggable from 'vuedraggable'
+import RelationGraphComponent from 'relation-graph/vue3'
+import type { RGOptions } from 'relation-graph/vue3'
+import { getSubscribeAttributes } from '@/modules/cmdb/api/preference'
+import { searchCI } from '@/modules/cmdb/api/ci'
+
+// relation-graph ships VueElement-style type declarations that vue-tsc cannot use to
+// infer scoped-slot prop types; cast the component so `node` slot props and event
+// handlers are treated as loosely-typed in the template.
+const RelationGraph = RelationGraphComponent as any
 
 const currentTopoKey = 'ops_cmdb_topo_currentId'
 
@@ -84,6 +93,63 @@ const errorMessageShow = ref(false)
 const topoViewJsonData = ref<any>({})
 const topoViewOption = ref<Record<string, any>>({})
 const topoViewSearchValue = ref('')
+
+// --- relation-graph canvas state ---
+const showTopoViewRef = ref<any>()
+const previewTopoViewRef = ref<any>()
+const ciTypeRelationGraphRef = ref<any>()
+
+const currentNode = ref<any>({})
+const currentNodeValues = ref<Record<string, any> | null>(null)
+const currentNodeAttributes = ref<any[]>([])
+const nodeTipsPosition = ref<Record<string, string>>({})
+const errorMessage = ref('')
+
+const nodeStyle: Record<string, { backgroundColor: string }> = {
+  '0': { backgroundColor: '#2F54EB' },
+  '1': { backgroundColor: '#29AAE1' },
+  '2': { backgroundColor: '#7F97FA' },
+  '3': { backgroundColor: '#75C5CA' },
+  '4': { backgroundColor: '#A699F6' },
+  '5': { backgroundColor: '#A4B5E1' },
+}
+
+const graphOptions: RGOptions = {
+  allowShowMiniToolBar: false,
+  defaultFocusRootNode: false,
+  defaultNodeColor: 'rgba(230, 247, 255, 1)',
+  defaultNodeFontColor: 'rgba(33, 32, 32, 1)',
+  layouts: [{ layoutName: 'tree' }],
+}
+
+const graphOptions2: RGOptions = {
+  backgrounImageNoRepeat: true,
+  moveToCenterWhenRefresh: true,
+  zoomToFitWhenRefresh: true,
+  useAnimationWhenExpanded: false,
+  defaultNodeShape: 1,
+  defaultLineShape: 4,
+  defaultNodeBorderWidth: 0,
+  defaultNodeWidth: 150,
+  defaultNodeHeight: 30,
+  defaultExpandHolderPosition: 'right',
+  defaultJunctionPoint: 'border',
+  layouts: [
+    {
+      layoutName: 'tree',
+      from: 'left',
+      max_per_width: 200,
+      min_per_height: 40,
+    },
+  ],
+}
+
+const graphOptionsPreview: RGOptions = {
+  ...graphOptions2,
+  toolBarDirection: 'h',
+  toolBarPositionH: 'left',
+  toolBarPositionV: 'top',
+}
 
 const formModel = reactive<{
   id?: number
@@ -391,7 +457,9 @@ function showPreview() {
           message.error(t('cmdb.topo.noData'))
           return
         }
-        // TODO: migrate topology (relation-graph) preview rendering.
+        nextTick(() => {
+          previewTopoViewRef.value?.setJsonData({ nodes, lines: links })
+        })
       })
     })
     .catch(() => {})
@@ -438,10 +506,11 @@ async function showTopoView(viewId: number | string) {
       message.error(t('cmdb.topo.noData'))
       return
     }
-    // TODO: migrate topology (relation-graph) rendering. The node/link payload is
-    // stored for the search filter until the graph renderer is ported.
-    topoViewJsonData.value = { nodes: new Map(nodes.map((n) => [n.id, n])), links }
+    topoViewJsonData.value = { nodes: new Map(nodes.map((n) => [n.id, n])), lines: links }
     topoViewSearchValue.value = ''
+    nextTick(() => {
+      showTopoViewRef.value?.setJsonData({ nodes, lines: links })
+    })
   })
 }
 
@@ -510,13 +579,124 @@ function handleDelete(record: any) {
 
 async function getRelationsByTypeId(typeId: number) {
   getRelationsByTypeIdApi(typeId).then((res) => {
+    const pathNodes: any[] = []
+    const pathLines: any[] = []
     nodes.value = res.nodes
-    if (!res.nodes?.length) {
+    ;(res.edges || []).forEach((item: any) => {
+      pathLines.push({
+        from: `${item.from_id}`,
+        to: `${item.to_id}`,
+        text: `${item.text}`,
+        disableDefaultClickEffect: true,
+      })
+    })
+    ;(res.nodes || []).forEach((item: any) => {
+      pathNodes.push({
+        id: `${item.id}`,
+        text: item.alias || item.name,
+        nodeShape: 1,
+        borderWidth: -1,
+        disableDefaultClickEffect: true,
+      })
+    })
+    if (!pathNodes.length) {
       message.error(t('cmdb.topo.noData'))
       return
     }
-    // TODO: migrate topology (relation-graph) path-selection rendering.
+    nextTick(() => {
+      ciTypeRelationGraphRef.value?.setJsonData({ rootId: `${typeId}`, nodes: pathNodes, lines: pathLines })
+    })
   })
+}
+
+function checked(e: any, node: any) {
+  if (e.target.checked) {
+    if (checkedNodes.value.findIndex((i) => i === node.id) === -1) {
+      checkedNodes.value.push(node.id)
+    }
+  } else {
+    const idx = checkedNodes.value.findIndex((i) => i === node.id)
+    if (idx > -1) {
+      checkedNodes.value.splice(idx, 1)
+    }
+  }
+}
+
+function nodeBorderColor(node: any): string {
+  if (node?.data?.btnType === 'more') return '#A4B5E1'
+  const level = Math.abs(node?.lot?.level ?? 0)
+  return nodeStyle[level]?.backgroundColor ?? '#A4B5E1'
+}
+
+function handleNullNodeTips(errorMsg: string) {
+  errorMessage.value = errorMsg
+  errorMessageShow.value = true
+  currentNodeValues.value = null
+  isShowNodeTipsPanel.value = false
+  currentNode.value = {}
+}
+
+async function showNodeTips(nodeObject: any, event: any) {
+  event.preventDefault?.()
+  event.stopPropagation?.()
+
+  if (currentNode.value !== nodeObject) {
+    currentNodeValues.value = null
+    errorMessageShow.value = false
+    currentNode.value = nodeObject
+    const rawNode = currentNodes.value.find((item: any) => item.id === nodeObject.id)
+    if (rawNode) {
+      try {
+        const [attributes] = await Promise.all([getSubscribeAttributes(rawNode.type_id)])
+        currentNodeAttributes.value = attributes?.attributes || []
+        if (!currentNodeAttributes.value.length) {
+          handleNullNodeTips(t('cmdb.topo.noPreferenceAttributes'))
+          return
+        }
+        const res = await searchCI({ q: `_id:${rawNode.id}` })
+        if (!res.result?.length) {
+          handleNullNodeTips(t('cmdb.topo.noInstancePerm'))
+        } else {
+          const values = res.result[0]
+          Object.keys(values).forEach((key) => {
+            const attr = currentNodeAttributes.value.find((a: any) => a.name === key)
+            if (attr?.choice_value?.length) {
+              if (Array.isArray(values[key])) {
+                values[key] = values[key].map((value: any) => {
+                  const choice = attr.choice_value.find((c: any) => value === c?.[0])
+                  return choice?.[1]?.label || value
+                })
+              } else {
+                const choice = attr.choice_value.find((c: any) => values[key] === c?.[0])
+                values[key] = choice?.[1]?.label || values[key]
+              }
+            }
+          })
+          currentNodeValues.value = values
+        }
+      } catch (error: any) {
+        handleNullNodeTips((error?.response?.data || {}).message || String(error))
+      }
+    }
+  }
+
+  nodeTipsPosition.value = {
+    top: '20px',
+    right: '20px',
+    maxHeight: `${windowHeight.value / 2 - 100}px`,
+  }
+  isShowNodeTipsPanel.value = true
+}
+
+function handleSearchTopoView(v: string) {
+  const jsonData = topoViewJsonData.value
+  if (!jsonData?.nodes) return
+  jsonData.nodes.forEach((node: any) => {
+    if (node?.data?.btnType !== 'more') {
+      node.opacity = (node?.text ?? '').indexOf(v) !== -1 ? 1 : 0.1
+    }
+  })
+  showTopoViewRef.value?.setJsonData({ nodes: Array.from(jsonData.nodes.values()), lines: jsonData.lines })
 }
 
 onMounted(async () => {
@@ -679,11 +859,62 @@ onMounted(async () => {
       <template #two>
         <div class="topo-right">
           <div v-if="currentCId" :style="{ height: `${windowHeight - 80}px` }">
-            <!-- TODO: migrate topology (relation-graph/butterfly-dag). The graph
-                 canvas is stubbed; data is fetched via showTopoView() above. -->
-            <div class="topo-graph-stub">
-              <a-empty :image="emptyImage" :description="t('cmdb.topo.topoViewSearchPlaceholder')" />
-            </div>
+            <RelationGraph
+              ref="showTopoViewRef"
+              :options="graphOptions2"
+              :on-node-click="showNodeTips"
+            >
+              <template #node="{ node }">
+                <div class="relation-graph-node" :style="{ borderColor: nodeBorderColor(node) }">
+                  <template v-if="node.data && node.data.icon">
+                    <img
+                      v-if="node.data.icon.split('$$')[2]"
+                      :src="`/api/common-setting/v1/file/${node.data.icon.split('$$')[3]}`"
+                      class="relation-graph-node-image"
+                    />
+                    <span
+                      v-else
+                      class="relation-graph-node-icon"
+                      :style="{ color: node.data.icon.split('$$')[1] }"
+                    >
+                      {{ node.data.icon.split('$$')[0] ? node.data.icon.split('$$')[0][0].toUpperCase() : '' }}
+                    </span>
+                  </template>
+                  <span class="relation-graph-node-text">
+                    {{
+                      node.data && node.data.btnType === 'more'
+                        ? t('cmdb.topo.moreBtn', { count: node.text })
+                        : node.text
+                    }}
+                  </span>
+                </div>
+              </template>
+              <template #graph-plug>
+                <a-input-search
+                  v-model:value="topoViewSearchValue"
+                  class="relation-graph-search"
+                  :placeholder="t('cmdb.topo.topoViewSearchPlaceholder')"
+                  @search="handleSearchTopoView"
+                />
+                <div
+                  v-if="(isShowNodeTipsPanel && currentNodeValues && currentNodeAttributes.length) || errorMessageShow"
+                  class="node-tips"
+                  :style="nodeTipsPosition"
+                >
+                  <a-descriptions
+                    v-if="currentNodeValues"
+                    bordered
+                    size="small"
+                    :column="{ xxl: 1, xl: 1, lg: 1, md: 1, sm: 1, xs: 1 }"
+                  >
+                    <a-descriptions-item v-for="attr in currentNodeAttributes" :key="attr.name" :label="attr.alias">
+                      {{ currentNodeValues[attr.name] }}
+                    </a-descriptions-item>
+                  </a-descriptions>
+                  <span v-if="errorMessageShow" style="color: red">{{ errorMessage }}</span>
+                </div>
+              </template>
+            </RelationGraph>
           </div>
           <div v-else class="topo-right-empty">
             <a-empty :image="emptyImage" description=""></a-empty>
@@ -745,8 +976,19 @@ onMounted(async () => {
           <div class="ant-form-explain">{{ t('cmdb.topo.filterInstancesTip') }}</div>
         </a-form-item>
         <a-form-item :label="t('cmdb.topo.path')" name="path">
-          <!-- TODO: migrate topology path selection (SeeksRelationGraph / relation-graph). -->
-          <div class="topo-path-stub">{{ t('cmdb.topo.centralNodeTypeTip') }}</div>
+          <div :style="{ height: '250px', border: '1px solid #e4e7ed' }">
+            <RelationGraph ref="ciTypeRelationGraphRef" :options="graphOptions">
+              <template #node="{ node }">
+                <div :style="{ lineHeight: '20px' }">
+                  <a-checkbox
+                    :checked="checkedNodes.includes(node.id)"
+                    @change="(e: any) => checked(e, node)"
+                  ></a-checkbox>
+                  <span :style="{ marginLeft: '5px' }">{{ node.text }}</span>
+                </div>
+              </template>
+            </RelationGraph>
+          </div>
         </a-form-item>
         <a-form-item :label="t('cmdb.topo.aggregationCount')" name="aggregation_count" :help="t('cmdb.topo.aggreationCountTip')">
           <a-input-number v-model:value="formModel.aggregation_count" :style="{ width: '100%' }" :min="0" />
@@ -757,7 +999,27 @@ onMounted(async () => {
             {{ t('cmdb.custom_dashboard.preview') }}
           </span>
           <template v-if="isShowPreview">
-            <!-- TODO: migrate topology (relation-graph) preview rendering. -->
+            <RelationGraph ref="previewTopoViewRef" :options="graphOptionsPreview">
+              <template #node="{ node }">
+                <div class="relation-graph-node" :style="{ borderColor: nodeBorderColor(node) }">
+                  <template v-if="node.data && node.data.icon">
+                    <img
+                      v-if="node.data.icon.split('$$')[2]"
+                      :src="`/api/common-setting/v1/file/${node.data.icon.split('$$')[3]}`"
+                      class="relation-graph-node-image"
+                    />
+                    <span
+                      v-else
+                      class="relation-graph-node-icon"
+                      :style="{ color: node.data.icon.split('$$')[1] }"
+                    >
+                      {{ node.data.icon.split('$$')[0] ? node.data.icon.split('$$')[0][0].toUpperCase() : '' }}
+                    </span>
+                  </template>
+                  <span class="relation-graph-node-text">{{ node.text }}</span>
+                </div>
+              </template>
+            </RelationGraph>
           </template>
         </div>
         <div class="custom-drawer-bottom-action">
@@ -971,16 +1233,49 @@ onMounted(async () => {
     }
   }
 }
-.topo-graph-stub,
-.topo-path-stub {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  min-height: 250px;
-  border: 1px solid #e4e7ed;
+.relation-graph-search {
+  position: absolute;
+  z-index: 10;
+  top: 20px;
+  left: 20px;
+  width: 300px;
+}
+.node-tips {
+  z-index: 999;
+  padding: 16px;
+  background-color: #ffffff;
+  border: 1px solid #e8eaed;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: absolute;
+  overflow: auto;
+  max-width: 400px;
+  max-height: 500px;
+}
+.relation-graph-node {
+  padding: 6px 3px;
   border-radius: 2px;
-  color: @text-color_3;
+  border-width: 2px;
+  border-style: solid;
+  background-color: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  &-text {
+    color: #000000;
+    font-size: 12px;
+    font-weight: 400;
+    margin-left: 6px;
+    word-break: break-all;
+  }
+  &-icon {
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.65);
+  }
+  &-image {
+    max-height: 20px;
+    max-width: 20px;
+  }
 }
 .chart-left-preview {
   border: 1px solid #e4e7ed;

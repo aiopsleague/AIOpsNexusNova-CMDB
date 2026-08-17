@@ -41,8 +41,13 @@ function handleNodeDblclick({ typeId, ciId }: { typeId: number; ciId: number }) 
 <template>
   <div class="ci-detail-relation">
     <CiDetailRelationTopo
+      :ci-id="ciId"
+      :type-id="currentTypeId"
+      :ci="ci"
       :parent-c-i-type-list="relationData.parentCITypeList"
       :child-c-i-type-list="relationData.childCITypeList"
+      :parent-c-i-list="relationData.parentCIList"
+      :child-c-i-list="relationData.childCIList"
       @node-dblclick="handleNodeDblclick"
     />
   </div>

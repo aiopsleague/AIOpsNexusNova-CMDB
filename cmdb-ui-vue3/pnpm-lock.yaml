@@ -59,6 +59,9 @@ importers:
       qrcode:
         specifier: ^1.5.4
         version: 1.5.4
+      relation-graph:
+        specifier: ^2.2.11
+        version: 2.2.11
       sortablejs:
         specifier: ^1.15.7
         version: 1.15.7
@@ -2113,6 +2116,9 @@ packages:
   readdir-glob@1.0.0:
     resolution: {integrity: sha512-km0DIcwQVZ1ZUhXhMWpF74/Wm5aFEd5/jDiVWF1Hkw2myPQovG8vCQ8+FQO2KXE9npQQvCnAMZhhWuUee4WcCQ==}
 
+  relation-graph@2.2.11:
+    resolution: {integrity: sha512-k8jrZkkNYMIKqGN0g8ZHhqd0sP9RAvem6xw9UN9FD59TiVlKx1Vsvi7E/Kh9Z1tZGltdrPo0ZERsUn6Ydoc0Sw==}
+
   require-directory@2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}
     engines: {node: '>=0.10.0'}
@@ -2164,6 +2170,10 @@ packages:
   saxes@6.0.0:
     resolution: {integrity: sha512-xAg7SOnEhrm5zI3puOOKyy1OMcMlIJZYNJY7xLBwSze0UjhPLnWfj2GF2EpT0jmzaJKIWKHLsaSSajf35bcYnA==}
     engines: {node: '>=v12.22.7'}
+
+  screenfull@5.2.0:
+    resolution: {integrity: sha512-9BakfsO2aUQN2K9Fdbj87RJIEZ82Q9IGim7FqM5OsebfoFC6ZHXgDq/KvniuLTPdeM8wY2o6Dj3WQ7KeQCj3cA==}
+    engines: {node: '>=0.10.0'}
 
   scroll-into-view-if-needed@2.2.31:
     resolution: {integrity: sha512-dGCXy99wZQivjmjIqihaBQNjryrz5rueJY7eHfTdyWEiR4ttYpsajb14rn9s5d4DY4EcY6+4+U/maARBXJedkA==}
@@ -4604,6 +4614,11 @@ snapshots:
     dependencies:
       minimatch: 3.1.5
 
+  relation-graph@2.2.11:
+    dependencies:
+      html2canvas: 1.4.1
+      screenfull: 5.2.0
+
   require-directory@2.1.1: {}
 
   require-main-filename@2.0.0: {}
@@ -4670,6 +4685,8 @@ snapshots:
   saxes@6.0.0:
     dependencies:
       xmlchars: 2.2.0
+
+  screenfull@5.2.0: {}
 
   scroll-into-view-if-needed@2.2.31:
     dependencies:
