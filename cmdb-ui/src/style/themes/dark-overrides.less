@@ -702,6 +702,49 @@ html[data-theme='dark'] {
   }
   .el-button:hover,
   .el-button:focus { border-color: #a29bfe; color: #a29bfe; }
+  /* element-ui popover (crontab collection-frequency picker): liquid-glass shell.
+     Element UI's default .el-popover.el-popper is white (#FFF) — swap to a
+     frosted glass surface so it reads consistently with the rest of dark mode. */
+  .el-popover.el-popper {
+    background: rgba(30, 30, 40, 0.85);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    color: #f0f0f3;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
+  }
+  .el-popover__title {
+    color: #f0f0f3;
+  }
+  /* Arrow: recolor the solid border triangle to match the glass border + surface.
+     (A CSS border triangle can't backdrop-filter, so the inner arrow uses the
+     surface color directly to blend with the frosted shell.) */
+  .el-popover.el-popper[x-placement^='top'] .popper__arrow {
+    border-top-color: rgba(255, 255, 255, 0.1);
+  }
+  .el-popover.el-popper[x-placement^='top'] .popper__arrow::after {
+    border-top-color: rgba(30, 30, 40, 0.85);
+  }
+  .el-popover.el-popper[x-placement^='bottom'] .popper__arrow {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+  }
+  .el-popover.el-popper[x-placement^='bottom'] .popper__arrow::after {
+    border-bottom-color: rgba(30, 30, 40, 0.85);
+  }
+  .el-popover.el-popper[x-placement^='left'] .popper__arrow {
+    border-left-color: rgba(255, 255, 255, 0.1);
+  }
+  .el-popover.el-popper[x-placement^='left'] .popper__arrow::after {
+    border-left-color: rgba(30, 30, 40, 0.85);
+  }
+  .el-popover.el-popper[x-placement^='right'] .popper__arrow {
+    border-right-color: rgba(255, 255, 255, 0.1);
+  }
+  .el-popover.el-popper[x-placement^='right'] .popper__arrow::after {
+    border-right-color: rgba(30, 30, 40, 0.85);
+  }
   .el-descriptions__body {
     background-color: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(12px) saturate(160%);
