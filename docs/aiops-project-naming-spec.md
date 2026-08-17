@@ -41,9 +41,9 @@
 
 ### 2.3 自动采集客户端 Agent（主机侧探针）
 **产品名称：Axiom-Euler Agent**
-- service / 镜像：`axiom-euler-agent`
+- service / 镜像：`axiom-euler`
 - module：`AxiomEulerAgent`
-- config：`axiom-euler-agent.yaml`
+- config：`axiom-euler.yaml`
 
 > 释义：
 > Euler（欧拉），图论、拓扑学开创者。Agent负责扫描探测节点、发现网络拓扑、采集主机与实例信息，在运维空间中发现节点与连接关系。
@@ -52,7 +52,7 @@
 
 ### 2.4 自动采集上报中心（数据网关）
 **产品名称：Axiom-Riemann Gateway**
-- service：`axiom-riemann-gateway`
+- service：`axiom-riemann`
 - module：`AxiomRiemannGateway`
 - api prefix：`/api/v1/axiom/riemann`
 
@@ -98,12 +98,12 @@ db: axiom_cantor
 
 2. 自动采集客户端Agent
 对外名称：Axiom-Euler Agent
-service: axiom-euler-agent
+service: axiom-euler
 module: AxiomEulerAgent
 
 3. 采集上报网关
 对外名称：Axiom-Riemann Gateway
-service: axiom-riemann-gateway
+service: axiom-riemann
 module: AxiomRiemannGateway
 
 4. 事件管理中心
